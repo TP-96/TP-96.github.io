@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>High School Projects — Tanmay Poddar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --orange: #FF5C00;
+      --orange-dim: #cc4a00;
+      --cream: #F5F0E8;
+      --dark: #0D0D0D;
+      --mid: #1a1a1a;
+      --gray: #888;
+      --border: rgba(255,92,0,0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--dark);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 4rem;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      color: var(--orange);
+      text-decoration: none;
+    }
+
+    .nav-back {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .nav-back:hover { opacity: 1; color: var(--orange); }
+
+    .project-hero {
+      min-height: 50vh;
+      padding: 10rem 4rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .project-hero::before {
+      content: 'HS';
+      position: absolute;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30vw;
+      color: rgba(255,92,0,0.04);
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .project-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--orange);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .project-tag::before {
+      content: '';
+      display: block;
+      width: 2rem;
+      height: 1px;
+      background: var(--orange);
+    }
+
+    .project-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 7vw, 7rem);
+      letter-spacing: 0.03em;
+      line-height: 0.95;
+      margin-bottom: 2rem;
+    }
+
+    .project-meta {
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .meta-item label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--orange);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .meta-item p { font-size: 0.9rem; opacity: 0.7; }
+
+    /* TWO-COLUMN PROJECT LAYOUT */
+    .projects-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 80vh;
+    }
+
+    .project-panel {
+      padding: 5rem 4rem;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+
+    .project-panel:last-child { border-right: none; }
+
+    .panel-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--orange);
+      letter-spacing: 0.2em;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .panel-subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--orange);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      opacity: 0.7;
+    }
+
+    .panel-body p {
+      font-size: 0.92rem;
+      line-height: 1.85;
+      opacity: 0.7;
+      margin-bottom: 1.2rem;
+    }
+
+    .panel-body h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin: 1.8rem 0 0.75rem;
+      color: var(--cream);
+    }
+
+    .panel-body ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-body li {
+      font-size: 0.88rem;
+      opacity: 0.68;
+      padding-left: 1.2rem;
+      position: relative;
+      line-height: 1.55;
+    }
+
+    .panel-body li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--orange);
+      font-size: 0.65rem;
+      top: 0.15rem;
+    }
+
+    .img-figure {
+      background: var(--mid);
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .img-figure img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(20%);
+      transition: filter 0.3s, transform 0.4s;
+    }
+
+    .img-figure:hover img {
+      filter: grayscale(0%);
+      transform: scale(1.02);
+    }
+
+    .img-caption {
+      padding: 0.75rem 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--gray);
+      letter-spacing: 0.08em;
+      border-top: 1px solid var(--border);
+    }
+
+    blockquote {
+      border-left: 2px solid var(--orange);
+      padding: 0.8rem 1.2rem;
+      margin: 1.5rem 0;
+      background: rgba(255,92,0,0.04);
+    }
+
+    blockquote p {
+      font-style: italic;
+      opacity: 0.75 !important;
+      margin: 0 !important;
+      font-size: 0.88rem !important;
+    }
+
+    /* PROJECT NAV */
+    .project-nav {
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .project-nav a {
+      padding: 2.5rem 4rem;
+      text-decoration: none;
+      color: var(--cream);
+      transition: background 0.3s;
+      border-right: 1px solid var(--border);
+    }
+
+    .project-nav a:last-child { border-right: none; text-align: right; }
+    .project-nav a:hover { background: rgba(255,92,0,0.04); }
+
+    .pnav-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--orange);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .pnav-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .project-hero { padding: 8rem 1.5rem 3rem; }
+      .projects-split { grid-template-columns: 1fr; }
+      .project-panel { border-right: none; border-bottom: 1px solid var(--border); padding: 3rem 1.5rem; }
+      .project-nav { grid-template-columns: 1fr; }
+      .project-nav a { border-right: none; border-bottom: 1px solid var(--border); }
+      .project-nav a:last-child { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">TP</a>
+    <a href="index.html" class="nav-back">← Back to Portfolio</a>
+  </nav>
+
+  <div class="project-hero">
+    <div class="project-tag">Projects 02 & 03 — Shop Class</div>
+    <h1 class="project-title">High School<br>Projects</h1>
+    <div class="project-meta">
+      <div class="meta-item">
+        <label>Course</label>
+        <p>Grade 12 Shop Class</p>
+      </div>
+      <div class="meta-item">
+        <label>Skills</label>
+        <p>Machining & Woodworking</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="projects-split">
+
+    <!-- PROJECT: MALLET -->
+    <div class="project-panel">
+      <div class="panel-num">Project 02 — Machining</div>
+      <div class="panel-title">Aluminum Mallet</div>
+      <div class="panel-subtitle">Manual Lathe / Grade 12</div>
+
+      <div class="img-figure">
+        <img src="IMG_2634.jpeg" alt="Aluminum mallet with stained pine display stand">
+        <div class="img-caption">Final project with stained pine display stand</div>
+      </div>
+
+      <div class="panel-body">
+        <p>During my Grade 12 shop class, I undertook a semester-long project to design and manufacture a metal mallet using a manual lathe. Lacking prior experience with metal lathes and without access to expert guidance, my partner and I independently researched machining techniques and gradually developed our skills using scrap material.</p>
+
+        <p>One significant challenge involved balancing design complexity with manufacturability, which prompted us to simplify a complex fillet into a more repeatable taper.</p>
+
+        <blockquote><p>I now recognize that selecting a simpler design earlier and allowing for larger error margins would have been advantageous given the time constraints.</p></blockquote>
+
+        <h3>What I Learned</h3>
+        <ul>
+          <li>Manual lathe operation from scratch, self-taught</li>
+          <li>Balancing design complexity with manufacturability</li>
+          <li>Importance of error margins in precision machining</li>
+          <li>Iterating on design to improve repeatability</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PROJECT: BOX -->
+    <div class="project-panel">
+      <div class="panel-num">Project 03 — Woodworking</div>
+      <div class="panel-title">Finger Lap Joint Box</div>
+      <div class="panel-subtitle">Table Saw / Maple Lumber</div>
+
+      <div class="img-figure">
+        <img src="IMG_2632.jpeg" alt="Finished finger lap joint box">
+        <div class="img-caption">Final project — maple finger lap joint box</div>
+      </div>
+
+      <div class="panel-body">
+        <p>A box built primarily on the table saw from maple lumber. This project was my first experience using Dado stack blades — throughout the build I was switching table saw blades and creating blade stacks of custom thickness.</p>
+
+        <p>The finger lap joints required precise, repeatable cuts. Learning to double-check measurements and factor in machine error was central to getting clean-fitting joints.</p>
+
+        <h3>What I Learned</h3>
+        <ul>
+          <li>Dado stack blade setup and custom thickness stacking</li>
+          <li>Double-checking measurements before each cut</li>
+          <li>Factoring in machine error (kerf, blade deflection)</li>
+          <li>Patience and precision in joinery</li>
+        </ul>
+
+        <blockquote><p>Every cut on the table saw is a commitment — measuring twice became second nature by the end of this project.</p></blockquote>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="project-nav">
+    <a href="robot-arm.html">
+      <span class="pnav-label">← Previous</span>
+      <span class="pnav-title">Robot Arm Effector</span>
+    </a>
+    <a href="index.html">
+      <span class="pnav-label">Back Home →</span>
+      <span class="pnav-title">Portfolio</span>
+    </a>
+  </div>
+
+</body>
+</html>
