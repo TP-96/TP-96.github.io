@@ -166,6 +166,22 @@
       text-transform: uppercase;
       margin-bottom: 2.5rem;
     }
+    .map-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  .map-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
 
     /* FIGURE */
     figure {
@@ -428,9 +444,17 @@
     </a>
   </div>
 
+  <div class="map-container">
+    <iframe 
+      src="https://www.flightradar24.com/simple_index.php?lat=43.68&lon=-79.62&z=12" 
+      frameborder="0" 
+      allowfullscreen>
+    </iframe>
+  </div>
+
   <footer style="border-top: 1px solid var(--border); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center;">
     <span style="font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em;">© 2026 Tanmay Poddar</span>
-    <span style="font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em;">Projects 02 & 03</span>
+    <span style="font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em;">High School Projects</span>
   </footer>
 
   <script>
