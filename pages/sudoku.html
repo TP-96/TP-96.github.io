@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sudoku — Tanmay Poddar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../styles/sudoku.css">
+</head>
+<body>
+
+  <nav>
+    <a class="nav-logo" href="index.html">Tanmay Poddar</a>
+    <ul class="nav-links">
+      <li><a href="index.html#projects">Projects</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <h1 class="page-title">Sudoku</h1>
+      <p class="page-desc">Fill the grid so every row, column, and 3×3 box contains the digits 1–9.</p>
+
+      <div class="difficulty-group">
+        <div class="difficulty-label">Difficulty</div>
+        <div class="difficulty-btns">
+          <button class="diff-btn active" data-diff="easy">Easy</button>
+          <button class="diff-btn" data-diff="medium">Medium</button>
+          <button class="diff-btn" data-diff="hard">Hard</button>
+        </div>
+      </div>
+
+      <!-- DAILY CHALLENGE CARD -->
+      <div class="daily-card" id="daily-card">
+        <div class="daily-card-eyebrow">Daily Challenge</div>
+        <div class="daily-card-title">Today's Puzzle</div>
+        <div class="daily-card-date" id="daily-card-date"></div>
+        <button class="daily-play-btn" id="daily-btn">Play ◆</button>
+      </div>
+
+      <div class="action-group">
+        <button class="action-btn primary" id="new-game-btn">New Game <span>↻</span></button>
+        <button class="action-btn" id="check-btn">Check Board <span>✓</span></button>
+        <button class="action-btn" id="solve-btn">Reveal Solution <span>→</span></button>
+      </div>
+
+      <!-- HINTS PANEL -->
+      <div class="hints-panel" id="hints-panel">
+        <div class="hints-panel-label">
+          Hints
+          <span class="hints-remaining" id="hints-remaining">3</span>
+        </div>
+        <div class="hint-tokens" id="hint-tokens"></div>
+        <button class="hint-use-btn" id="hint-btn">Use Hint — select a cell first</button>
+        <div class="hint-message" id="hint-message"></div>
+      </div>
+
+    </div>
+
+    <!-- CENTER BOARD -->
+    <div class="board-wrap">
+
+      <!-- Pause button lives here, directly above the board -->
+      <div class="board-controls">
+        <span class="board-status" id="board-status">Ready to play</span>
+        <button class="pause-btn" id="pause-btn">⏸ Pause</button>
+      </div>
+
+      <div class="board-relative">
+        <div id="sudoku-board"></div>
+
+        <!-- Start overlay — covers the board until user is ready -->
+        <div class="start-overlay" id="start-overlay">
+          <span class="start-overlay-label">When you're ready</span>
+          <div class="start-overlay-title">Press <span>Start</span><br>to begin the timer</div>
+          <button class="start-btn" id="start-btn">Start Game ▶</button>
+        </div>
+      </div>
+
+      <!-- Notes mode toggle — sits between board and numpad -->
+      <div class="notes-toggle-row">
+        <button class="notes-toggle-btn" id="notes-toggle-btn">
+          <span class="notes-icon">✎</span> Notes Mode — <span id="notes-mode-label">Off</span>
+        </button>
+      </div>
+
+      <div class="numpad" id="numpad"></div>
+
+      <!-- Stats bar — sits right below the numpad -->
+      <div class="board-stats-bar">
+        <div class="board-stat">
+          <span class="board-stat-key">Time</span>
+          <span class="board-stat-val" id="timer-display">00:00</span>
+        </div>
+        <div class="board-stat-divider"></div>
+        <div class="board-stat">
+          <span class="board-stat-key">Errors</span>
+          <span class="board-stat-val" id="error-display">0</span>
+        </div>
+        <div class="board-stat-divider"></div>
+        <div class="board-stat">
+          <span class="board-stat-key">Filled</span>
+          <span class="board-stat-val" id="filled-display">0/81</span>
+        </div>
+      </div>
+    </div>
+
+    </div>
+  </main>
+
+  <!-- BOTTOM INSTRUCTIONS SECTION -->
+  <div class="bottom-section">
+    <div class="bottom-hint-col">
+      <div class="bottom-section-label">How to Play</div>
+      <ul class="bottom-rules-list">
+        <li>Press Start when you're ready — the timer won't begin until you do.</li>
+        <li>Click a cell, then press a number key or tap the numpad below the board.</li>
+        <li>Each row must contain digits 1–9 with no repeats.</li>
+        <li>Each column must contain digits 1–9 with no repeats.</li>
+        <li>Each 3×3 box must contain digits 1–9 with no repeats.</li>
+        <li>Orange numbers are given clues and cannot be changed.</li>
+        <li>Use the Pause button above the board to freeze the timer anytime.</li>
+        <li>You have 3 hints per game — select an empty cell then press Use Hint.</li>
+      </ul>
+    </div>
+    <div class="bottom-rules-col">
+      <div class="bottom-section-label">Controls</div>
+      <ul class="bottom-rules-list">
+        <li>Arrow keys navigate between cells.</li>
+        <li>Number keys 1–9 fill the selected cell.</li>
+        <li>Backspace or Delete clears a cell.</li>
+        <li>Press N or click Notes Mode to toggle pencil-note mode — numbers annotate candidates without committing a value.</li>
+        <li>Daily Challenge resets every day with a new seeded puzzle.</li>
+        <li>Everyone playing on the same day gets the exact same Daily puzzle.</li>
+        <li>Submit your time to the leaderboard after completing the daily.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PERMANENT DAILY LEADERBOARD -->
+  <div class="leaderboard-section" id="page-leaderboard-section">
+    <div class="lb-section-header">
+      <div class="lb-section-title">Daily <span>Leaderboard</span></div>
+      <div class="lb-section-date" id="lb-page-date"></div>
+    </div>
+    <div class="lb-page-table">
+      <div class="lb-page-header">
+        <span>#</span><span>Player</span><span>Time</span><span>Diff</span>
+      </div>
+      <div id="lb-page-rows"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>2026 Tanmay Poddar</span>
+    <span>Toronto, Canada</span>
+  </footer>
+
+  <!-- PAUSE OVERLAY -->
+  <div class="full-overlay" id="pause-overlay">
+    <div class="overlay-title">Game<br><span>Paused.</span></div>
+    <div class="overlay-sub">Your progress is saved</div>
+    <button class="overlay-btn" id="resume-btn">Resume Game ▶</button>
+  </div>
+
+  <!-- WIN OVERLAY -->
+  <div class="full-overlay" id="win-overlay">
+    <div class="overlay-title">Puzzle<br><span>Solved.</span></div>
+    <div class="overlay-sub" id="win-sub">Completed in</div>
+    <div class="overlay-time" id="win-time">00:00</div>
+
+    <!-- Daily challenge leaderboard (shown only for daily mode) -->
+    <div id="daily-win-section" style="display:none; flex-direction:column; align-items:center; gap:1rem; width:100%; max-width:360px;">
+      <div class="overlay-divider"></div>
+      <div class="leaderboard-section-label" id="lb-section-label">Daily Challenge — Submit Your Time</div>
+
+      <div id="lb-submit-area" class="win-leaderboard-section">
+        <div class="leaderboard-submit">
+          <input class="leaderboard-input" id="lb-name-input" maxlength="16" placeholder="Enter username" autocomplete="off" spellcheck="false"/>
+          <button class="leaderboard-submit-btn" id="lb-submit-btn">Submit →</button>
+        </div>
+      </div>
+
+      <div class="leaderboard-table-wrap" id="lb-table-wrap">
+        <div class="leaderboard-header">
+          <span>#</span><span>Player</span><span>Time</span><span>Diff</span>
+        </div>
+        <div id="lb-rows"></div>
+      </div>
+    </div>
+
+    <button class="overlay-btn" id="win-new-btn">Play Again ↻</button>
+  </div>
+
+  <script type="module" src="../scripts/sudoku.js"></script>
+</body>
+</html>
