@@ -1406,8 +1406,8 @@
 
     function flipHoleCard() {
       const cards = $dealerCards.querySelectorAll('.card-wrapper');
-      const hole  = cards[0];
-      if (!hole || hole.dataset.faceDown !== '1') return;
+      const hole  = Array.from(cards).find(c => c.dataset.faceDown === '1');
+      if (!hole) return;
       hole.dataset.faceDown = '0';
       // Slide the wrapper to signal it's being revealed
       hole.classList.add('hole-reveal');
@@ -1746,54 +1746,6 @@
           isSplitMode = false; playerHands = [[]]; activeHand = 0;
           phase = 'over'; setControls('bet'); checkZeroBalance();
         }, 2200);
-      });
-    }
-            balance += hBet * 2;
-            totalWin += hBet;
-            wins++;
-          } else if (pTotal < dTotal) {
-            losses++;
-            stats.net -= hBet;
-          } else {
-            balance += hBet; // push
-            pushes++;
-          }
-        });
-
-        stats.hands += playerHands.length;
-        stats.wins    += wins;
-        stats.losses  += losses;
-        stats.pushes  += pushes;
-        stats.net     += totalWin;
-
-        if (wins > 0 && losses === 0 && pushes === 0) {
-          resultText = `YOU WIN +$${totalWin}`; resultType = 'win';
-          flashOutcome('win');
-          updateBalanceDisplay('up');
-        } else if (losses > 0 && wins === 0 && pushes === 0) {
-          const lostTotal = handBets.reduce((s,b)=>s+b,0);
-          resultText = `DEALER WINS -$${lostTotal}`; resultType = 'lose';
-          flashOutcome('lose');
-          updateBalanceDisplay('down');
-        } else if (pushes === playerHands.length) {
-          resultText = 'PUSH — BET RETURNED'; resultType = 'push';
-        } else {
-          // Mixed result across split hands
-          resultText = wins > losses
-            ? `AHEAD +$${totalWin}` : losses > wins
-            ? `BEHIND` : 'SPLIT RESULT';
-          resultType = wins > losses ? 'win' : losses > wins ? 'lose' : 'push';
-          if (resultType === 'win') { flashOutcome('win'); updateBalanceDisplay('up'); }
-          else if (resultType === 'lose') { flashOutcome('lose'); updateBalanceDisplay('down'); }
-        }
-
-        updateStats();
-        showResult(resultText, resultType);
-        bet = 0; updateBetDisplay(); handBets = [0];
-        isSplitMode = false; playerHands = [[]]; activeHand = 0;
-        phase = 'over';
-        setControls('bet');
-        checkZeroBalance();
       });
     }
 
