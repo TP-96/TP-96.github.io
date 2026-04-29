@@ -183,8 +183,8 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: 0.85rem;
       letter-spacing: 0.4em;
-      color: rgba(201,168,76,0.4);
-      margin-bottom: 1.5rem;
+      color: rgba(201,168,76,0.55);
+      margin-bottom: 0.4rem;
       position: relative;
     }
 
@@ -533,6 +533,14 @@
       60%  { opacity: 0.6; }
       100% { opacity: 0; background: rgba(201,168,76,0); }
     }
+    .outcome-flash.flash-push {
+      animation: flashPush 0.9s ease-out forwards;
+    }
+    @keyframes flashPush {
+      0%   { opacity: 0; background: rgba(230,180,20,0.35); }
+      30%  { opacity: 1; }
+      100% { opacity: 0; background: rgba(230,180,20,0); }
+    }
 
     /* ── SPLIT LAYOUT ── */
     .split-container {
@@ -587,7 +595,7 @@
       font-size: 0.6rem;
       letter-spacing: 0.12em;
       color: rgba(201,168,76,0.35);
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.75rem;
     }
 
     /* ── CONTROLS BAR ── */
@@ -735,6 +743,7 @@
     .chip-25  { border-color: #2ecc71; color: #2ecc71; background: rgba(46,204,113,0.1); }
     .chip-50  { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.1); }
     .chip-100 { border-color: #9b59b6; color: #9b59b6; background: rgba(155,89,182,0.1); }
+    .chip-500 { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
 
     .btn-clear-bet {
       font-family: 'DM Mono', monospace;
@@ -879,6 +888,13 @@
     }
     .casino-table.win { animation: winFlash 0.5s ease-in-out 2; }
 
+    /* ── PUSH FLASH ── */
+    @keyframes pushFlash {
+      0%, 100% { box-shadow: 0 0 80px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,0,0,0.5), 0 0 2px var(--felt-border); }
+      50% { box-shadow: 0 0 80px rgba(0,0,0,0.8), inset 0 0 60px rgba(230,180,20,0.22), 0 0 18px rgba(230,180,20,0.35); }
+    }
+    .casino-table.push { animation: pushFlash 0.55s ease-in-out 2; }
+
     /* ── BALANCE FLASH ── */
     @keyframes balanceUp { 0%,100% { color: var(--orange); } 50% { color: #4a9e5c; } }
     @keyframes balanceDown { 0%,100% { color: var(--orange); } 50% { color: var(--red); } }
@@ -953,9 +969,10 @@
   <nav>
     <a class="nav-logo" href="index.html">Tanmay Poddar</a>
     <ul class="nav-links">
+      <li><a href="sudoku.html">Sudoku</a></li>
       <li><a href="index.html#projects">Projects</a></li>
       <li><a href="about.html">About</a></li>
-      <li><a href="games.html" class="active">Games</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
     </ul>
   </nav>
 
@@ -978,6 +995,10 @@
       <div class="page-header-line"></div>
     </div>
 
+    <!-- TABLE HEADER (above felt) -->
+    <div class="table-label">♠ BLACKJACK — 3 TO 2 PAYS — DEALER STANDS ON SOFT 17 ♠</div>
+    <div class="shoe-info" id="shoeInfo">6-DECK SHOE · CARDS REMAINING: 312</div>
+
     <!-- CASINO TABLE -->
     <div class="casino-table" id="casinoTable">
 
@@ -989,9 +1010,6 @@
           <button class="btn btn-primary" id="btnRefund">Get $500 Reload</button>
         </div>
       </div>
-
-      <div class="table-label">♠ BLACKJACK — 3 TO 2 PAYS — DEALER STANDS ON SOFT 17 ♠</div>
-      <div class="shoe-info" id="shoeInfo">6-DECK SHOE · CARDS REMAINING: 312</div>
 
       <!-- Dealer -->
       <div class="dealer-section">
@@ -1052,6 +1070,7 @@
           <button class="chip chip-25"  data-val="25"  title="$25 chip">25</button>
           <button class="chip chip-50"  data-val="50"  title="$50 chip">50</button>
           <button class="chip chip-100" data-val="100" title="$100 chip">100</button>
+          <button class="chip chip-500" data-val="500" title="$500 chip">500</button>
           <button class="btn-clear-bet" id="btnClearBet">Clear</button>
         </div>
       </div>
@@ -1091,7 +1110,7 @@
       <div class="modal-body">
         This is a simulated blackjack game for entertainment only. No real money is involved.
         Gambling can be addictive and harmful to you and those around you.
-        Please play responsibly and within your means. (kevin)
+        Please play responsibly and within your means.
       </div>
       <div class="modal-helpline">
         <div class="modal-helpline-label">Ontario Problem Gambling Helpline</div>
@@ -1266,26 +1285,39 @@
     }
 
     function setControls(state) {
+      const locked  = state === 'dealer';
       const playing = state === 'playing';
       const betting = state === 'bet' || state === 'over';
       const hand    = playerHands[activeHand] || [];
-      $btnDeal.disabled   = !(betting && bet > 0);
-      $btnHit.disabled    = !playing;
-      $btnStand.disabled  = !playing;
-      $btnDouble.disabled = !(playing && hand.length === 2 && balance >= handBets[activeHand]);
-      $btnSplit.disabled  = !(playing && canSplit(hand) && balance >= handBets[activeHand] && !isSplitMode);
-      $btnClearBet.disabled = !betting;
-      document.querySelectorAll('.chip').forEach(c => { c.disabled = !betting; });
+      $btnDeal.disabled   = locked || !(betting && bet > 0);
+      $btnHit.disabled    = locked || !playing;
+      $btnStand.disabled  = locked || !playing;
+      $btnDouble.disabled = locked || !(playing && hand.length === 2 && balance >= handBets[activeHand]);
+      $btnSplit.disabled  = locked || !(playing && canSplit(hand) && balance >= handBets[activeHand] && !isSplitMode);
+      $btnClearBet.disabled = locked || !betting;
+      document.querySelectorAll('.chip').forEach(c => { c.disabled = locked || !betting || parseInt(c.dataset.val) > balance; });
     }
 
     // ── OUTCOME FLASH ─────────────────────────────────────────────────────────
     function flashOutcome(type) {
+      if (!type) return;
       $outcomeFlash.className = 'outcome-flash';
       void $outcomeFlash.offsetWidth;
       $outcomeFlash.classList.add(
-        type === 'win' ? 'flash-win' :
-        type === 'bj'  ? 'flash-bj'  : 'flash-lose'
+        type === 'win'  ? 'flash-win'  :
+        type === 'bj'   ? 'flash-bj'   :
+        type === 'push' ? 'flash-push' : 'flash-lose'
       );
+      // Also pulse the table border
+      $casinoTable.classList.remove('win', 'bust', 'push');
+      void $casinoTable.offsetWidth;
+      $casinoTable.classList.add(
+        type === 'win' || type === 'bj' ? 'win' :
+        type === 'push' ? 'push' : 'bust'
+      );
+      $casinoTable.addEventListener('animationend', () => {
+        $casinoTable.classList.remove('win', 'bust', 'push');
+      }, { once: true });
     }
 
     // ── RESULT BANNER ─────────────────────────────────────────────────────────
@@ -1436,7 +1468,7 @@
       // 2) After ring completes → flash + banner
       setTimeout(() => {
         $resultCountdown.classList.remove('show', 'counting');
-        flashOutcome(type === 'blackjack' ? 'bj' : type === 'win' ? 'win' : type === 'lose' ? 'lose' : null);
+        flashOutcome(type === 'blackjack' ? 'bj' : type === 'win' ? 'win' : type === 'lose' ? 'lose' : type === 'push' ? 'push' : null);
         showResult(text, type);
       }, delay + 1150);
     }
@@ -1649,7 +1681,7 @@
 
     // ── RESOLVE ───────────────────────────────────────────────────────────────
     function resolveRound(isPlayerBJ) {
-      setControls('over');
+      setControls("dealer");
       const dealerTotal = handTotal(dealerHand);
 
       // Player natural blackjack
@@ -1739,6 +1771,7 @@
         }
 
         updateStats();
+        updateBalanceDisplay(resultType === 'win' ? 'up' : resultType === 'lose' ? 'down' : null);
         showResultWithSuspense(resultText, resultType);
         setTimeout(() => {
           bet = 0; updateBetDisplay(); handBets = [0];
