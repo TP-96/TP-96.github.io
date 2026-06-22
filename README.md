@@ -4,4 +4,6 @@ Main Pages include
   2. Contact Information
   3. Puzzle Games
        - Sudoku
+       - Blackjack
+       - 2048
          
