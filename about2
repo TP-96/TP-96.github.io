@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Tanmay Poddar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:#f7f0e0;
+  color:#080F2A;
+  font-family:'Crimson Pro',Georgia,serif;
+  font-size:18px;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+::selection{background:rgba(15,42,74,.2);color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#f0ece5}
+::-webkit-scrollbar-thumb{background:#c5c0b8;border-radius:3px}
+
+:focus-visible{outline:2px solid #12151C;outline-offset:3px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.15);opacity:.55}}
+
+#gear-container{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#gear-container svg{position:fixed;pointer-events:none;opacity:1}
+#gear-container .gear-g{transform-origin:center center}
+
+/* ═══ NAV ═══ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;
+  padding:1.55rem 3rem;
+  background:rgba(247,240,224,.55);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(15,42,74,.08);
+}
+.nav-logo{
+  display:flex;align-items:center;gap:.55rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.92rem;font-weight:600;color:#080F2A;
+  text-decoration:none;letter-spacing:-.01em;transition:opacity .2s;
+}
+.nav-logo:hover{opacity:.65}
+.nav-mark{
+  width:26px;height:26px;border-radius:7px;background:#12151C;
+  display:flex;align-items:center;justify-content:center;
+  color:#faf8f0;font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:1rem;
+  flex-shrink:0;
+}
+.nav-links{margin-left:auto;display:flex;align-items:center;list-style:none;gap:.4rem}
+.nav-links a{
+  font-family:'Crimson Pro',Georgia,serif;font-size:.95rem;font-weight:400;
+  color:rgba(28,26,24,.55);text-decoration:none;
+  padding:.4rem .9rem;border-radius:9999px;transition:all .2s;
+}
+.nav-links a:hover,.nav-links a.active{color:#080F2A;background:rgba(15,42,74,.06)}
+.cta-nav{
+  font-weight:500;
+  color:#faf8f0 !important;background:#12151C;
+}
+.cta-nav:hover{background:#173a63;color:#faf8f0 !important}
+
+/* ═══ ABOUT HERO ═══ */
+.about-hero{
+  min-height:52vh;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:9.5rem 3rem 4.5rem;position:relative;
+  max-width:1180px;margin:0 auto;width:100%;
+  border-bottom:1px solid rgba(15,42,74,.1);
+}
+.about-hero-glow{
+  position:absolute;top:-20%;right:-6%;width:520px;height:520px;
+  background:radial-gradient(circle,rgba(15,42,74,.06),transparent 70%);
+  pointer-events:none;z-index:-1;
+  animation:pulse 9s ease-in-out infinite;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:.6rem;
+  font-size:.72rem;font-weight:600;color:#080F2A;
+  text-transform:uppercase;letter-spacing:.22em;
+  margin-bottom:1.4rem;font-family:'JetBrains Mono',monospace;
+  opacity:0;animation:fadeUp .8s .1s forwards;
+}
+.hero-eyebrow::before{content:'';width:28px;height:1px;background:#12151C;opacity:.5}
+.about-hero h1{
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;
+  font-size:clamp(2.8rem,7.5vw,5.2rem);
+  line-height:1.05;color:#080F2A;margin-bottom:1.6rem;max-width:800px;
+  letter-spacing:.005em;
+  opacity:0;animation:fadeUp .8s .22s forwards;
+}
+.about-hero h1 .accent{color:#1B2A4E}
+.hero-intro{
+  font-size:1.15rem;color:rgba(28,26,24,.62);max-width:600px;line-height:1.7;
+  font-weight:300;font-style:italic;
+  opacity:0;animation:fadeUp .8s .36s forwards;
+}
+
+/* ═══ SECTIONS ═══ */
+.content-section{
+  padding:6rem 3rem;max-width:1180px;margin:0 auto;
+  border-bottom:1px solid rgba(15,42,74,.1);
+}
+.content-section.alt{background:rgba(15,42,74,.025)}
+.section-header{
+  display:flex;align-items:baseline;gap:1.4rem;margin-bottom:3rem;
+}
+.section-num{
+  font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;
+  color:#080F2A;opacity:.6;letter-spacing:.05em;flex-shrink:0;
+}
+.section-title{
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:2.3rem;
+  line-height:1;color:#080F2A;letter-spacing:0em;flex-shrink:0;
+}
+.section-line{flex:1;height:1px;background:rgba(15,42,74,.15)}
+
+/* ═══ TWO COL / PROSE ═══ */
+.two-col{display:grid;grid-template-columns:1.15fr 1fr;gap:3.5rem;align-items:start}
+.prose{font-size:1.02rem;color:rgba(28,26,24,.62);line-height:1.8}
+.prose p{margin-bottom:1.15rem}
+.prose p:last-child{margin-bottom:0}
+.prose strong{color:#080F2A;font-weight:600}
+blockquote{
+  border-left:2px solid #12151C;border-radius:0 12px 12px 0;
+  padding:1.1rem 1.5rem;margin:1.6rem 0;
+  background:rgba(15,42,74,.045);
+}
+blockquote p{
+  font-style:italic;color:rgba(28,26,24,.7) !important;
+  font-size:1.05rem !important;margin:0 !important;
+  font-family:'Crimson Pro',Georgia,serif;
+}
+
+/* ═══ DETAIL TABLE (reuses about-details styling) ═══ */
+.detail-table{
+  display:flex;flex-direction:column;
+  background:rgba(15,42,74,.035);border-radius:16px;
+  border:1px solid rgba(15,42,74,.09);box-shadow:0 1px 2px rgba(15,42,74,.03);
+  overflow:hidden;
+}
+.detail-row{display:flex;gap:1rem;padding:1.1rem 1.6rem;border-bottom:1px solid rgba(15,42,74,.07);align-items:baseline}
+.detail-row:last-child{border-bottom:none}
+.detail-key{
+  font-family:'JetBrains Mono',monospace;font-size:.64rem;font-weight:600;
+  color:rgba(15,42,74,.5);text-transform:uppercase;letter-spacing:.08em;
+  flex-shrink:0;
+}
+.detail-val{font-size:.92rem;color:rgba(28,26,24,.75);font-weight:500;text-align:right;margin-left:auto}
+.detail-val a{color:#080F2A;text-decoration:none;border-bottom:1px solid rgba(15,42,74,.25)}
+
+/* ═══ VALUE CARDS ═══ */
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+.value-card{
+  background:rgba(15,42,74,.035);border:1px solid rgba(15,42,74,.12);
+  border-radius:16px;padding:2.2rem;
+  transition:all .3s cubic-bezier(.2,.8,.2,1);
+}
+.value-card:hover{
+  border-color:rgba(15,42,74,.3);background:rgba(15,42,74,.07);
+  transform:translateY(-3px);box-shadow:0 16px 32px -18px rgba(15,42,74,.18);
+}
+.value-num{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;
+  color:rgba(15,42,74,.45);letter-spacing:.15em;margin-bottom:1rem;
+}
+.value-title{
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:1.35rem;
+  margin-bottom:.7rem;color:#080F2A;
+}
+.value-desc{font-size:.92rem;color:rgba(28,26,24,.58);font-weight:300;line-height:1.7}
+
+/* ═══ TIMELINE ═══ */
+.timeline{display:flex;flex-direction:column}
+.timeline-item{
+  display:grid;grid-template-columns:110px 1px 1fr;gap:0 2rem;
+  padding-bottom:2.75rem;position:relative;
+}
+.timeline-item:last-child{padding-bottom:0}
+.tl-date{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#080F2A;opacity:.6;
+  letter-spacing:.05em;padding-top:.2rem;text-align:right;
+}
+.tl-line{background:rgba(15,42,74,.15);position:relative;flex-shrink:0}
+.tl-line::before{
+  content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+  width:9px;height:9px;border-radius:50%;background:#B08D57;
+}
+.tl-title{
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:1.35rem;
+  margin-bottom:.3rem;color:#080F2A;
+}
+.tl-sub{
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;color:rgba(28,26,24,.42);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem;
+}
+.tl-desc{font-size:.94rem;color:rgba(28,26,24,.58);font-weight:300;line-height:1.75;margin-bottom:.9rem}
+
+/* ═══ CHIPS ═══ */
+.chip-row{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{
+  font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:500;
+  color:#080F2A;background:rgba(15,42,74,.06);
+  padding:.28rem .7rem;border-radius:9999px;
+  border:1px solid rgba(15,42,74,.1);
+  text-transform:uppercase;letter-spacing:.03em;
+}
+
+/* ═══ SKILLS GRID ═══ */
+.skills-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1.1rem;
+}
+.skill-item{
+  background:rgba(15,42,74,.035);border:1px solid rgba(15,42,74,.1);
+  border-radius:14px;padding:1.6rem;transition:all .3s;
+}
+.skill-item:hover{border-color:rgba(15,42,74,.28);background:rgba(15,42,74,.06)}
+.skill-category{
+  font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:600;
+  color:rgba(15,42,74,.45);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.7rem;
+}
+.skill-name{
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:1.2rem;
+  line-height:1.15;margin-bottom:.5rem;color:#080F2A;
+}
+.skill-desc{font-size:.85rem;color:rgba(28,26,24,.55);font-weight:300;line-height:1.6}
+
+/* ═══ CTA STRIP ═══ */
+.cta-strip{
+  padding:5rem 3rem;max-width:1180px;margin:0 auto;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:2rem;
+}
+.cta-big{
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;
+  font-size:clamp(2.2rem,4.5vw,3.6rem);line-height:1.05;color:#080F2A;
+}
+.cta-big .accent{color:#1B2A4E}
+.cta-actions{display:flex;gap:.9rem;align-items:center;flex-wrap:wrap}
+.btn-primary{
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:500;
+  color:#faf8f0;background:#12151C;
+  border:1px solid #12151C;padding:.85rem 1.6rem;border-radius:9999px;
+  text-decoration:none;transition:all .25s;
+  display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-primary:hover{background:#173a63;border-color:#173a63;gap:.7rem}
+.btn-ghost{
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:500;
+  color:#080F2A;background:transparent;
+  border:1px solid rgba(15,42,74,.25);padding:.85rem 1.6rem;border-radius:9999px;
+  text-decoration:none;transition:all .25s;
+  display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-ghost:hover{border-color:#12151C;background:rgba(15,42,74,.06);gap:.7rem}
+
+/* ═══ FOOTER ═══ */
+footer{
+  text-align:center;padding:2.2rem 2.5rem;
+  font-size:.72rem;font-family:'JetBrains Mono',monospace;
+  color:rgba(28,26,24,.32);
+  border-top:1px solid rgba(15,42,74,.07);
+}
+
+/* ═══ REVEAL ═══ */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:900px){
+  .two-col{grid-template-columns:1fr;gap:2.5rem}
+  .three-col{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  nav{padding:1.15rem 1.4rem}
+  .nav-links a{font-size:.85rem;padding:.32rem .65rem}
+  .about-hero{padding:6.5rem 1.4rem 3rem}
+  .hero-intro{font-size:1.02rem}
+  .content-section{padding:4rem 1.4rem}
+  .section-title{font-size:1.9rem}
+  .timeline-item{grid-template-columns:78px 1px 1fr;gap:0 1.1rem}
+  .cta-strip{padding:4rem 1.4rem;flex-direction:column;align-items:flex-start}
+  footer{padding:1.75rem 1.4rem}
+}
+</style>
+</head>
+<body>
+
+<div id="gear-container"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html"><span class="nav-mark">T</span>Tanmay Poddar</a>
+  <ul class="nav-links">
+    <li><a href="games.html">Games</a></li>
+    <li><a href="index.html#projects">Projects</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="index.html#contact" class="cta-nav">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="about-hero">
+  <div class="about-hero-glow"></div>
+  <div class="hero-eyebrow">02 — About Me</div>
+  <h1>Tanmay <span class="accent">Poddar</span></h1>
+  <p class="hero-intro">Mechanical Engineering student at McMaster University. Obsessed with aerospace, applied physics, and the idea that the simplest solution is almost always the right one.</p>
+</div>
+
+<section class="content-section">
+  <div class="section-header reveal">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Who I Am</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="two-col reveal">
+    <div class="prose">
+      <p>I'm an aspiring engineer from the <strong>Greater Toronto Area</strong>, currently studying Mechanical Engineering at McMaster University. From a young age I've been drawn to how things work — why planes stay in the air, how forces interact, what happens when a design fails and what it takes to make it not fail again.</p>
+      <p>My goal is to contribute meaningfully to the <strong>future of airline transportation</strong>. Whether that means improving the efficiency of existing aircraft, designing new propulsion systems, or rethinking how aviation infrastructure works — I want to be part of that work.</p>
+      <blockquote>
+        <p>I believe the simplest solution is often the best solution — a principle reinforced through every prototype iteration and project setback I've learned from.</p>
+      </blockquote>
+      <p>Outside of engineering coursework, I gravitate toward hands-on creation. Machining a mallet on a lathe, building a wooden box with finger lap joints, designing a claw end-effector for a robot arm — these aren't just projects, they're how I've learned to think.</p>
+    </div>
+    <div class="detail-table">
+      <div class="detail-row"><span class="detail-key">Location</span><span class="detail-val">Greater Toronto Area, Canada</span></div>
+      <div class="detail-row"><span class="detail-key">University</span><span class="detail-val">McMaster University</span></div>
+      <div class="detail-row"><span class="detail-key">Program</span><span class="detail-val">Mechanical Engineering</span></div>
+      <div class="detail-row"><span class="detail-key">Year</span><span class="detail-val">First Year (2025–26)</span></div>
+      <div class="detail-row"><span class="detail-key">Focus</span><span class="detail-val">Aerospace & Applied Physics</span></div>
+      <div class="detail-row"><span class="detail-key">Email</span><span class="detail-val"><a href="mailto:tanmay@poddar.net">tanmay@poddar.net</a></span></div>
+      <div class="detail-row"><span class="detail-key">GitHub</span><span class="detail-val"><a href="https://github.com/TP-96" target="_blank">TP-96</a></span></div>
+      <div class="detail-row"><span class="detail-key">LinkedIn</span><span class="detail-val"><a href="http://www.linkedin.com/in/tanmay-poddar1" target="_blank">tanmay-poddar1</a></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section alt">
+  <div class="section-header reveal">
+    <span class="section-num">02</span>
+    <h2 class="section-title">What I Value</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="three-col reveal">
+    <div class="value-card">
+      <div class="value-num">01</div>
+      <div class="value-title">Simplicity First</div>
+      <p class="value-desc">Every extra part, variable, or assumption is a potential failure point. The most elegant solution does the most with the least.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-num">02</div>
+      <div class="value-title">Build to Learn</div>
+      <p class="value-desc">Physical prototypes reveal things that no amount of sketching or simulation can. Iterate fast, iterate cheap, and let the thing tell you what's wrong.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-num">03</div>
+      <div class="value-title">Design for People</div>
+      <p class="value-desc">Technology only matters when it solves a real problem for a real person. Every constraint is an opportunity to understand your user better.</p>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-header reveal">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Background</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="timeline reveal">
+    <div class="timeline-item">
+      <div class="tl-date">Sep 2025 –<br>Present</div>
+      <div class="tl-line"></div>
+      <div class="tl-content">
+        <div class="tl-title">McMaster University</div>
+        <div class="tl-sub">Mechanical Engineering · Hamilton, ON</div>
+        <p class="tl-desc">Mechanical Engineering program at McMaster University. Completed two design projects: a robot arm end-effector (Project 1) and a client-facing mechanical ball launcher (Project 3). Developed skills in CAD, Python, 3D printing, and project management.</p>
+        <div class="chip-row">
+          <span class="chip">CAD / Fusion 360</span>
+          <span class="chip">Python</span>
+          <span class="chip">3D Printing</span>
+          <span class="chip">Project Management</span>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2023 – 2025</div>
+      <div class="tl-line"></div>
+      <div class="tl-content">
+        <div class="tl-title">High School — Grade 12</div>
+        <div class="tl-sub">Shop Class · Greater Toronto Area</div>
+        <p class="tl-desc">Undertook semester-long precision manufacturing projects — a manual-lathe turned aluminum mallet and a maple finger lap joint box. Self-taught lathe operation, and developed an instinct for measurement, tolerancing, and machine error that has carried into university projects.</p>
+        <div class="chip-row">
+          <span class="chip">Manual Lathe</span>
+          <span class="chip">Woodworking</span>
+          <span class="chip">Dado Stack Blades</span>
+          <span class="chip">Technical Drawing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section alt">
+  <div class="section-header reveal">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Skills</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="skills-grid reveal">
+    <div class="skill-item">
+      <div class="skill-category">Software</div>
+      <div class="skill-name">CAD / Fusion 360</div>
+      <p class="skill-desc">Solid modelling, assemblies, iterative design, exploded views.</p>
+    </div>
+    <div class="skill-item">
+      <div class="skill-category">Software</div>
+      <div class="skill-name">SOLIDWORKS</div>
+      <p class="skill-desc">Parametric modelling, part and assembly design, technical drawings, design intent.</p>
+    </div>
+    <div class="skill-item">
+      <div class="skill-category">Programming</div>
+      <div class="skill-name">Python</div>
+      <p class="skill-desc">Automation, control systems, encryption with Bcrypt, flowchart-driven programming.</p>
+    </div>
+    <div class="skill-item">
+      <div class="skill-category">Fabrication</div>
+      <div class="skill-name">3D Printing</div>
+      <p class="skill-desc">FDM prototyping, scale modelling, mechanism validation, rapid iteration.</p>
+    </div>
+    <div class="skill-item">
+      <div class="skill-category">Machining</div>
+      <div class="skill-name">Manual Lathe</div>
+      <p class="skill-desc">Turning, facing, tapering, tolerancing in aluminum and steel.</p>
+    </div>
+    <div class="skill-item">
+      <div class="skill-category">Woodworking</div>
+      <div class="skill-name">Table Saw</div>
+      <p class="skill-desc">Dado stack setup, precision joinery, repeatable cut technique.</p>
+    </div>
+    <div class="skill-item">
+      <div class="skill-category">Leadership</div>
+      <div class="skill-name">Project Management</div>
+      <p class="skill-desc">GANTT charts, delegation, conflict resolution, timeline management.</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-strip reveal">
+  <div class="cta-big">Want to<br>Work <span class="accent">Together?</span></div>
+  <div class="cta-actions">
+    <a href="mailto:tanmay@poddar.net" class="btn-primary">Get in Touch <span>↗</span></a>
+    <a href="index.html#projects" class="btn-ghost">View Projects</a>
+  </div>
+</div>
+
+<footer>2026 Tanmay Poddar · Toronto, Canada</footer>
+
+<script>
+(function(){
+  'use strict';
+  var c = document.getElementById('gear-container');
+  if (!c) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  var gears = [];
+
+  function gp(ir, or, t, hr) {
+    var helix = 0.85; // angular twist applied across tooth height, for a helical-gear look
+    var step = 2 * Math.PI / t;
+    var hw = step * 0.2;
+    var twist = hw * helix;
+    var midR = ir + (or - ir) * 0.5;
+    var parts = [];
+    for (var i = 0; i < t; i++) {
+      var a = i * step;
+      var aB1 = a - hw, aB2 = a + hw;
+      var aT1 = aB1 + twist, aT2 = aB2 + twist;
+      var p1x = ir * Math.cos(aB1), p1y = ir * Math.sin(aB1);
+      if (i === 0) parts.push('M' + p1x.toFixed(3) + ' ' + p1y.toFixed(3));
+      var mA1 = aB1 + twist * 0.5;
+      var cx1 = midR * Math.cos(mA1), cy1 = midR * Math.sin(mA1);
+      var p2x = or * Math.cos(aT1), p2y = or * Math.sin(aT1);
+      parts.push('Q' + cx1.toFixed(3) + ' ' + cy1.toFixed(3) + ' ' + p2x.toFixed(3) + ' ' + p2y.toFixed(3));
+      var p3x = or * Math.cos(aT2), p3y = or * Math.sin(aT2);
+      parts.push('A' + or + ' ' + or + ' 0 0 1 ' + p3x.toFixed(3) + ' ' + p3y.toFixed(3));
+      var mA2 = aB2 + twist * 0.5;
+      var cx2 = midR * Math.cos(mA2), cy2 = midR * Math.sin(mA2);
+      var p4x = ir * Math.cos(aB2), p4y = ir * Math.sin(aB2);
+      parts.push('Q' + cx2.toFixed(3) + ' ' + cy2.toFixed(3) + ' ' + p4x.toFixed(3) + ' ' + p4y.toFixed(3));
+      var na = (i + 1) * step;
+      var nx = ir * Math.cos(na - hw), ny = ir * Math.sin(na - hw);
+      if (i < t - 1) parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + nx.toFixed(3) + ' ' + ny.toFixed(3));
+      else { var fx = ir * Math.cos(0 - hw), fy = ir * Math.sin(0 - hw); parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + fx.toFixed(3) + ' ' + fy.toFixed(3)); }
+    }
+    parts.push('Z');
+    if (hr > 0) { var h = hr; parts.push('M' + h + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + (-h) + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + h + ' 0 Z'); }
+    return parts.join('');
+  }
+
+  function cg(ir, or, t, hr, o) {
+    var size = (or + 4) * 2;
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', (-or - 2) + ' ' + (-or - 2) + ' ' + (or + 2) * 2 + ' ' + (or + 2) * 2);
+    svg.setAttribute('width', size); svg.setAttribute('height', size);
+    svg.style.cssText = 'left:' + o.x + '%;top:' + o.y + '%;opacity:1;pointer-events:none;z-index:-1;will-change:transform;';
+    var g = document.createElementNS(ns, 'g');
+    g.setAttribute('class', 'gear-g');
+    g.style.willChange = 'transform';
+
+    var path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', gp(ir, or, t, hr));
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke', '#B08D57');
+    path.setAttribute('stroke-width', o.strokeWidth || 2.5);
+    path.setAttribute('opacity', o.opacity || 0.06);
+    g.appendChild(path);
+
+    if (o.innerRing) {
+      var ring = document.createElementNS(ns, 'circle');
+      ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0');
+      ring.setAttribute('r', o.innerRing); ring.setAttribute('fill', 'none');
+      ring.setAttribute('stroke', '#B08D57'); ring.setAttribute('stroke-width', '1.8');
+      ring.setAttribute('opacity', (o.opacity || 0.06) * 0.6);
+      g.appendChild(ring);
+    }
+    if (o.spokes) {
+      for (var s = 0; s < o.spokes; s++) {
+        var ang = (s / o.spokes) * 2 * Math.PI;
+        var r1 = hr || ir * 0.35, r2 = ir * 0.82;
+        var line = document.createElementNS(ns, 'line');
+        line.setAttribute('x1', r1 * Math.cos(ang)); line.setAttribute('y1', r1 * Math.sin(ang));
+        line.setAttribute('x2', r2 * Math.cos(ang)); line.setAttribute('y2', r2 * Math.sin(ang));
+        line.setAttribute('stroke', '#B08D57'); line.setAttribute('stroke-width', '1.3');
+        line.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
+        g.appendChild(line);
+      }
+    }
+    for (var d = 0; d < t; d++) {
+      var da = (d / t) * 2 * Math.PI - Math.PI / 2;
+      var dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', (or * 0.78) * Math.cos(da));
+      dot.setAttribute('cy', (or * 0.78) * Math.sin(da));
+      dot.setAttribute('r', or * 0.08);
+      dot.setAttribute('fill', '#B08D57');
+      dot.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
+      g.appendChild(dot);
+    }
+
+    svg.appendChild(g);
+    c.appendChild(svg);
+    gears.push({
+      g: g,
+      svg: svg,
+      dur: o.duration || 30,
+      dir: o.dir === 'reverse' ? -1 : 1,
+      angle: 0,
+      time: 0,
+      mode: o.mode || 'spin',
+      oscAmp: o.oscAmp || 35,
+      parallax: o.parallax || 0.02
+    });
+    return svg;
+  }
+
+  cg(95, 114, 24, 20, { x:84, y:-6, opacity:0.32, duration:60, dir:'normal', strokeWidth:6, innerRing:68, spokes:8, parallax:0.015, mode:'spin' });
+  cg(62, 80, 18, 16, { x:2, y:-10, opacity:0.28, duration:42, dir:'reverse', strokeWidth:5.5, innerRing:46, spokes:6, parallax:0.025, mode:'spin' });
+  cg(44, 56, 14, 10, { x:56, y:-4, opacity:0.3, duration:28, dir:'normal', strokeWidth:5.5, innerRing:30, spokes:4, parallax:0.02, mode:'oscillate', oscAmp:40 });
+  cg(30, 38, 10, 7, { x:16, y:12, opacity:0.26, duration:18, dir:'reverse', strokeWidth:5, innerRing:20, spokes:3, parallax:0.03, mode:'spin' });
+  cg(18, 24, 8, 4, { x:48, y:30, opacity:0.24, duration:12, dir:'normal', strokeWidth:5, innerRing:12, spokes:3, parallax:0.035, mode:'oscillate', oscAmp:55 });
+  cg(14, 18, 6, 3, { x:90, y:22, opacity:0.22, duration:8, dir:'reverse', strokeWidth:4.5, spokes:2, parallax:0.04, mode:'spin' });
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var scrollY = window.pageYOffset || 0;
+  var lastTs = null;
+
+  window.addEventListener('scroll', function() {
+    scrollY = window.pageYOffset || 0;
+  }, { passive: true });
+
+  function frame(ts) {
+    if (lastTs === null) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+
+    gears.forEach(function(gr) {
+      if (!reduce) {
+        gr.time += dt;
+        if (gr.mode === 'oscillate') {
+          gr.angle = gr.dir * gr.oscAmp * Math.sin((2 * Math.PI / gr.dur) * gr.time);
+        } else {
+          gr.angle = (gr.angle + gr.dir * (360 / gr.dur) * dt) % 360;
+        }
+      }
+      var drift = scrollY * gr.parallax;
+      gr.g.style.transform = 'translate3d(0,' + drift.toFixed(2) + 'px,0) rotate(' + gr.angle.toFixed(2) + 'deg)';
+    });
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+var observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
