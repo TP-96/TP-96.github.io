@@ -29,7 +29,26 @@ body{
 
 #gear-container{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 #gear-container svg{position:fixed;pointer-events:none;opacity:1}
-#gear-container .gear-g{transform-origin:center center}
+#gear-container .gear-g{transform-box:fill-box;transform-origin:center center}
+
+/* ═══ PLANE ═══ */
+#plane-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:hidden}
+.plane-wrap{
+  position:absolute;top:0;left:-12%;
+  will-change:transform;
+}
+.plane-body{
+  position:relative;
+  will-change:transform;
+  transform-origin:50% 50%;
+}
+.plane-trail{
+  position:absolute;right:100%;top:50%;
+  width:140px;height:2px;
+  transform:translateY(-50%);
+  background:linear-gradient(to left,rgba(176,141,87,.35),transparent);
+}
+.plane-icon{display:block;filter:drop-shadow(0 2px 4px rgba(8,15,42,.15))}
 
 /* ═══ NAV ═══ */
 nav{
@@ -87,22 +106,26 @@ nav{
 }
 .hero-label{
   display:inline-flex;align-items:center;gap:.6rem;
-  font-size:.72rem;font-weight:600;color:#080F2A;
-  text-transform:uppercase;letter-spacing:.22em;
-  margin-bottom:1.6rem;font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;font-weight:600;color:#080F2A;
+  text-transform:uppercase;letter-spacing:.32em;
+  margin-bottom:2rem;font-family:'JetBrains Mono',monospace;
   opacity:0;animation:fadeUp .8s .1s forwards;
 }
 .hero-label::before{
-  content:'';width:28px;height:1px;background:#12151C;opacity:.5;
+  content:'';width:40px;height:1px;background:#12151C;opacity:.5;
+}
+.hero-label::after{
+  content:'';width:40px;height:1px;background:#12151C;opacity:.5;
 }
 .hero h1{
   font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;
-  font-size:clamp(2.8rem,7.5vw,5.2rem);
-  line-height:1.08;color:#080F2A;margin-bottom:1.6rem;max-width:900px;
-  letter-spacing:.005em;text-align:center;margin-left:auto;margin-right:auto;
+  font-size:clamp(3.6rem,11vw,7.8rem);
+  line-height:1.02;color:#080F2A;margin-bottom:1.8rem;max-width:1100px;
+  letter-spacing:-.005em;text-align:center;margin-left:auto;margin-right:auto;
+  text-shadow:0 2px 40px rgba(15,42,74,.12),0 1px 0 rgba(15,42,74,.05);
   opacity:0;animation:fadeUp .8s .22s forwards;
 }
-.hero h1 .accent{color:#1B2A4E}
+.hero h1 .accent{color:#1B2A4E;position:relative}
 .hero-desc{
   font-size:1.2rem;color:rgba(28,26,24,.62);max-width:600px;line-height:1.65;
   margin-bottom:2.4rem;font-weight:300;
@@ -366,6 +389,7 @@ footer{
 <body>
 
 <div id="gear-container"></div>
+<div id="plane-container"></div>
 
 <nav>
   <a class="nav-logo" href="#"><span class="nav-mark">T</span>Tanmay Poddar</a>
@@ -568,12 +592,17 @@ footer{
   function cg(ir, or, t, hr, o) {
     var size = (or + 4) * 2;
     var svg = document.createElementNS(ns, 'svg');
+    // Center the viewBox on the gear's own coordinate space so that
+    // CSS transform-origin:center (fill-box) rotates it in place.
     svg.setAttribute('viewBox', (-or - 2) + ' ' + (-or - 2) + ' ' + (or + 2) * 2 + ' ' + (or + 2) * 2);
     svg.setAttribute('width', size); svg.setAttribute('height', size);
-    svg.style.cssText = 'left:' + o.x + '%;top:' + o.y + '%;opacity:1;pointer-events:none;z-index:-1;will-change:transform;';
+    // Offset the fixed-position svg by half its size so that "x/y" percentages
+    // refer to the gear's visual center, not its top-left corner.
+    svg.style.cssText = 'left:calc(' + o.x + '% - ' + (size / 2) + 'px);top:calc(' + o.y + '% - ' + (size / 2) + 'px);opacity:1;pointer-events:none;z-index:-1;will-change:transform;';
     var g = document.createElementNS(ns, 'g');
     g.setAttribute('class', 'gear-g');
     g.style.willChange = 'transform';
+    g.style.transformOrigin = '0px 0px'; // path is drawn centered at (0,0) already
 
     var path = document.createElementNS(ns, 'path');
     path.setAttribute('d', gp(ir, or, t, hr));
@@ -626,12 +655,12 @@ footer{
     return svg;
   }
 
-  cg(95, 114, 24, 20, { x:84, y:-6, opacity:0.32, duration:60, dir:'normal', strokeWidth:6, innerRing:68, spokes:8, parallax:0.015 });
-  cg(62, 80, 18, 16, { x:2, y:-10, opacity:0.28, duration:42, dir:'reverse', strokeWidth:5.5, innerRing:46, spokes:6, parallax:0.025 });
-  cg(44, 56, 14, 10, { x:56, y:-4, opacity:0.3, duration:28, dir:'normal', strokeWidth:5.5, innerRing:30, spokes:4, parallax:0.02 });
-  cg(30, 38, 10, 7, { x:16, y:12, opacity:0.26, duration:18, dir:'reverse', strokeWidth:5, innerRing:20, spokes:3, parallax:0.03 });
-  cg(18, 24, 8, 4, { x:48, y:30, opacity:0.24, duration:12, dir:'normal', strokeWidth:5, innerRing:12, spokes:3, parallax:0.035 });
-  cg(14, 18, 6, 3, { x:90, y:22, opacity:0.22, duration:8, dir:'reverse', strokeWidth:4.5, spokes:2, parallax:0.04 });
+  cg(165, 198, 30, 34, { x:88, y:8, opacity:0.4, duration:70, dir:'normal', strokeWidth:8, innerRing:118, spokes:10, parallax:0.01 });
+  cg(120, 148, 22, 26, { x:6, y:4, opacity:0.34, duration:50, dir:'reverse', strokeWidth:7, innerRing:86, spokes:8, parallax:0.018 });
+  cg(78, 98, 16, 16, { x:50, y:2, opacity:0.24, duration:34, dir:'normal', strokeWidth:6, innerRing:54, spokes:6, parallax:0.022 });
+  cg(44, 56, 12, 9, { x:20, y:34, opacity:0.2, duration:20, dir:'reverse', strokeWidth:5, innerRing:28, spokes:4, parallax:0.03 });
+  cg(28, 36, 8, 5, { x:78, y:38, opacity:0.2, duration:14, dir:'normal', strokeWidth:5, innerRing:18, spokes:3, parallax:0.035 });
+  cg(16, 21, 6, 3, { x:95, y:30, opacity:0.18, duration:9, dir:'reverse', strokeWidth:4.5, spokes:2, parallax:0.04 });
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var scrollY = window.pageYOffset || 0;
@@ -657,6 +686,71 @@ footer{
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+// ═══ FLYING PLANE ═══
+(function(){
+  'use strict';
+  var container = document.getElementById('plane-container');
+  if (!container) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) return;
+
+  var planeSVG =
+    '<svg class="plane-icon" width="52" height="52" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">' +
+      '<g fill="#B08D57" opacity="0.55" transform="rotate(90 32 32)">' +
+        '<path d="M32 2 C33.5 2 34.5 3.5 34.5 6 L34.5 24 L54 34 L54 39 L34.5 33 L34.5 47 L42 52 L42 56 L32 53.5 L22 56 L22 52 L29.5 47 L29.5 33 L10 39 L10 34 L29.5 24 L29.5 6 C29.5 3.5 30.5 2 32 2 Z" />' +
+      '</g>' +
+    '</svg>';
+
+  function launchPlane(){
+    var wrap = document.createElement('div');
+    wrap.className = 'plane-wrap';
+
+    var body = document.createElement('div');
+    body.className = 'plane-body';
+    body.innerHTML = planeSVG + '<div class="plane-trail"></div>';
+    wrap.appendChild(body);
+
+    // Randomize flight path so it feels alive and energetic
+    var topPos = 4 + Math.random() * 20; // % from top, nav/hero band
+    var duration = 5 + Math.random() * 3; // fast crossing, 5-8s
+    var scale = 0.85 + Math.random() * 0.55;
+    var bobAmp = 14 + Math.random() * 14;
+    var bobCycles = 2 + Math.floor(Math.random() * 2);
+
+    wrap.style.top = topPos + '%';
+    container.appendChild(wrap);
+
+    var startTime = null;
+    function step(ts){
+      if (startTime === null) startTime = ts;
+      var elapsed = (ts - startTime) / 1000;
+      var progress = elapsed / duration;
+      if (progress >= 1){
+        wrap.remove();
+        return;
+      }
+      // Travel from just off-screen left to just off-screen right
+      var vw = window.innerWidth;
+      var x = -140 + progress * (vw + 280);
+      // Position (translate) lives on the wrap; banking/scale lives on the body
+      var bob = Math.sin(progress * Math.PI * bobCycles) * bobAmp;
+      var bank = Math.cos(progress * Math.PI * bobCycles) * 12;
+      wrap.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + bob.toFixed(1) + 'px,0)';
+      body.style.transform = 'scale(' + scale.toFixed(2) + ') rotate(' + bank.toFixed(1) + 'deg)';
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // First plane arrives quickly after load, then keeps buzzing by often
+  setTimeout(launchPlane, 900);
+  setInterval(function(){
+    launchPlane();
+  }, 4500 + Math.random() * 3000);
 })();
 </script>
 </body>
