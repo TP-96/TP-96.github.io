@@ -1,1 +1,1047 @@
-<header>Hello</header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wiffle Wafter — Tanmay Poddar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #B08D57;
+      --gold-light: #c8a468;
+      --navy: #080F2A;
+      --bg: #f7f0e0;
+      --surface: #fffdf8;
+      --surface2: #f0ece1;
+      --text: #080F2A;
+      --muted: rgba(28,26,24,.55);
+      --muted2: rgba(28,26,24,.4);
+      --border: rgba(15,42,74,.14);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: 18px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    ::selection { background: rgba(15,42,74,.2); color: #fff; }
+
+    #gear-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    #gear-container svg { position: fixed; pointer-events: none; opacity: 1; }
+    #gear-container .gear-g { transform-origin: center center; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.55rem 3rem;
+      background: rgba(247,240,224,.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(15,42,74,.08);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: .55rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .92rem; font-weight: 600; color: var(--navy);
+      text-decoration: none; letter-spacing: -.01em; transition: opacity .2s;
+    }
+    .nav-logo:hover { opacity: .65; }
+    .nav-mark {
+      width: 26px; height: 26px; border-radius: 7px; background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      color: #faf8f0; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-style: italic; font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .nav-back {
+      font-family: 'Crimson Pro', Georgia, serif; font-size: .95rem; font-weight: 400;
+      color: var(--muted); text-decoration: none;
+      padding: .4rem .9rem; border-radius: 9999px; transition: all .2s;
+    }
+    .nav-back:hover { color: var(--navy); background: rgba(15,42,74,.06); }
+
+    /* HERO */
+    .project-hero {
+      min-height: 62vh;
+      padding: 10rem 3rem 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    /* HERO WATERMARK SPRING (replaces the old '03' numeral) */
+    .hero-spring-wrap {
+      position: absolute;
+      right: 4%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: min(18vw, 240px);
+      height: min(28vw, 340px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.85;
+    }
+    .hero-spring-wrap svg { width: 100%; height: 100%; overflow: visible; }
+    .hero-spring-coil {
+      transform-box: fill-box;
+      transform-origin: top center;
+      animation: hero-spring-bounce 3s ease-in-out infinite;
+    }
+    .hero-spring-plate {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: hero-plate-bounce 3s ease-in-out infinite;
+    }
+    @keyframes hero-spring-bounce {
+      0%   { transform: scaleY(1); }
+      82%  { transform: scaleY(1); }
+      90%  { transform: scaleY(0.6); }
+      95%  { transform: scaleY(1.1); }
+      98%  { transform: scaleY(0.96); }
+      100% { transform: scaleY(1); }
+    }
+    @keyframes hero-plate-bounce {
+      0%   { transform: translateY(0); }
+      82%  { transform: translateY(0); }
+      90%  { transform: translateY(72px); }
+      95%  { transform: translateY(-14px); }
+      98%  { transform: translateY(6px); }
+      100% { transform: translateY(0); }
+    }
+
+    .project-hero::after {
+      content: '03';
+      position: absolute;
+      right: -0.02em;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 700; font-style: italic;
+      font-size: 26vw;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(176,141,87,.14);
+      pointer-events: none;
+      line-height: 1;
+    }
+    .project-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem; font-weight: 600; color: var(--navy);
+      text-transform: uppercase; letter-spacing: .22em;
+      margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .project-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--navy); opacity: .5; }
+    .project-hero h1 {
+      font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-style: italic;
+      font-size: clamp(3rem, 7vw, 5.6rem);
+      line-height: 1.02;
+      color: var(--navy);
+      margin-bottom: 2.5rem;
+    }
+    .project-hero h1 span { color: var(--gold); }
+    .project-meta { display: flex; gap: 3rem; flex-wrap: wrap; }
+    .meta-item label {
+      font-family: 'JetBrains Mono', monospace; font-size: .62rem; color: var(--gold);
+      letter-spacing: .2em; text-transform: uppercase; display: block; margin-bottom: .35rem; font-weight: 600;
+    }
+    .meta-item p { font-size: .92rem; color: var(--muted); font-weight: 300; }
+
+    /* BACKGROUND ANIMATION LAYER (fixed, behind all content) */
+    #fx-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .fx-scene {
+      position: absolute;
+    }
+    .ground-line {
+      stroke: var(--border);
+      stroke-width: 1.5;
+    }
+    .fx-launcher-body { opacity: 0.85; }
+    .flight-path {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.2;
+      stroke-dasharray: 3 6;
+      opacity: 0.22;
+    }
+
+    /* --- LOB LAUNCH (right margin) --- */
+    .wiffle-ball-group {
+      offset-path: path('M 18,138 C 34,66 66,12 105,12 C 141,12 171,66 183,133');
+      offset-rotate: 0deg;
+      animation: fly-ball 5s cubic-bezier(.22,.6,.4,1) infinite;
+      animation-delay: 0.6s;
+      opacity: 0;
+    }
+    .wiffle-ball {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: spin-ball 5s linear infinite;
+      animation-delay: 0.6s;
+    }
+    @keyframes fly-ball {
+      0%    { offset-distance: 0%;   opacity: 0; }
+      3%    { opacity: 0.85; }
+      92%   { opacity: 0.85; }
+      100%  { offset-distance: 100%; opacity: 0; }
+    }
+    @keyframes spin-ball {
+      0%   { opacity: 0; transform: rotate(0deg); }
+      3%   { opacity: 0.85; }
+      92%  { opacity: 0.85; }
+      100% { opacity: 0; transform: rotate(760deg); }
+    }
+    .launch-flash {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: flash-pulse 5s ease-out infinite;
+      animation-delay: 0.5s;
+    }
+    @keyframes flash-pulse {
+      0%   { opacity: 0; transform: scale(0.4); }
+      2%   { opacity: 0.75; transform: scale(1); }
+      10%  { opacity: 0; transform: scale(1.6); }
+      100% { opacity: 0; transform: scale(1.6); }
+    }
+    .dust-puff {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: dust-rise 5s ease-out infinite;
+    }
+    .dust-puff.d1 { animation-delay: 4.6s; }
+    .dust-puff.d2 { animation-delay: 4.65s; }
+    .dust-puff.d3 { animation-delay: 4.7s; }
+    @keyframes dust-rise {
+      0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+      4%   { opacity: 0.45; }
+      20%  { opacity: 0; transform: translateY(-14px) scale(1.3); }
+      100% { opacity: 0; }
+    }
+
+    /* --- SPRING LAUNCH (left margin) --- */
+    .spring-coil {
+      transform-box: fill-box;
+      transform-origin: left center;
+      animation: spring-squash 4.6s cubic-bezier(.4,0,.2,1) infinite;
+    }
+    @keyframes spring-squash {
+      0%   { transform: scaleX(1); }
+      34%  { transform: scaleX(1); }
+      42%  { transform: scaleX(0.4); }
+      50%  { transform: scaleX(0.32); }
+      58%  { transform: scaleX(1.06); }
+      64%  { transform: scaleX(0.98); }
+      70%  { transform: scaleX(1); }
+      100% { transform: scaleX(1); }
+    }
+    .spring-plate {
+      animation: plate-move 4.6s cubic-bezier(.4,0,.2,1) infinite;
+    }
+    @keyframes plate-move {
+      0%   { transform: translateX(0); }
+      34%  { transform: translateX(0); }
+      42%  { transform: translateX(-25px); }
+      50%  { transform: translateX(-30px); }
+      58%  { transform: translateX(-1px); }
+      64%  { transform: translateX(3px); }
+      70%  { transform: translateX(0); }
+      100% { transform: translateX(0); }
+    }
+    .spring-ball {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: spring-ball-fly 4.6s cubic-bezier(.3,0,.15,1) infinite;
+    }
+    @keyframes spring-ball-fly {
+      0%   { transform: translateX(0) rotate(0deg); opacity: 1; }
+      34%  { transform: translateX(0) rotate(0deg); opacity: 1; }
+      50%  { transform: translateX(-3px) rotate(20deg); opacity: 1; }
+      92%  { transform: translateX(-145px) rotate(540deg); opacity: 1; }
+      100% { transform: translateX(-168px) rotate(620deg); opacity: 0; }
+    }
+    .spring-flash {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: spring-flash-pulse 4.6s ease-out infinite;
+    }
+    @keyframes spring-flash-pulse {
+      0%   { opacity: 0; }
+      48%  { opacity: 0; }
+      52%  { opacity: 0.8; transform: scale(1); }
+      62%  { opacity: 0; transform: scale(1.7); }
+      100% { opacity: 0; }
+    }
+
+    /* CONTENT SECTIONS */
+    .content-section {
+      padding: 6rem 3rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .content-section:last-of-type { border-bottom: none; }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    .section-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      color: var(--gold);
+      letter-spacing: .15em;
+      font-weight: 600;
+    }
+    .section-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 700; font-style: italic;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 0;
+      line-height: 1;
+      color: var(--navy);
+    }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* GRIDS */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+    .two-col-wide { display: grid; grid-template-columns: 3fr 2fr; gap: 5rem; align-items: start; }
+
+    /* PROSE */
+    .prose p { color: rgba(28,26,24,.7); font-size: 1.05rem; font-weight: 300; line-height: 1.85; margin-bottom: 1.4rem; }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--navy); font-weight: 600; }
+    .prose h3 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--gold); margin: 2.5rem 0 1rem; font-weight: 600;
+    }
+    .prose ul { list-style: none; display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.5rem; }
+    .prose li {
+      font-size: 1rem; color: rgba(28,26,24,.7); font-weight: 300;
+      padding-left: 1.5rem; position: relative; line-height: 1.65;
+    }
+    .prose li::before { content: '▸'; position: absolute; left: 0; color: var(--gold); font-size: .65rem; top: .35rem; }
+
+    blockquote {
+      border-left: 2px solid var(--gold);
+      padding: 1rem 1.5rem;
+      margin: 2rem 0;
+      background: rgba(176,141,87,.06);
+      border-radius: 0 12px 12px 0;
+    }
+    blockquote p { font-style: italic; color: rgba(28,26,24,.75) !important; font-size: 1.05rem !important; margin: 0 !important; }
+
+    /* FIGURES */
+    .fig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem; }
+    .fig-grid.single { grid-template-columns: 1fr; }
+    .fig-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+    figure {
+      background: var(--surface);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    figure img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+      display: block;
+      filter: sepia(8%) saturate(85%);
+      transition: filter .35s, transform .4s;
+    }
+    figure img.tall { height: 320px; }
+    figure img.short { height: 200px; }
+    figure:hover img { filter: sepia(0%) saturate(100%); transform: scale(1.02); }
+    figcaption {
+      padding: .75rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .64rem;
+      color: var(--muted);
+      letter-spacing: .05em;
+      border-top: 1px solid var(--border);
+    }
+
+    /* CALLOUT */
+    .callout {
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      background: var(--surface);
+      border-radius: 16px;
+    }
+    .callout-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .62rem; color: var(--gold);
+      letter-spacing: .2em; text-transform: uppercase;
+      margin-bottom: .75rem; font-weight: 600;
+    }
+    .callout p { color: rgba(28,26,24,.7); font-size: 1rem; font-weight: 300; line-height: 1.7; margin: 0; }
+
+    /* CHIPS */
+    .chip-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .64rem; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); border: 1px solid var(--border);
+      padding: .35rem .85rem; border-radius: 9999px; background: var(--surface);
+    }
+
+    /* OBJECTIVES GRID */
+    .objectives-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 3rem;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .objective-item { background: var(--surface); padding: 1.5rem; }
+    .objective-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .62rem; color: var(--gold);
+      letter-spacing: .15em; margin-bottom: .5rem; font-weight: 600;
+    }
+    .objective-text { font-size: .95rem; color: rgba(28,26,24,.7); font-weight: 300; line-height: 1.5; }
+
+    /* PROJECT NAV */
+    .project-nav { border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; position: relative; z-index: 1; }
+    .project-nav a {
+      padding: 2.5rem 3rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: background .3s;
+      border-right: 1px solid var(--border);
+    }
+    .project-nav a:last-child { border-right: none; text-align: right; }
+    .project-nav a:hover { background: rgba(176,141,87,.08); }
+    .pnav-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .62rem; color: var(--gold);
+      letter-spacing: .2em; text-transform: uppercase; display: block; margin-bottom: .5rem; font-weight: 600;
+    }
+    .pnav-title { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-style: italic; font-size: 1.5rem; color: var(--navy); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; z-index: 1; flex-wrap: wrap; gap: .75rem;
+    }
+    footer span { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--muted2); letter-spacing: .08em; }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .wiffle-ball { animation: none; opacity: 1; offset-distance: 40%; }
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 1.15rem 1.4rem; }
+      .project-hero { padding: 8rem 1.4rem 3rem; min-height: 50vh; }
+      .content-section { padding: 4rem 1.4rem; }
+      .two-col, .two-col-wide { grid-template-columns: 1fr; gap: 3rem; }
+      .fig-grid { grid-template-columns: 1fr; }
+      .fig-grid.three { grid-template-columns: 1fr; }
+      .objectives-grid { grid-template-columns: 1fr 1fr; }
+      .project-nav { grid-template-columns: 1fr; }
+      .project-nav a { border-right: none; border-bottom: 1px solid var(--border); }
+      .project-nav a:last-child { text-align: left; }
+      footer { padding: 1.75rem 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="gear-container"></div>
+  <div id="fx-container"></div>
+
+  <nav>
+    <a class="nav-logo" href="index.html"><span class="nav-mark">T</span>Tanmay Poddar</a>
+    <a class="nav-back" href="index.html">← Back to Portfolio</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="project-hero">
+    <div class="hero-spring-wrap">
+      <svg viewBox="0 0 160 260" preserveAspectRatio="xMidYMid meet">
+        <!-- fixed top mount -->
+        <rect x="55" y="0" width="50" height="14" rx="4" fill="none" stroke="var(--gold)" stroke-width="2" opacity="0.35"/>
+        <!-- coil, compresses/stretches vertically -->
+        <g class="hero-spring-coil" transform="translate(0,14)">
+          <path d="M 80,0 L 105,14 L 55,28 L 105,42 L 55,56 L 105,70 L 55,84 L 105,98 L 55,112 L 105,126 L 80,140"
+                fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+        </g>
+        <!-- plate + ball riding the bottom of the spring -->
+        <g class="hero-spring-plate" transform="translate(0,154)">
+          <rect x="45" y="0" width="70" height="10" rx="3" fill="none" stroke="var(--gold)" stroke-width="2" opacity="0.32"/>
+          <circle cx="80" cy="28" r="16" fill="none" stroke="var(--gold)" stroke-width="2" opacity="0.28"/>
+          <circle cx="73" cy="21" r="2.4" fill="var(--gold)" opacity="0.22"/>
+          <circle cx="88" cy="24" r="2.4" fill="var(--gold)" opacity="0.22"/>
+          <circle cx="80" cy="35" r="2.4" fill="var(--gold)" opacity="0.22"/>
+        </g>
+      </svg>
+    </div>
+    <div class="project-eyebrow">Project 03 — Assistive Technology / Mechanical Design</div>
+    <h1>Wiffle<br><span>Wafter</span></h1>
+    <div class="project-meta">
+      <div class="meta-item">
+        <label>Timeline</label>
+        <p>Jan 6 — Apr 4, 2026</p>
+      </div>
+      <div class="meta-item">
+        <label>Role</label>
+        <p>Subject Matter Expert</p>
+      </div>
+      <div class="meta-item">
+        <label>Skills</label>
+        <p>CAD · 3D Printing · Fabrication</p>
+      </div>
+      <div class="meta-item">
+        <label>Budget</label>
+        <p>Under $50</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="content-section">
+    <div class="section-header reveal">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Project Overview</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="two-col-wide reveal">
+      <div class="prose">
+        <p>The goal of Project 3 was to design a real-world solution for our client <strong>Mark</strong> — a retired individual living with juvenile arthritis. The condition significantly limits his grip strength, fine motor control, and upper body endurance.</p>
+        <p>One area directly affected is his ability to play with his dog, <strong>Rosie</strong>. Mark struggles to throw a ball far enough to engage her in a meaningful game of fetch. Our solution: a mechanical ball launcher that restores that connection.</p>
+        <blockquote>
+          <p>The design prioritized Mark's limitations at every step — from mechanism selection to handle ergonomics — while targeting commercial viability.</p>
+        </blockquote>
+      </div>
+      <div>
+        <div class="callout">
+          <div class="callout-label">Design Objectives</div>
+          <p>Light &amp; accessible · Under $50 · Durable · Commercially generalizable · Safe for user &amp; dog</p>
+        </div>
+        <div class="fig-grid single" style="margin-top: 1.5rem;">
+          <figure>
+            <img src="images/IMG_38361.jpeg" alt="Final Wiffle Wafter prototype" class="tall">
+            <figcaption>Figure 1 — Final prototype</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+
+    <div class="objectives-grid reveal">
+      <div class="objective-item">
+        <div class="objective-num">01</div>
+        <div class="objective-text">Light &amp; Accessible for Mark to use</div>
+      </div>
+      <div class="objective-item">
+        <div class="objective-num">02</div>
+        <div class="objective-text">Low Cost — under $50</div>
+      </div>
+      <div class="objective-item">
+        <div class="objective-num">03</div>
+        <div class="objective-text">Durable construction</div>
+      </div>
+      <div class="objective-item">
+        <div class="objective-num">04</div>
+        <div class="objective-text">Potential for commercial application</div>
+      </div>
+      <div class="objective-item">
+        <div class="objective-num">05</div>
+        <div class="objective-text">Safe for user &amp; dog</div>
+      </div>
+      <div class="objective-item">
+        <div class="objective-num">06</div>
+        <div class="objective-text">Launch distance ≥ 7.5 m</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INDIVIDUAL CONTRIBUTIONS -->
+  <div class="content-section">
+    <div class="section-header reveal">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Individual Contributions</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="two-col reveal">
+      <div class="prose">
+        <p>I served as the <strong>Subject Matter Expert</strong> for this project — maintaining an accurate database of sources and references, and ensuring the project report was completed on time with full team participation.</p>
+        <p>Beyond my defined role, I contributed across the full design and build pipeline: creating initial concept sketches, refining them into <strong>CAD models</strong>, fabricating the handle and barrel, and leading the final testing phase with another team member.</p>
+        <h3>Responsibilities</h3>
+        <ul>
+          <li>Maintained references &amp; source database</li>
+          <li>Ensured report completion and team participation</li>
+          <li>Concept sketching and CAD modeling</li>
+          <li>Fabrication — handle and barrel</li>
+          <li>Led final testing</li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout">
+          <div class="callout-label">Subject Matter Expert</div>
+          <p>As SME, my focus was keeping the team grounded in evidence. Every design decision was cross-referenced against our objectives and constraints — especially accessibility for Mark.</p>
+        </div>
+        <div class="chip-row" style="margin-top: 1.5rem;">
+          <span class="chip">CAD / Fusion 360</span>
+          <span class="chip">3D Printing</span>
+          <span class="chip">Fabrication</span>
+          <span class="chip">Testing</span>
+          <span class="chip">Documentation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESIGN PROCESS -->
+  <div class="content-section">
+    <div class="section-header reveal">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Design Process</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="two-col-wide reveal">
+      <div class="prose">
+        <p>We began by brainstorming mechanisms capable of launching a ball roughly <strong>7.5 m</strong>. My first personal concept was a spring-based design where the user pulled back a string handle — minimal moving parts, mountable in a wheelchair cup holder.</p>
+        <p>My second concept introduced a <strong>rack-and-pinion system</strong> with a hand crank to wind a spring, and ratcheting gears to hold tension without requiring constant force from the user. The ratchet-and-pawl mechanism was key — Mark wouldn't need to strain to maintain compression.</p>
+        <p>As a team we converged on a pull-back spring mechanism, which I developed into a CAD model featuring <strong>3D-printed springs</strong> slotted into attachment points on both ends. A half-scale model was printed to rapidly validate the mechanism before committing to full-scale fabrication.</p>
+      </div>
+      <div>
+        <div class="fig-grid" style="margin: 0;">
+          <figure>
+            <img src="images/IMG_2745.jpg" alt="Spring-based initial concept sketch" class="tall">
+            <figcaption>Figure 2 — Spring-based concept sketch</figcaption>
+          </figure>
+          <figure>
+            <img src="images/d624aab0-0853-4b74-a1df-1759cdc5bf74.png" alt="Rack and pinion gear-based concept sketch" class="tall">
+            <figcaption>Figure 3 — Rack &amp; pinion concept sketch</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+
+    <div class="fig-grid single reveal" style="max-width: 700px; margin-top: 0;">
+      <figure>
+        <img src="images/Screenshot_2026-04-05_143602.png" alt="Initial CAD model with 3D printed springs" style="height: 340px; object-fit: cover;">
+        <figcaption>Figure 4 — Initial CAD model with 3D-printed springs (half-scale)</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- FABRICATION -->
+  <div class="content-section">
+    <div class="section-header reveal">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Fabrication &amp; Iteration</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="prose reveal" style="max-width: 720px; margin-bottom: 3rem;">
+      <p>After fabricating the half-scale prototype, one of the 3D-printed springs snapped under repeated load. We pivoted to a <strong>metal spring</strong>, which required rethinking the entire launch method.</p>
+      <blockquote>
+        <p>3D-printed springs are not ideal for high-stress applications — best reserved for alignment and light-duty uses.</p>
+      </blockquote>
+      <p>The next iteration used a metal spring with an end plate the user compressed directly. Testing exceeded our target launch distance, but the mechanism jammed repeatedly. We then added a <strong>central solid shaft</strong> connecting the launch plate through a fixed barrel plate — this resolved the jamming.</p>
+      <p>The full-scale model revealed a critical insight hidden by small-scale prototyping: applying force off-center (as Mark would from a wheelchair) caused lateral loads on the barrel walls, jamming the launcher. We redesigned for a <strong>centrally-pulled handle</strong>, reducing off-axis forces and dramatically improving energy efficiency.</p>
+    </div>
+
+    <div class="fig-grid three reveal">
+      <figure>
+        <img src="images/a8ec7063-b4ef-409a-9fd8-deff71c221cf.png" alt="Initial half-scale physical prototype">
+        <figcaption>Figure 5 — Half-scale initial prototype</figcaption>
+      </figure>
+      <figure>
+        <img src="images/4f2ea5c9-2684-4858-8241-25044d36ef90.png" alt="Second prototype with metal spring">
+        <figcaption>Figure 6 — Second prototype, metal spring iteration</figcaption>
+      </figure>
+      <figure>
+        <img src="images/35ecb9de-16e3-4f2e-9c7e-b482c32fcb31.png" alt="Full-scale prototype without barrel">
+        <figcaption>Figure 7 — Full-scale prototype, barrel removed</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- FINAL DESIGN -->
+  <div class="content-section">
+    <div class="section-header reveal">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Final Design</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="two-col reveal">
+      <div class="prose">
+        <p>The final design uses <strong>PVC piping</strong> for the barrel and a string handle the user pulls back and releases to launch the ball. The solution proved extremely durable — surviving a drop from the second floor.</p>
+        <p>Mass and cost came in well below targets, meeting two of our primary objectives with margin to spare.</p>
+
+        <h3>Strengths</h3>
+        <ul>
+          <li>Exceptional durability — survived 2nd-floor drop</li>
+          <li>Far below cost and mass targets</li>
+          <li>Comfortable string handle interface</li>
+          <li>Simple, low-maintenance mechanism</li>
+        </ul>
+
+        <h3>Areas for Improvement</h3>
+        <ul>
+          <li>Spring was underpowered — a stiffer spring would significantly increase launch distance</li>
+          <li>Handle needed greater rigidity for consistent performance</li>
+        </ul>
+
+        <blockquote>
+          <p>The spring swap is a simple modification. Given one more iteration, launch distance would have comfortably cleared the target.</p>
+        </blockquote>
+
+        <div class="chip-row">
+          <span class="chip">PVC Barrel</span>
+          <span class="chip">Metal Spring</span>
+          <span class="chip">String Handle</span>
+          <span class="chip">3D Printing</span>
+          <span class="chip">Assistive Design</span>
+        </div>
+      </div>
+      <div>
+        <div class="callout">
+          <div class="callout-label">Final Demo</div>
+          <p>The final demonstration video (Figure 8) shows the launcher in operation — loaded and fired by a single user with minimal wrist force, validating the core accessibility objective.</p>
+        </div>
+        <div style="margin-top: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+          <div style="position: relative; width: 100%; padding-top: 56.25%;">
+            <iframe
+              src="https://www.youtube.com/embed/LMGz-I27VX4"
+              title="YouTube video player"
+              frameborder="0"
+              style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <div style="padding: 0.75rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--muted); letter-spacing: 0.05em; border-top: 1px solid var(--border);">Figure 8 — Final demonstration video. If the player above doesn't load, <a href="https://www.youtube.com/watch?v=LMGz-I27VX4" target="_blank" rel="noopener" style="color: var(--gold);">watch it directly on YouTube</a>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFLECTION -->
+  <div class="content-section">
+    <div class="section-header reveal">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Reflection</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="two-col reveal">
+      <div class="prose">
+        <p>A core challenge was limited manufacturing time against a design that specified a large prototype requiring long print durations. Our solution: prototype at <strong>1:2 scale</strong>. During Week 9 studio, I printed a rough concept, found the spring was mounted at an angle, corrected it, and printed a new model — all in the same session.</p>
+        <p>We used <strong>weighted decision matrices</strong> at every crossroads — choosing the ball launcher over a pooper scooper specifically because it offered more universal application, better serving both Mark and Rosie.</p>
+        <blockquote>
+          <p>Failure is an essential part of the design process. Small prototypes allow faster iteration — but they can be misleading, performing much better than the eventual full-scale model.</p>
+        </blockquote>
+      </div>
+      <div class="prose">
+        <h3>Design Philosophy Going Forward</h3>
+        <p>I will integrate rapid prototyping as my default first step: define the objective, build, evaluate, then document what the prototype proved and what it didn't before moving on.</p>
+        <ul>
+          <li>Print prototypes at reduced scale when testing mechanism concepts</li>
+          <li>Always test at final scale before committing to a design decision</li>
+          <li>Account for off-axis loading in any mechanism designed for one-handed use</li>
+          <li>Overbuild first — optimize after it works</li>
+        </ul>
+        <blockquote>
+          <p>Iterate quickly and design your prototypes to be simple to fabricate.</p>
+        </blockquote>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT NAV -->
+  <div class="project-nav">
+    <a href="highschool.html">
+      <span class="pnav-label">← Previous</span>
+      <span class="pnav-title">High School Projects</span>
+    </a>
+    <a href="robot-arm.html">
+      <span class="pnav-label">Next Project →</span>
+      <span class="pnav-title">Robot Arm Effector</span>
+    </a>
+  </div>
+
+  <footer>
+    <span>© 2026 Tanmay Poddar</span>
+    <span>First Year Engineering Project 3</span>
+  </footer>
+
+  <script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+  <script>
+  (function(){
+    'use strict';
+    var c = document.getElementById('gear-container');
+    if (!c) return;
+    var ns = 'http://www.w3.org/2000/svg';
+    var gears = [];
+
+    function gp(ir, or, t, hr) {
+      var step = 2 * Math.PI / t;
+      var hw = step * 0.2;
+      var parts = [];
+      for (var i = 0; i < t; i++) {
+        var a = i * step;
+        var p1x = ir * Math.cos(a - hw), p1y = ir * Math.sin(a - hw);
+        var p2x = or * Math.cos(a - hw * 0.45), p2y = or * Math.sin(a - hw * 0.45);
+        var p3x = or * Math.cos(a + hw * 0.45), p3y = or * Math.sin(a + hw * 0.45);
+        var p4x = ir * Math.cos(a + hw), p4y = ir * Math.sin(a + hw);
+        if (i === 0) parts.push('M' + p1x.toFixed(3) + ' ' + p1y.toFixed(3));
+        parts.push('L' + p2x.toFixed(3) + ' ' + p2y.toFixed(3));
+        parts.push('L' + p3x.toFixed(3) + ' ' + p3y.toFixed(3));
+        parts.push('L' + p4x.toFixed(3) + ' ' + p4y.toFixed(3));
+        var na = (i + 1) * step;
+        var nx = ir * Math.cos(na - hw), ny = ir * Math.sin(na - hw);
+        if (i < t - 1) parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + nx.toFixed(3) + ' ' + ny.toFixed(3));
+        else { var fx = ir * Math.cos(0 - hw), fy = ir * Math.sin(0 - hw); parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + fx.toFixed(3) + ' ' + fy.toFixed(3)); }
+      }
+      parts.push('Z');
+      if (hr > 0) { var h = hr; parts.push('M' + h + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + (-h) + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + h + ' 0 Z'); }
+      return parts.join('');
+    }
+
+    function cg(ir, or, t, hr, o) {
+      var size = (or + 4) * 2;
+      var svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', (-or - 2) + ' ' + (-or - 2) + ' ' + (or + 2) * 2 + ' ' + (or + 2) * 2);
+      svg.setAttribute('width', size); svg.setAttribute('height', size);
+      svg.style.cssText = 'left:' + o.x + '%;top:' + o.y + '%;opacity:1;pointer-events:none;z-index:0;will-change:transform;';
+      var g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'gear-g');
+      g.style.willChange = 'transform';
+
+      var path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', gp(ir, or, t, hr));
+      path.setAttribute('fill', 'none'); path.setAttribute('stroke', '#B08D57');
+      path.setAttribute('stroke-width', o.strokeWidth || 2.5);
+      path.setAttribute('opacity', o.opacity || 0.06);
+      g.appendChild(path);
+
+      if (o.innerRing) {
+        var ring = document.createElementNS(ns, 'circle');
+        ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0');
+        ring.setAttribute('r', o.innerRing); ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', '#B08D57'); ring.setAttribute('stroke-width', '1.8');
+        ring.setAttribute('opacity', (o.opacity || 0.06) * 0.6);
+        g.appendChild(ring);
+      }
+      if (o.spokes) {
+        for (var s = 0; s < o.spokes; s++) {
+          var ang = (s / o.spokes) * 2 * Math.PI;
+          var r1 = hr || ir * 0.35, r2 = ir * 0.82;
+          var line = document.createElementNS(ns, 'line');
+          line.setAttribute('x1', r1 * Math.cos(ang)); line.setAttribute('y1', r1 * Math.sin(ang));
+          line.setAttribute('x2', r2 * Math.cos(ang)); line.setAttribute('y2', r2 * Math.sin(ang));
+          line.setAttribute('stroke', '#B08D57'); line.setAttribute('stroke-width', '1.3');
+          line.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
+          g.appendChild(line);
+        }
+      }
+      for (var d = 0; d < t; d++) {
+        var da = (d / t) * 2 * Math.PI - Math.PI / 2;
+        var dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('cx', (or * 0.78) * Math.cos(da));
+        dot.setAttribute('cy', (or * 0.78) * Math.sin(da));
+        dot.setAttribute('r', or * 0.08);
+        dot.setAttribute('fill', '#B08D57');
+        dot.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
+        g.appendChild(dot);
+      }
+
+      svg.appendChild(g);
+      c.appendChild(svg);
+      gears.push({
+        g: g,
+        svg: svg,
+        dur: o.duration || 30,
+        dir: o.dir === 'reverse' ? -1 : 1,
+        angle: 0,
+        parallax: o.parallax || 0.02
+      });
+      return svg;
+    }
+
+    cg(95, 114, 24, 20, { x:86, y:8, opacity:0.3, duration:60, dir:'normal', strokeWidth:6, innerRing:68, spokes:8, parallax:0.015 });
+    cg(62, 80, 18, 16, { x:4, y:62, opacity:0.26, duration:42, dir:'reverse', strokeWidth:5.5, innerRing:46, spokes:6, parallax:0.025 });
+    cg(44, 56, 14, 10, { x:52, y:88, opacity:0.28, duration:28, dir:'normal', strokeWidth:5.5, innerRing:30, spokes:4, parallax:0.02 });
+    cg(30, 38, 10, 7, { x:14, y:22, opacity:0.24, duration:18, dir:'reverse', strokeWidth:5, innerRing:20, spokes:3, parallax:0.03 });
+    cg(18, 24, 8, 4, { x:92, y:48, opacity:0.22, duration:12, dir:'normal', strokeWidth:5, innerRing:12, spokes:3, parallax:0.035 });
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var scrollY = window.pageYOffset || 0;
+    var lastTs = null;
+
+    window.addEventListener('scroll', function() {
+      scrollY = window.pageYOffset || 0;
+    }, { passive: true });
+
+    function frame(ts) {
+      if (lastTs === null) lastTs = ts;
+      var dt = (ts - lastTs) / 1000;
+      lastTs = ts;
+
+      gears.forEach(function(gr) {
+        if (!reduce) {
+          gr.angle = (gr.angle + gr.dir * (360 / gr.dur) * dt) % 360;
+        }
+        var drift = scrollY * gr.parallax;
+        gr.g.style.transform = 'translate3d(0,' + drift.toFixed(2) + 'px,0) rotate(' + gr.angle.toFixed(2) + 'deg)';
+      });
+
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  })();
+  </script>
+
+  <script>
+  (function(){
+    'use strict';
+    var c = document.getElementById('fx-container');
+    if (!c) return;
+
+    // Only render these scenes when there's real margin space beside the
+    // content column, so they stay tucked in the gutters and never sit
+    // under text. Content column caps out well under 1200px in practice.
+    var MIN_VIEWPORT = 1400;
+
+    var lobHTML =
+      '<svg viewBox="0 0 200 180" width="200" height="180" style="overflow:visible;">' +
+        '<line class="ground-line" x1="0" y1="150" x2="200" y2="150" />' +
+        '<path class="flight-path" d="M 18,138 C 34,66 66,12 105,12 C 141,12 171,66 183,133" />' +
+        '<g class="fx-launcher-body" transform="translate(18,138)">' +
+          '<rect x="-5" y="-26" width="10" height="30" rx="3" transform="rotate(-58)" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.2"/>' +
+          '<rect x="-7" y="0" width="14" height="5" rx="1.5" fill="var(--navy)" opacity="0.45"/>' +
+        '</g>' +
+        '<g transform="translate(183,145)">' +
+          '<circle class="dust-puff d1" r="2.6" cx="-3.5" cy="0" fill="var(--gold)" />' +
+          '<circle class="dust-puff d2" r="2" cx="3" cy="-1.5" fill="var(--gold)" />' +
+          '<circle class="dust-puff d3" r="2.3" cx="0" cy="2" fill="var(--gold)" />' +
+        '</g>' +
+        '<circle class="launch-flash" cx="18" cy="138" r="6" fill="var(--gold)" opacity="0" />' +
+        '<g class="wiffle-ball-group">' +
+          '<g class="wiffle-ball">' +
+            '<circle r="5" fill="var(--surface)" stroke="var(--navy)" stroke-width="1"/>' +
+            '<circle r="1" cx="-2" cy="-2" fill="var(--navy)" opacity="0.45"/>' +
+            '<circle r="1" cx="2.2" cy="-1.6" fill="var(--navy)" opacity="0.45"/>' +
+            '<circle r="1" cx="0" cy="2.4" fill="var(--navy)" opacity="0.45"/>' +
+            '<circle r="1" cx="-2.4" cy="1.2" fill="var(--navy)" opacity="0.3"/>' +
+            '<circle r="1" cx="2.6" cy="1.4" fill="var(--navy)" opacity="0.3"/>' +
+          '</g>' +
+        '</g>' +
+      '</svg>';
+
+    var springHTML =
+      '<svg viewBox="0 0 200 100" width="200" height="100" style="overflow:visible;">' +
+        '<line class="ground-line" x1="0" y1="76" x2="200" y2="76" />' +
+        // fixed wall / mount
+        '<rect x="0" y="44" width="9" height="32" rx="1.5" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.1" />' +
+        // barrel guide (static)
+        '<rect x="9" y="56" width="144" height="9" rx="4" fill="none" stroke="var(--border)" stroke-width="1.1" />' +
+        // spring coil, compresses on release
+        '<g class="spring-coil" transform="translate(9,60)">' +
+          '<path d="M 0,0 L 4,-5 L 9,5 L 14,-5 L 19,5 L 24,-5 L 29,5 L 34,-5 L 39,5 L 44,-5 L 49,5 L 53,0" ' +
+                'fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />' +
+        '</g>' +
+        // plate that pushes the ball
+        '<g class="spring-plate" transform="translate(61,60)">' +
+          '<rect x="-2" y="-6" width="4" height="12" rx="1.2" fill="var(--navy)" opacity="0.55" />' +
+        '</g>' +
+        // release flash
+        '<circle class="spring-flash" cx="61" cy="60" r="6" fill="var(--gold)" opacity="0" />' +
+        // ball launched off the plate
+        '<g class="spring-ball" transform="translate(70,60)">' +
+          '<circle r="4.5" fill="var(--surface)" stroke="var(--navy)" stroke-width="1"/>' +
+          '<circle r="0.9" cx="-1.8" cy="-1.8" fill="var(--navy)" opacity="0.45"/>' +
+          '<circle r="0.9" cx="1.9" cy="-1.4" fill="var(--navy)" opacity="0.45"/>' +
+          '<circle r="0.9" cx="0" cy="2.2" fill="var(--navy)" opacity="0.45"/>' +
+          '<circle r="0.9" cx="-2.2" cy="1.1" fill="var(--navy)" opacity="0.3"/>' +
+          '<circle r="0.9" cx="2.3" cy="1.3" fill="var(--navy)" opacity="0.3"/>' +
+        '</g>' +
+      '</svg>';
+
+    // Content column caps at 1100px; anything beyond that is open gutter.
+    var CONTENT_WIDTH = 1100;
+    var MIN_GUTTER = 90;   // smallest gutter we're willing to draw into
+    var NATIVE_W = 200;    // native width the scene art is drawn at
+
+    var scenes = [];
+
+    function mount() {
+      c.innerHTML = '';
+      scenes = [];
+
+      var gutter = (window.innerWidth - CONTENT_WIDTH) / 2 - 24;
+      if (gutter < MIN_GUTTER) return;
+
+      var scale = Math.min(1, gutter / NATIVE_W);
+
+      // Lob-arc scene tucked in the right gutter, mid-page.
+      var lob = document.createElement('div');
+      lob.className = 'fx-scene';
+      lob.style.cssText = 'right:14px;top:36vh;opacity:0.6;transform:scale(' + scale + ');transform-origin:top right;';
+      lob.innerHTML = lobHTML;
+      c.appendChild(lob);
+
+      // Spring-launch scene tucked in the left gutter, further down the page.
+      var spring = document.createElement('div');
+      spring.className = 'fx-scene';
+      spring.style.cssText = 'left:14px;top:130vh;opacity:0.6;transform:scale(' + scale + ');transform-origin:top left;';
+      spring.innerHTML = springHTML;
+      c.appendChild(spring);
+    }
+
+    mount();
+    var resizeTimer;
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(mount, 200);
+    });
+  })();
+  </script>
+</body>
+</html>
