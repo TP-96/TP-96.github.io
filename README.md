@@ -7,3 +7,4 @@ Main Pages include
        - Blackjack
        - 2048
          
+Version 2 
