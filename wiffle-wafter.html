@@ -4,6 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Wiffle Wafter — Tanmay Poddar</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -31,9 +33,6 @@
     }
     ::selection { background: rgba(15,42,74,.2); color: #fff; }
 
-    #gear-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-    #gear-container svg { position: fixed; pointer-events: none; opacity: 1; }
-    #gear-container .gear-g { transform-origin: center center; }
 
     /* NAV */
     nav {
@@ -354,14 +353,11 @@
     }
     figure img {
       width: 100%;
-      height: 260px;
-      object-fit: cover;
+      height: auto;
       display: block;
       filter: sepia(8%) saturate(85%);
       transition: filter .35s, transform .4s;
     }
-    figure img.tall { height: 320px; }
-    figure img.short { height: 200px; }
     figure:hover img { filter: sepia(0%) saturate(100%); transform: scale(1.02); }
     figcaption {
       padding: .75rem 1rem;
@@ -463,10 +459,246 @@
       footer { padding: 1.75rem 1.4rem; }
     }
   </style>
+<style>
+/* Background mechanisms (spur gear train, herringbone pair) — kept faint on this page.
+   Shared by every page; each page includes only the containers it wants. */
+
+/* ═══ MECHANISMS — spur train (top right), herringbone pair (bottom left) ═══ */
+.mech{
+  position:fixed;pointer-events:none;z-index:-1;
+  opacity:0;animation:gearIn 1.6s .3s ease-out forwards;
+}
+.mech svg{display:block;width:100%;height:auto;overflow:visible}
+#gear-container{
+  top:calc(78px + clamp(12px,2.5vw,36px));right:clamp(14px,3vw,48px);
+  width:clamp(170px,19vw,280px);
+  animation:gearIn 1.6s .3s ease-out forwards, gearDrift 36s ease-in-out infinite alternate;
+}
+#herring-container{
+  left:clamp(14px,3vw,48px);bottom:clamp(14px,3vw,48px);
+  width:clamp(72px,7.5vw,118px);
+  animation:gearIn 1.6s .5s ease-out forwards, herringDrift 28s ease-in-out infinite alternate;
+  transform-origin:50% 50%;
+}
+@keyframes gearIn{to{opacity:1}}
+/* the spur train wanders a loose loop around its corner */
+@keyframes gearDrift{
+  0%  {transform:translate(0,0)}
+  25% {transform:translate(-6vw,5vh)}
+  50% {transform:translate(-14vw,2vh)}
+  75% {transform:translate(-8vw,-1vh)}
+  100%{transform:translate(-2vw,3vh)}
+}
+/* the herringbone pair rocks back and forth while it drifts */
+@keyframes herringDrift{
+  0%  {transform:translate(0,0) rotate(0deg)}
+  25% {transform:translate(2vw,-3vh) rotate(-14deg)}
+  50% {transform:translate(4vw,-6vh) rotate(4deg)}
+  75% {transform:translate(2vw,-4vh) rotate(16deg)}
+  100%{transform:translate(1vw,-1vh) rotate(-6deg)}
+}
+@media(max-width:768px){
+  .mech{opacity:.8;animation:none}
+  #gear-container{top:100px;width:36vw;animation:gearDrift 36s ease-in-out infinite alternate}
+  #herring-container{width:15vw;animation:herringDrift 28s ease-in-out infinite alternate}
+}
+@media(prefers-reduced-motion:reduce){.mech,#gear-container,#herring-container{animation:none;opacity:1}}
+
+</style>
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   editorial.css — shared look for the About and project pages.
+   Loaded after each page's own <style>, so these rules take over:
+   ruled lines instead of tinted boxes, slash-separated tags instead of
+   pills, underlined links instead of pill buttons.
+   ════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar-thumb{background:rgba(15,42,74,.28);border-radius:0}
+
+/* ─── Nav: underline on hover, no grey pills ─── */
+.nav-links a,
+.nav-back{
+  font-size:1rem;color:rgba(28,26,24,.6);
+  padding:.35rem .85rem;border-radius:0;
+  background-color:transparent;
+  background-image:linear-gradient(#B08D57,#B08D57);background-repeat:no-repeat;
+  background-size:0 1px;background-position:50% 100%;
+  transition:color .2s,background-size .3s;
+}
+.nav-links a:hover,
+.nav-links a.active,
+.nav-back:hover{
+  color:#080F2A;background-color:transparent;
+  background-repeat:no-repeat;background-position:50% 100%;
+  background-size:calc(100% - 1.7rem) 1px;
+}
+.nav-links a.active{background-image:linear-gradient(#12151C,#12151C)}
+.cta-nav{
+  font-weight:600;color:#080F2A !important;background-color:transparent !important;
+  background-image:linear-gradient(#12151C,#12151C) !important;
+  background-size:calc(100% - 1.7rem) 1px !important;
+}
+.cta-nav:hover{background-image:linear-gradient(#B08D57,#B08D57) !important}
+
+/* ─── Heroes: no glow, no giant outlined watermark numerals ─── */
+.about-hero-glow{display:none}
+.project-hero::after{content:none !important}
+.gear-cluster{display:none}
+
+/* ─── Page width: keep everything on the same column as the homepage ─── */
+.project-hero,
+.content-section,
+.projects-split,
+.project-nav{
+  max-width:1180px;margin-left:auto;margin-right:auto;width:100%;
+}
+.content-section.alt{background:transparent}
+
+/* ─── Section headers: number · title · hairline, left-aligned ─── */
+.section-header{
+  flex-direction:row !important;align-items:baseline !important;text-align:left !important;
+  gap:1.4rem !important;margin-bottom:2.6rem;
+}
+.section-header .section-num{order:0}
+.section-num{
+  font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:500;
+  color:#B08D57;opacity:1;letter-spacing:.08em;
+}
+.section-title{font-size:clamp(2.2rem,4vw,3.1rem);flex-shrink:0}
+.section-line{flex:1;width:auto;height:1px;background:rgba(15,42,74,.22);align-self:center;margin-top:.6rem}
+
+/* ─── Quotes and callouts: a gold rule, no box ─── */
+blockquote{
+  background:transparent;border-radius:0;
+  border-left:2px solid #B08D57;padding:.2rem 0 .2rem 1.4rem;
+}
+.callout{
+  background:transparent !important;border:none !important;border-radius:0 !important;box-shadow:none !important;
+  border-top:2px solid #12151C !important;
+  padding:1.1rem 0 0 !important;
+}
+
+/* ─── Tags: slash-separated mono text instead of pills ─── */
+.chip-row{display:block;line-height:2.1;gap:0}
+.chip{
+  display:inline;white-space:nowrap;
+  background:none;border:none;border-radius:0;padding:0;
+  font-family:'JetBrains Mono',monospace;font-size:.66rem;font-weight:500;
+  color:rgba(28,26,24,.6);letter-spacing:.06em;
+}
+.chip:not(:last-child)::after{content:'/';color:#B08D57;margin:0 .55rem}
+
+/* ─── Buttons: underlined links ─── */
+.btn-primary,
+.btn-ghost{
+  background:transparent !important;border:none !important;border-radius:0 !important;
+  padding:0 0 .3rem !important;color:#080F2A !important;
+  border-bottom:2px solid #12151C !important;
+  transition:gap .3s,border-color .3s !important;
+}
+.btn-ghost{border-bottom-width:1px !important;border-bottom-color:rgba(15,42,74,.35) !important}
+.btn-primary:hover,
+.btn-ghost:hover{border-bottom-color:#B08D57 !important;background:transparent !important}
+.cta-actions{gap:2rem}
+.cta-strip{border-top:2px solid #12151C;padding-top:3.5rem;margin-top:1rem}
+
+/* ─── About: details table as a ruled list ─── */
+.detail-table{
+  background:transparent;border:none;border-radius:0;box-shadow:none;overflow:visible;
+  border-top:2px solid #12151C;
+}
+.detail-row{
+  display:grid;grid-template-columns:7rem minmax(0,1fr);column-gap:1.25rem;
+  padding:.9rem 0 .85rem;border-bottom:1px solid rgba(15,42,74,.22);
+}
+.detail-row:last-child{border-bottom:1px solid rgba(15,42,74,.22)}
+.detail-key{color:#B08D57;font-weight:500;font-size:.66rem}
+.detail-val{
+  text-align:left;margin-left:0;
+  font-family:'Crimson Pro',Georgia,serif;font-size:1.08rem;font-weight:400;color:#12151C;
+}
+.detail-val a{
+  border-bottom:none;text-decoration:underline;text-decoration-thickness:1px;
+  text-underline-offset:.2em;text-decoration-color:rgba(15,42,74,.3);
+}
+.detail-val a:hover{text-decoration-color:#B08D57}
+
+/* ─── About: values and skills as ruled columns, not cards ─── */
+.three-col{column-gap:3rem;row-gap:2.5rem}
+.value-card,
+.skill-item{
+  background:transparent !important;border:none !important;border-radius:0 !important;box-shadow:none !important;
+  transform:none !important;
+  border-top:2px solid #12151C !important;
+  padding:1.3rem 0 0 !important;
+}
+.skill-item{border-top-width:1px !important;border-top-color:rgba(15,42,74,.35) !important}
+.value-card:hover .value-title,
+.skill-item:hover .skill-name{color:#1B2A4E}
+.value-num,
+.skill-category{color:#B08D57}
+.skills-grid{column-gap:2.4rem;row-gap:2.2rem}
+
+/* ─── Ball launcher: objectives as a ruled grid ─── */
+.objectives-grid{
+  background:transparent;border:none;border-radius:0;overflow:visible;
+  column-gap:2.4rem;row-gap:0;border-top:2px solid #12151C;
+}
+.objective-item{
+  background:transparent;padding:1.1rem 0 1.2rem;
+  border-bottom:1px solid rgba(15,42,74,.22);
+}
+
+/* ─── Figures: square photos, caption under a hairline ─── */
+.fig-grid{
+  background:transparent;border:none;border-radius:0;overflow:visible;gap:1.5rem;
+}
+figure{background:transparent;border:none;border-radius:0}
+figure img{border-radius:0}
+figcaption{padding:.6rem 0 0;border-top:none}
+
+/* ─── Figures: whole photo, natural proportions, never cropped ─── */
+.fig-grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:1.5rem}
+.fig-grid figure{flex:var(--w,1) 1 calc(var(--w,1) * 220px);min-width:0;margin:0}
+.fig-grid.single figure{flex:0 1 auto;max-width:100%}
+figure img,figure img.tall,figure img.short{
+  width:auto;max-width:100%;height:auto;max-height:min(78vh,720px);object-fit:contain;
+}
+.fig-grid:not(.single) figure img{width:100%;max-height:none}
+
+/* ─── 3D viewer (robot arm): squared off, no drop shadow ─── */
+.viewer-frame{border-radius:0;box-shadow:none}
+.browse-btn,.vc-btn,.viewer-info,.error-banner{border-radius:0}
+
+/* ─── Previous / next project ─── */
+.project-nav a:hover{background:transparent}
+.pnav-title{
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em;
+  text-decoration-color:transparent;transition:text-decoration-color .3s;
+}
+.project-nav a:hover .pnav-title{text-decoration-color:#B08D57}
+
+/* ─── Footer: hairline, aligned to the content column ─── */
+footer{
+  max-width:1180px;margin-left:auto;margin-right:auto;
+  border-top:1px solid rgba(15,42,74,.22);
+}
+
+@media(max-width:900px){
+  .three-col{row-gap:2.2rem}
+  .objectives-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .section-header{gap:1rem !important}
+  .detail-row{grid-template-columns:6rem minmax(0,1fr)}
+  .nav-links a,.nav-back{font-size:.9rem;padding:.3rem .6rem}
+  .nav-links a:hover,.nav-links a.active,.nav-back:hover,.cta-nav{background-size:calc(100% - 1.2rem) 1px !important}
+}
+</style>
 </head>
 <body>
+<div id="gear-container" class="mech"></div>
 
-  <div id="gear-container"></div>
   <div id="fx-container"></div>
 
   <nav>
@@ -618,11 +850,11 @@
       </div>
       <div>
         <div class="fig-grid" style="margin: 0;">
-          <figure>
+          <figure style="--w:2.42">
             <img src="images/IMG_2745.jpg" alt="Spring-based initial concept sketch" class="tall">
             <figcaption>Figure 2 — Spring-based concept sketch</figcaption>
           </figure>
-          <figure>
+          <figure style="--w:2.18">
             <img src="images/d624aab0-0853-4b74-a1df-1759cdc5bf74.png" alt="Rack and pinion gear-based concept sketch" class="tall">
             <figcaption>Figure 3 — Rack &amp; pinion concept sketch</figcaption>
           </figure>
@@ -632,7 +864,7 @@
 
     <div class="fig-grid single reveal" style="max-width: 700px; margin-top: 0;">
       <figure>
-        <img src="images/Screenshot_2026-04-05_143602.png" alt="Initial CAD model with 3D printed springs" style="height: 340px; object-fit: cover;">
+        <img src="images/Screenshot_2026-04-05_143602.png" alt="Initial CAD model with 3D printed springs">
         <figcaption>Figure 4 — Initial CAD model with 3D-printed springs (half-scale)</figcaption>
       </figure>
     </div>
@@ -656,15 +888,15 @@
     </div>
 
     <div class="fig-grid three reveal">
-      <figure>
+      <figure style="--w:1.35">
         <img src="images/a8ec7063-b4ef-409a-9fd8-deff71c221cf.png" alt="Initial half-scale physical prototype">
         <figcaption>Figure 5 — Half-scale initial prototype</figcaption>
       </figure>
-      <figure>
+      <figure style="--w:1.82">
         <img src="images/4f2ea5c9-2684-4858-8241-25044d36ef90.png" alt="Second prototype with metal spring">
         <figcaption>Figure 6 — Second prototype, metal spring iteration</figcaption>
       </figure>
-      <figure>
+      <figure style="--w:0.94">
         <img src="images/35ecb9de-16e3-4f2e-9c7e-b482c32fcb31.png" alt="Full-scale prototype without barrel">
         <figcaption>Figure 7 — Full-scale prototype, barrel removed</figcaption>
       </figure>
@@ -791,132 +1023,7 @@
     reveals.forEach(el => observer.observe(el));
   </script>
 
-  <script>
-  (function(){
-    'use strict';
-    var c = document.getElementById('gear-container');
-    if (!c) return;
-    var ns = 'http://www.w3.org/2000/svg';
-    var gears = [];
-
-    function gp(ir, or, t, hr) {
-      var step = 2 * Math.PI / t;
-      var hw = step * 0.2;
-      var parts = [];
-      for (var i = 0; i < t; i++) {
-        var a = i * step;
-        var p1x = ir * Math.cos(a - hw), p1y = ir * Math.sin(a - hw);
-        var p2x = or * Math.cos(a - hw * 0.45), p2y = or * Math.sin(a - hw * 0.45);
-        var p3x = or * Math.cos(a + hw * 0.45), p3y = or * Math.sin(a + hw * 0.45);
-        var p4x = ir * Math.cos(a + hw), p4y = ir * Math.sin(a + hw);
-        if (i === 0) parts.push('M' + p1x.toFixed(3) + ' ' + p1y.toFixed(3));
-        parts.push('L' + p2x.toFixed(3) + ' ' + p2y.toFixed(3));
-        parts.push('L' + p3x.toFixed(3) + ' ' + p3y.toFixed(3));
-        parts.push('L' + p4x.toFixed(3) + ' ' + p4y.toFixed(3));
-        var na = (i + 1) * step;
-        var nx = ir * Math.cos(na - hw), ny = ir * Math.sin(na - hw);
-        if (i < t - 1) parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + nx.toFixed(3) + ' ' + ny.toFixed(3));
-        else { var fx = ir * Math.cos(0 - hw), fy = ir * Math.sin(0 - hw); parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + fx.toFixed(3) + ' ' + fy.toFixed(3)); }
-      }
-      parts.push('Z');
-      if (hr > 0) { var h = hr; parts.push('M' + h + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + (-h) + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + h + ' 0 Z'); }
-      return parts.join('');
-    }
-
-    function cg(ir, or, t, hr, o) {
-      var size = (or + 4) * 2;
-      var svg = document.createElementNS(ns, 'svg');
-      svg.setAttribute('viewBox', (-or - 2) + ' ' + (-or - 2) + ' ' + (or + 2) * 2 + ' ' + (or + 2) * 2);
-      svg.setAttribute('width', size); svg.setAttribute('height', size);
-      svg.style.cssText = 'left:' + o.x + '%;top:' + o.y + '%;opacity:1;pointer-events:none;z-index:0;will-change:transform;';
-      var g = document.createElementNS(ns, 'g');
-      g.setAttribute('class', 'gear-g');
-      g.style.willChange = 'transform';
-
-      var path = document.createElementNS(ns, 'path');
-      path.setAttribute('d', gp(ir, or, t, hr));
-      path.setAttribute('fill', 'none'); path.setAttribute('stroke', '#B08D57');
-      path.setAttribute('stroke-width', o.strokeWidth || 2.5);
-      path.setAttribute('opacity', o.opacity || 0.06);
-      g.appendChild(path);
-
-      if (o.innerRing) {
-        var ring = document.createElementNS(ns, 'circle');
-        ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0');
-        ring.setAttribute('r', o.innerRing); ring.setAttribute('fill', 'none');
-        ring.setAttribute('stroke', '#B08D57'); ring.setAttribute('stroke-width', '1.8');
-        ring.setAttribute('opacity', (o.opacity || 0.06) * 0.6);
-        g.appendChild(ring);
-      }
-      if (o.spokes) {
-        for (var s = 0; s < o.spokes; s++) {
-          var ang = (s / o.spokes) * 2 * Math.PI;
-          var r1 = hr || ir * 0.35, r2 = ir * 0.82;
-          var line = document.createElementNS(ns, 'line');
-          line.setAttribute('x1', r1 * Math.cos(ang)); line.setAttribute('y1', r1 * Math.sin(ang));
-          line.setAttribute('x2', r2 * Math.cos(ang)); line.setAttribute('y2', r2 * Math.sin(ang));
-          line.setAttribute('stroke', '#B08D57'); line.setAttribute('stroke-width', '1.3');
-          line.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
-          g.appendChild(line);
-        }
-      }
-      for (var d = 0; d < t; d++) {
-        var da = (d / t) * 2 * Math.PI - Math.PI / 2;
-        var dot = document.createElementNS(ns, 'circle');
-        dot.setAttribute('cx', (or * 0.78) * Math.cos(da));
-        dot.setAttribute('cy', (or * 0.78) * Math.sin(da));
-        dot.setAttribute('r', or * 0.08);
-        dot.setAttribute('fill', '#B08D57');
-        dot.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
-        g.appendChild(dot);
-      }
-
-      svg.appendChild(g);
-      c.appendChild(svg);
-      gears.push({
-        g: g,
-        svg: svg,
-        dur: o.duration || 30,
-        dir: o.dir === 'reverse' ? -1 : 1,
-        angle: 0,
-        parallax: o.parallax || 0.02
-      });
-      return svg;
-    }
-
-    cg(95, 114, 24, 20, { x:86, y:8, opacity:0.3, duration:60, dir:'normal', strokeWidth:6, innerRing:68, spokes:8, parallax:0.015 });
-    cg(62, 80, 18, 16, { x:4, y:62, opacity:0.26, duration:42, dir:'reverse', strokeWidth:5.5, innerRing:46, spokes:6, parallax:0.025 });
-    cg(44, 56, 14, 10, { x:52, y:88, opacity:0.28, duration:28, dir:'normal', strokeWidth:5.5, innerRing:30, spokes:4, parallax:0.02 });
-    cg(30, 38, 10, 7, { x:14, y:22, opacity:0.24, duration:18, dir:'reverse', strokeWidth:5, innerRing:20, spokes:3, parallax:0.03 });
-    cg(18, 24, 8, 4, { x:92, y:48, opacity:0.22, duration:12, dir:'normal', strokeWidth:5, innerRing:12, spokes:3, parallax:0.035 });
-
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var scrollY = window.pageYOffset || 0;
-    var lastTs = null;
-
-    window.addEventListener('scroll', function() {
-      scrollY = window.pageYOffset || 0;
-    }, { passive: true });
-
-    function frame(ts) {
-      if (lastTs === null) lastTs = ts;
-      var dt = (ts - lastTs) / 1000;
-      lastTs = ts;
-
-      gears.forEach(function(gr) {
-        if (!reduce) {
-          gr.angle = (gr.angle + gr.dir * (360 / gr.dur) * dt) % 360;
-        }
-        var drift = scrollY * gr.parallax;
-        gr.g.style.transform = 'translate3d(0,' + drift.toFixed(2) + 'px,0) rotate(' + gr.angle.toFixed(2) + 'deg)';
-      });
-
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  })();
-  </script>
-
+  
   <script>
   (function(){
     'use strict';
@@ -1022,5 +1129,187 @@
     });
   })();
   </script>
+<script>
+// Background mechanisms (spur gear train, herringbone pair).
+// Each part only runs if its container (#gear-container, #herring-container) is on the page.
+
+(function(){
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  var GOLD = '#B08D57';
+  var D2R = Math.PI / 180;
+  var TOP_OPACITY = .17, LOW_OPACITY = .07;   // faint on the About and project pages
+
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function stroke(tag, attrs, parent, w, op) {
+    attrs['stroke-width'] = w; attrs['vector-effect'] = 'non-scaling-stroke';
+    if (op != null) attrs.opacity = op;
+    return el(tag, attrs, parent);
+  }
+  function makeSvg(c, x, y, w, h) {
+    return el('svg', { viewBox: [x, y, w, h].map(function (v) { return v.toFixed(1); }).join(' '),
+      'aria-hidden': 'true', focusable: 'false', opacity: TOP_OPACITY }, c);
+  }
+
+  /* ─── 1. Spur gear train: true involute teeth, correct ratios ─── */
+  function buildSpur(c) {
+    var M = 4, PA = 20 * D2R, BACKLASH = 0.06 * M;
+    function inv(a) { return Math.tan(a) - a; }
+    function gearPath(N) {
+      var r = M * N / 2, rb = r * Math.cos(PA), ra = r + M, rf = r - 1.25 * M;
+      var step = 2 * Math.PI / N, halfPitch = Math.PI / (2 * N) - BACKLASH / (2 * r);
+      function psi(R) { return halfPitch + inv(PA) - inv(Math.acos(Math.min(1, rb / R))); }
+      var r0 = Math.max(rb, rf), psiB = psi(r0), psiA = psi(ra), pts = [], S = 10;
+      function P(R, a) { pts.push((R * Math.cos(a)).toFixed(2) + ' ' + (R * Math.sin(a)).toFixed(2)); }
+      for (var k = 0; k < N; k++) {
+        var a = k * step, i, R;
+        P(rf, a - psiB);
+        for (i = 0; i <= S; i++) { R = r0 + (ra - r0) * i / S; P(R, a - psi(R)); }
+        for (i = 1; i < 4; i++) P(ra, a - psiA + 2 * psiA * i / 4);
+        for (i = S; i >= 0; i--) { R = r0 + (ra - r0) * i / S; P(R, a + psi(R)); }
+        P(rf, a + psiB);
+        var gap = step - 2 * psiB;
+        for (i = 1; i < 4; i++) P(rf, a + psiB + gap * i / 4);
+      }
+      return 'M' + pts.join(' L') + ' Z';
+    }
+    var spec = [ { N: 48, spokes: 6 }, { N: 32, spokes: 5, dir: 160 }, { N: 16, spokes: 3, dir: 210 } ];
+    var gears = [];
+    spec.forEach(function (s, i) {
+      var r = M * s.N / 2, x = 0, y = 0, phase = 0, ratio = 1;
+      if (i) {
+        var p = gears[i - 1], dist = p.r + r;
+        x = p.x + dist * Math.cos(s.dir * D2R);
+        y = p.y + dist * Math.sin(s.dir * D2R);
+        phase = s.dir + 180 - (p.N / s.N) * (p.phase - s.dir) - 180 / s.N;   // a gap faces the driving tooth
+        ratio = -p.ratio * p.N / s.N;
+      }
+      gears.push({ N: s.N, r: r, x: x, y: y, phase: phase, ratio: ratio, spokes: s.spokes });
+    });
+    var pad = M * 2, minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+    gears.forEach(function (g) {
+      var ra = g.r + M;
+      minX = Math.min(minX, g.x - ra); maxX = Math.max(maxX, g.x + ra);
+      minY = Math.min(minY, g.y - ra); maxY = Math.max(maxY, g.y + ra);
+    });
+    var svg = makeSvg(c, minX - pad, minY - pad, maxX - minX + 2 * pad, maxY - minY + 2 * pad);
+    gears.forEach(function (g) {
+      var holder = el('g', { transform: 'translate(' + g.x.toFixed(2) + ' ' + g.y.toFixed(2) + ')' }, svg);
+      var rim = g.r - 1.25 * M - M * 1.4, hub = Math.max(7, g.r * 0.2);
+      var n = el('g', { fill: 'none', stroke: GOLD, 'stroke-linejoin': 'round' }, holder);
+      stroke('path', { d: gearPath(g.N), class: 'gear-teeth' }, n, 1.3);
+      stroke('circle', { r: rim.toFixed(2) }, n, 0.9, .7);
+      stroke('circle', { r: hub.toFixed(2) }, n, 1.1);
+      stroke('circle', { r: (hub * 0.42).toFixed(2) }, n, 0.9, .8);
+      for (var s = 0; s < g.spokes; s++) {
+        var a = s / g.spokes * 2 * Math.PI;
+        stroke('line', { x1: (hub * Math.cos(a)).toFixed(2), y1: (hub * Math.sin(a)).toFixed(2),
+          x2: (rim * Math.cos(a)).toFixed(2), y2: (rim * Math.sin(a)).toFixed(2) }, n, 0.9, .7);
+      }
+      g.node = n;
+    });
+    var SPEED = 360 / 30;   // big gear: one turn every 30 s → 20 s for the 32-tooth, 10 s for the 16-tooth
+    return { svg: svg, update: function (t) {
+      gears.forEach(function (g) {
+        g.node.setAttribute('transform', 'rotate(' + ((g.phase + t * SPEED * g.ratio) % 360).toFixed(3) + ')');
+      });
+    } };
+  }
+
+  /* ─── 2. Herringbone pair, side view: V-teeth sweep across the faces ─── */
+  function buildHerringbone(c) {
+    var W = 64, EXT = 22, HELIX = 30 * D2R;
+    var set = [ { r: 60, N: 24, cy: 0, hand: 1 }, { r: 40, N: 16, cy: 100, hand: -1 } ];
+    var svg = makeSvg(c, -W / 2 - EXT - 4, -66, W + 2 * EXT + 8, 212);
+    var defs = el('defs', {}, svg);
+    var grad = el('linearGradient', { id: 'hb-shade', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    [[0, .2], [.5, .02], [1, .2]].forEach(function (s) {
+      el('stop', { offset: s[0], 'stop-color': GOLD, 'stop-opacity': s[1] }, grad);
+    });
+    set.forEach(function (g, gi) {
+      var top = g.cy - g.r, h = 2 * g.r;
+      var clip = el('clipPath', { id: 'hb-clip-' + gi }, defs);
+      el('rect', { x: -W / 2, y: top, width: W, height: h }, clip);
+      var grp = el('g', { fill: 'none', stroke: GOLD }, svg);
+      // shaft and hub collars
+      stroke('line', { x1: -W / 2 - EXT, y1: g.cy, x2: W / 2 + EXT, y2: g.cy }, grp, 1.1, .8);
+      stroke('rect', { x: W / 2, y: g.cy - g.r * .28, width: EXT * .55, height: g.r * .56 }, grp, 1);
+      stroke('rect', { x: -W / 2 - EXT * .55, y: g.cy - g.r * .28, width: EXT * .55, height: g.r * .56 }, grp, 1);
+      el('rect', { x: -W / 2, y: top, width: W, height: h, fill: 'url(#hb-shade)', stroke: 'none' }, grp);
+      var teeth = el('g', { 'clip-path': 'url(#hb-clip-' + gi + ')' }, grp);
+      g.paths = [];
+      for (var k = 0; k < g.N; k++) {
+        g.paths.push(stroke('path', { fill: GOLD, 'stroke-linejoin': 'round' }, teeth, 1));
+      }
+      stroke('rect', { x: -W / 2, y: top, width: W, height: h }, grp, 1.3);
+      stroke('line', { x1: 0, y1: top, x2: 0, y2: top + h }, grp, .7, .35);   // the herringbone's centre seam
+      g.kh = Math.tan(HELIX) / g.r;
+    });
+
+    function flank(g, theta, sign) {
+      // points across the face; the tooth lags toward the centre seam, forming the V
+      var pts = [], S = 8;
+      for (var i = 0; i <= S; i++) {
+        var x = -W / 2 + W * i / S;
+        var th = theta + g.hand * g.kh * (W / 2 - Math.abs(x));
+        pts.push(x.toFixed(2) + ' ' + (g.cy - g.r * Math.sin(th)).toFixed(2));
+      }
+      return sign > 0 ? pts : pts.reverse();
+    }
+    var SPEED = 2 * Math.PI / 24;   // upper gear: one turn every 24 s
+    return { svg: svg, update: function (t) {
+      var phi1 = t * SPEED;
+      set.forEach(function (g, gi) {
+        var phi = gi === 0 ? phi1 : -phi1 * set[0].N / g.N;
+        var step = 2 * Math.PI / g.N, half = step * 0.22;
+        for (var k = 0; k < g.N; k++) {
+          var th = phi + k * step;
+          var mid = th + g.hand * g.kh * W / 4;
+          var face = Math.cos(mid);
+          var p = g.paths[k];
+          if (face < -0.05) { p.setAttribute('d', ''); continue; }
+          var f = Math.max(0, face);
+          p.setAttribute('d', 'M' + flank(g, th - half, 1).concat(flank(g, th + half, -1)).join(' L') + ' Z');
+          p.setAttribute('fill-opacity', (0.05 + 0.2 * f).toFixed(3));
+          p.setAttribute('stroke-opacity', (0.3 + 0.7 * f).toFixed(3));
+        }
+      });
+    } };
+  }
+
+  var parts = [];
+  [['gear-container', buildSpur], ['herring-container', buildHerringbone]]
+    .forEach(function (b) { var c = document.getElementById(b[0]); if (c) parts.push(b[1](c)); });
+  if (!parts.length) return;
+
+  // Fade everything back as the visitor scrolls past the hero
+  function fadeOnScroll() {
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var k = Math.min(1, y / (window.innerHeight * 0.8));
+    var o = (TOP_OPACITY - (TOP_OPACITY - LOW_OPACITY) * k).toFixed(3);
+    parts.forEach(function (p) { p.svg.setAttribute('opacity', o); });
+  }
+  window.addEventListener('scroll', fadeOnScroll, { passive: true });
+  window.addEventListener('resize', fadeOnScroll);
+  fadeOnScroll();
+
+  parts.forEach(function (p) { p.update(0); });
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var t0 = null;
+  function frame(ts) {
+    if (t0 === null) t0 = ts;
+    var t = (ts - t0) / 1000;
+    for (var i = 0; i < parts.length; i++) parts[i].update(t);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
