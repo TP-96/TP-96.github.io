@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sudoku — Tanmay Poddar</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -1318,14 +1320,60 @@
     function createPuzzleSeeded(solution, difficulty, rng) {
       const clues = { easy: 38, medium: 28, hard: 22 };
       const numClues = clues[difficulty] || 28;
+      return carvePuzzle(solution, numClues, seededShuffle([...Array(81).keys()], rng));
+    }
+
+    // ─── UNIQUE-SOLUTION CHECK ────────────────────────────────────────────────
+    // Counts the solutions of a puzzle (stops at `limit`) by always filling the cell
+    // with the fewest candidates. A puzzle is only fair if this returns exactly 1,
+    // otherwise a correct answer could be marked wrong.
+    function countSolutions(puzzle, limit = 2) {
+      const g = puzzle.map(r => [...r]);
+      const rows = Array(9).fill(0), cols = Array(9).fill(0), boxes = Array(9).fill(0);
+      for (let r = 0; r < 9; r++)
+        for (let c = 0; c < 9; c++) {
+          const v = g[r][c];
+          if (v) { const bit = 1 << v; rows[r] |= bit; cols[c] |= bit; boxes[Math.floor(r/3)*3 + Math.floor(c/3)] |= bit; }
+        }
+      let found = 0;
+      function solve() {
+        let br = -1, bc = -1, bestMask = 0, bestCount = 10;
+        for (let r = 0; r < 9 && bestCount > 1; r++)
+          for (let c = 0; c < 9; c++) {
+            if (g[r][c]) continue;
+            const used = rows[r] | cols[c] | boxes[Math.floor(r/3)*3 + Math.floor(c/3)];
+            const free = ~used & 0x3FE;
+            let n = 0; for (let m = free; m; m &= m - 1) n++;
+            if (n < bestCount) { bestCount = n; br = r; bc = c; bestMask = free; if (n <= 1) break; }
+          }
+        if (br === -1) { found++; return; }          // no empty cell left: one full solution
+        if (bestCount === 0) return;                 // dead end
+        const b = Math.floor(br/3)*3 + Math.floor(bc/3);
+        for (let v = 1; v <= 9 && found < limit; v++) {
+          const bit = 1 << v;
+          if (!(bestMask & bit)) continue;
+          g[br][bc] = v; rows[br] |= bit; cols[bc] |= bit; boxes[b] |= bit;
+          solve();
+          g[br][bc] = 0; rows[br] &= ~bit; cols[bc] &= ~bit; boxes[b] &= ~bit;
+        }
+      }
+      solve();
+      return found;
+    }
+
+    // Removes cells in the given order, putting one back whenever its removal would let
+    // the puzzle be solved in more than one way. Stops once `numClues` clues remain, or
+    // when no further cell can be removed (the hardest levels may stop a few clues short).
+    function carvePuzzle(solution, numClues, positions) {
       const puzzle = solution.map(r => [...r]);
-      const positions = seededShuffle([...Array(81).keys()], rng);
-      let removed = 0;
+      let clues = 81;
       for (const pos of positions) {
-        if (removed >= 81 - numClues) break;
+        if (clues <= numClues) break;
         const r = Math.floor(pos / 9), c = pos % 9;
+        const keep = puzzle[r][c];
         puzzle[r][c] = 0;
-        removed++;
+        if (countSolutions(puzzle, 2) === 1) clues--;
+        else puzzle[r][c] = keep;
       }
       return puzzle;
     }
@@ -1344,11 +1392,11 @@
     }
 
     function hasPlayedToday() {
-      return !!localStorage.getItem('sudoku_daily_played_' + todayKey());
+      try { return !!localStorage.getItem('sudoku_daily_played_' + todayKey()); } catch { return false; }
     }
 
     function markPlayedToday() {
-      localStorage.setItem('sudoku_daily_played_' + todayKey(), '1');
+      try { localStorage.setItem('sudoku_daily_played_' + todayKey(), '1'); } catch {}
     }
 
     function addLeaderboardEntry(dateStr, name, timeSeconds, difficulty) {
@@ -1458,16 +1506,7 @@
     function createPuzzle(solution, difficulty) {
       const clues = { easy: 38, medium: 28, hard: 22 };
       const numClues = clues[difficulty] || 30;
-      const puzzle = solution.map(r => [...r]);
-      const positions = shuffle([...Array(81).keys()]);
-      let removed = 0;
-      for (const pos of positions) {
-        if (removed >= 81 - numClues) break;
-        const r = Math.floor(pos / 9), c = pos % 9;
-        puzzle[r][c] = 0;
-        removed++;
-      }
-      return puzzle;
+      return carvePuzzle(solution, numClues, shuffle([...Array(81).keys()]));
     }
 
     // ─── STATE ────────────────────────────────────────────────────────────────
@@ -1650,6 +1689,17 @@
         return;
       }
 
+      // ── ERASE: clears the value and any pencil notes in the cell ─────────────
+      if (num === 0) {
+        if (userBoard[r][c] === 0 && notesBoard[r][c].size === 0) return;
+        userBoard[r][c] = 0;
+        notesBoard[r][c].clear();
+        renderBoard();
+        updateHighlights();
+        renderHintTokens();
+        return;
+      }
+
       // ── NORMAL MODE ──────────────────────────────────────────────────────────
       const prev = userBoard[r][c];
       userBoard[r][c] = num;
@@ -1665,6 +1715,9 @@
 
     document.addEventListener('keydown', (e) => {
       if (!started || paused) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;                       // leave browser shortcuts alone
+      if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;  // typing a username
+      if (e.key.startsWith('Arrow') && selectedCell) e.preventDefault();    // arrows move the cell, not the page
       if (e.key === 'n' || e.key === 'N') { toggleNotesMode(); return; }
       if (e.key >= '1' && e.key <= '9') enterNumber(parseInt(e.key));
       if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') enterNumber(0);
@@ -1822,6 +1875,7 @@
     }
 
     function startGame() {
+      if (!gameActive) { document.getElementById('start-overlay').classList.add('hidden'); return; }
       started = true;
       document.getElementById('start-overlay').classList.add('hidden');
       document.getElementById('board-status').textContent = isDailyMode ? '◆ Daily — In progress' : 'In progress';
@@ -1893,6 +1947,7 @@
           }
         }
       document.getElementById('board-status').textContent = 'Solution revealed';
+      document.getElementById('start-overlay').classList.add('hidden');
       renderBoard();
     }
 
@@ -1921,10 +1976,12 @@
     // ─── TIMER ────────────────────────────────────────────────────────────────
 
     function startTimer() {
+      clearInterval(timerInterval);
+      const origin = Date.now() - seconds * 1000;   // browsers slow timers in hidden tabs, so read the clock instead
       timerInterval = setInterval(() => {
-        seconds++;
+        seconds = Math.floor((Date.now() - origin) / 1000);
         document.getElementById('timer-display').textContent = formatTime(seconds);
-      }, 1000);
+      }, 250);
     }
     function stopTimer()  { clearInterval(timerInterval); }
     function resetTimer() {
