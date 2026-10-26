@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>2048 — Tanmay Poddar</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -246,6 +248,7 @@
     .board-relative { position: relative; }
 
     #game-board {
+      touch-action: none;
       width: var(--board-size);
       height: var(--board-size);
       display: grid;
@@ -833,7 +836,15 @@
     let keepGoing = false;
     let gameOver  = false;
     let moveToken = 0;     // incremented each move; lets pending timeouts detect staleness
-    let highScore = parseInt(localStorage.getItem('2048_best') || '0');
+    let overlayToken = 0;  // incremented whenever overlays are hidden; stale win/over popups check it
+    // localStorage can throw (private windows, blocked storage), so every access is guarded.
+    function loadBest() {
+      try { return parseInt(localStorage.getItem('2048_best') || '0') || 0; } catch (e) { return 0; }
+    }
+    function saveBest(v) {
+      try { localStorage.setItem('2048_best', v); } catch (e) {}
+    }
+    let highScore = loadBest();
 
     // ─── HELPERS ─────────────────────────────────────────────────
     const clone = b => b.map(r => [...r]);
@@ -884,9 +895,10 @@
     // ─── MOVE ────────────────────────────────────────────────────
     function move(dir) {
       if (gameOver) return;
+      if (won && !keepGoing) return;   // the win screen is up: choose Keep Going or New Game first
 
       // Snapshot for undo BEFORE we touch anything
-      const snap = { board: clone(board), score, moves, undosLeft };
+      const snap = { board: clone(board), score, moves, undosLeft, won, keepGoing, highScore };
 
       let totalScore = 0;
       let anyMoved   = false;
@@ -923,24 +935,22 @@
       moves++;
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('2048_best', highScore);
+        saveBest(highScore);
       }
 
-      // Capture token so a stale timeout from a superseded move
-      // doesn't spawn an extra tile after the board has already advanced.
+      // The new tile goes onto the board right away, so the game state is always complete
+      // even if the next key arrives before the animation has finished. Only the drawing is delayed.
+      const spawned = spawnRandom();
       const token = ++moveToken;
 
-      // Render the slid board immediately so tiles animate to new positions,
-      // then spawn a new tile after the CSS transition (~100 ms) completes.
-      render(null);
+      render(null, spawned);   // slid board, new tile not shown yet
       updateUI();
+      checkState();
 
       setTimeout(() => {
-        if (token !== moveToken) return; // superseded by a later move
-        const spawned = spawnRandom();
+        if (token !== moveToken) return; // a later move, undo or new game has already redrawn the board
         render(spawned);
         updateUI();
-        checkState();
       }, 100);
     }
 
@@ -952,8 +962,13 @@
       score     = prev.score;
       moves     = prev.moves;
       undosLeft = prev.undosLeft - 1;
+      won       = prev.won;
+      keepGoing = prev.keepGoing;
       gameOver  = false;
+      if (highScore !== prev.highScore) { highScore = prev.highScore; saveBest(highScore); }
+      moveToken++;                        // cancel any pending redraw from the move being undone
       hideOverlays();
+      setStatus('In progress');
       render(null);
       updateUI();
     }
@@ -968,7 +983,7 @@
       won       = false;
       keepGoing = false;
       gameOver  = false;
-      moveToken = 0;
+      moveToken++;
       hideOverlays();
       renderSlots();
       spawnRandom();
@@ -987,7 +1002,7 @@
       }
       if (!canMove()) {
         gameOver = true;
-        setTimeout(showOver, 300);
+        showOver();
       }
     }
 
@@ -1004,7 +1019,7 @@
     // ─── RENDER ──────────────────────────────────────────────────
     // Full teardown + rebuild of tile layer every frame.
     // `newCell` = {r,c} of tile to animate as "new", or null.
-    function render(newCell) {
+    function render(newCell, hideCell) {
       const layer = document.getElementById('tile-layer');
       layer.innerHTML = '';
 
@@ -1016,6 +1031,7 @@
         for (let c = 0; c < SIZE; c++) {
           const val = board[r][c];
           if (!val) continue;
+          if (hideCell && hideCell.r === r && hideCell.c === c) continue;
 
           const el       = document.createElement('div');
           el.className   = 'tile';
@@ -1092,15 +1108,18 @@
 
     function showWin() {
       document.getElementById('win-score').textContent = score.toLocaleString();
-      setTimeout(() => document.getElementById('win-overlay').classList.add('show'), 300);
+      const t = overlayToken;
+      setTimeout(() => { if (t === overlayToken) document.getElementById('win-overlay').classList.add('show'); }, 300);
       setStatus('2048 — You won!', 'win');
     }
     function showOver() {
       document.getElementById('over-score').textContent = score.toLocaleString();
-      document.getElementById('over-overlay').classList.add('show');
+      const t = overlayToken;
+      setTimeout(() => { if (t === overlayToken) document.getElementById('over-overlay').classList.add('show'); }, 300);
       setStatus('Game over', 'over');
     }
     function hideOverlays() {
+      overlayToken++;
       document.getElementById('win-overlay').classList.remove('show');
       document.getElementById('over-overlay').classList.remove('show');
     }
@@ -1141,6 +1160,7 @@
       keepGoing = true;
       hideOverlays();
       setStatus('In progress');
+      checkState();
     });
 
     // ─── KEYBOARD ────────────────────────────────────────────────
@@ -1150,6 +1170,7 @@
       W:'up', S:'down', A:'left', D:'right'
     };
     document.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;   // Ctrl+S, Ctrl+W, Cmd+A etc. stay with the browser
       const dir = KEY_MAP[e.key];
       if (dir) { e.preventDefault(); move(dir); }
     });
@@ -1160,6 +1181,7 @@
     boardEl.addEventListener('touchstart', e => {
       touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }, { passive: true });
+    boardEl.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
     boardEl.addEventListener('touchend', e => {
       if (!touchStart) return;
       const dx = e.changedTouches[0].clientX - touchStart.x;

@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Blackjack — Tanmay Poddar</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -240,30 +242,43 @@
     }
     /* deal-in slides the wrapper — never touches the flip transform */
     .card-wrapper.deal-in {
-      animation: dealCard 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: dealCard 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
+    /* cards arrive from the shoe (upper right), face down */
     @keyframes dealCard {
-      from { opacity: 0; transform: translateY(-50px) rotate(-4deg) scale(0.8); }
-      to   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+      from { opacity: 0; transform: translate(90px, -70px) rotate(9deg) scale(0.86); }
+      60%  { opacity: 1; }
+      to   { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
     }
-    /* Hole card reveal — slides in from dealer's side */
+    /* Hole card reveal — the dealer lifts the card a touch before turning it */
     .card-wrapper.hole-reveal {
-      animation: holeReveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: holeLift 0.8s cubic-bezier(0.33, 0, 0.2, 1) both;
     }
-    @keyframes holeReveal {
-      from { opacity: 0.3; transform: translateX(-18px) scale(0.92); }
-      to   { opacity: 1;   transform: translateX(0)     scale(1); }
+    @keyframes holeLift {
+      0%   { transform: translateY(0); }
+      35%  { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
     }
     .card {
       width: 90px;
       height: 135px;
       position: relative;
       transform-style: preserve-3d;
-      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: default;
     }
-    /* flip lives only on .card, no conflict with deal-in */
+    /* flip lives only on .card, no conflict with deal-in.
+       The card lifts and grows slightly as it turns edge-on, then settles face up. */
     .card.flipped { transform: rotateY(180deg); }
+    .card.flipping { animation: cardFlip 0.55s cubic-bezier(0.45, 0.05, 0.25, 1) both; }
+    .card.flipping.slow { animation-duration: 0.75s; }
+    @keyframes cardFlip {
+      0%   { transform: translateY(0)     scale(1)    rotateY(0deg); }
+      50%  { transform: translateY(-12px) scale(1.08) rotateY(90deg); }
+      100% { transform: translateY(0)     scale(1)    rotateY(180deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card-wrapper.deal-in, .card-wrapper.hole-reveal, .card.flipping { animation-duration: 1ms !important; }
+    }
 
     /* Dealer score tick — pulses when score updates */
     @keyframes scoreTick {
@@ -1236,6 +1251,9 @@
     let phase = 'bet';         // 'bet' | 'playing' | 'over'
     let isSplitMode  = false;
     let stats = { hands:0, wins:0, losses:0, pushes:0, net:0 };
+    let busy = false;          // true while cards are moving — player actions wait
+    let roundSettled = false;  // a round is paid out exactly once
+    const MIN_CHIP = Math.min(...Array.from(document.querySelectorAll('.chip')).map(c => parseInt(c.dataset.val)));
 
     // ── DOM REFS ──────────────────────────────────────────────────────────────
     const $dealerCards  = document.getElementById('dealerCards');
@@ -1271,7 +1289,10 @@
         setTimeout(() => $balanceDisp.classList.remove(dir), 700);
       }
     }
-    function updateBetDisplay() { $betDisp.textContent = `$${bet}`; }
+    function updateBetDisplay() {
+      const riding = phase === 'playing' ? handBets.reduce((s,b) => s + b, 0) : bet;
+      $betDisp.textContent = `$${riding}`;
+    }
 
     function updateStats() {
       document.getElementById('statHands').textContent  = stats.hands;
@@ -1425,7 +1446,8 @@
       cardEl.appendChild(front);
 
       if (!faceDown) {
-        setTimeout(() => cardEl.classList.add('flipped'), delay + 430);
+        // turn the card over as it lands, not after it has stopped
+        setTimeout(() => flipCard(cardEl), delay + 280);
       }
 
       wrapper.appendChild(cardEl);
@@ -1434,15 +1456,28 @@
       return wrapper;
     }
 
+    function flipCard(cardEl, slow=false) {
+      if (cardEl.classList.contains('flipped') || cardEl.classList.contains('flipping')) return;
+      if (slow) cardEl.classList.add('slow');
+      cardEl.classList.add('flipping');
+      const done = (e) => {
+        if (e.target !== cardEl || e.animationName !== 'cardFlip') return;
+        cardEl.removeEventListener('animationend', done);
+        cardEl.classList.add('flipped');
+        cardEl.classList.remove('flipping', 'slow');
+      };
+      cardEl.addEventListener('animationend', done);
+    }
+
     function flipHoleCard() {
       const cards = $dealerCards.querySelectorAll('.card-wrapper');
       const hole  = Array.from(cards).find(c => c.dataset.faceDown === '1');
       if (!hole) return;
       hole.dataset.faceDown = '0';
-      // Slide the wrapper to signal it's being revealed
+      // Lift the card slightly, then turn it over
+      hole.classList.remove('deal-in');
       hole.classList.add('hole-reveal');
-      // Then flip after the slide lands
-      setTimeout(() => hole._cardEl.classList.add('flipped'), 120);
+      setTimeout(() => flipCard(hole._cardEl, true), 90);
     }
 
     function scoreTickAnim(el) {
@@ -1485,45 +1520,54 @@
     }
 
     // ── SPLIT RENDERING ───────────────────────────────────────────────────────
+    // Updates the split layout in place: cards already on the table stay put,
+    // only newly dealt cards animate in.
     function renderSplitHands() {
-      $playerCards.innerHTML = '';
-      $playerScore.textContent = '';
+      let container = $playerCards.querySelector('.split-container');
+      let carried = [];
+      if (!container) {
+        // first render after a split: keep the two cards already on the table
+        carried = Array.from($playerCards.querySelectorAll(':scope > .card-wrapper'));
+        carried.forEach(w => w.classList.remove('deal-in'));
+        $playerCards.innerHTML = '';
+        $playerScore.textContent = '';
+        container = document.createElement('div');
+        container.className = 'split-container';
+        $playerCards.appendChild(container);
+      }
 
-      const container = document.createElement('div');
-      container.className = 'split-container';
-
+      let dealt = 0;
       playerHands.forEach((hand, hi) => {
-        const handDiv = document.createElement('div');
+        let handDiv = container.querySelector(`#splitHand-${hi}`);
+        if (!handDiv) {
+          handDiv = document.createElement('div');
+          handDiv.id = `splitHand-${hi}`;
+          const lbl = document.createElement('div');
+          lbl.className = 'split-hand-label';
+          const cardsDiv = document.createElement('div');
+          cardsDiv.className = 'split-cards';
+          if (carried[hi]) cardsDiv.appendChild(carried[hi]);
+          const scoreDiv = document.createElement('div');
+          scoreDiv.className = 'split-hand-score';
+          handDiv.appendChild(lbl);
+          handDiv.appendChild(cardsDiv);
+          handDiv.appendChild(scoreDiv);
+          container.appendChild(handDiv);
+        }
         handDiv.className = 'split-hand' + (hi === activeHand ? ' active-hand' : '');
-        handDiv.id = `splitHand-${hi}`;
-
-        const lbl = document.createElement('div');
-        lbl.className = 'split-hand-label';
-        lbl.textContent = `Hand ${hi + 1} · $${handBets[hi]}`;
-
-        const scoreDiv = document.createElement('div');
-        scoreDiv.className = 'split-hand-score';
-        scoreDiv.textContent = handTotal(hand) || '—';
-
-        const cardsDiv = document.createElement('div');
-        cardsDiv.className = 'split-cards';
-        hand.forEach((card, ci) => {
-          const w = createCardEl(card, false, ci * 80);
-          cardsDiv.appendChild(w);
-        });
-
-        handDiv.appendChild(lbl);
-        handDiv.appendChild(cardsDiv);
-        handDiv.appendChild(scoreDiv);
-        container.appendChild(handDiv);
+        handDiv.querySelector('.split-hand-label').textContent = `Hand ${hi + 1} · $${handBets[hi]}`;
+        handDiv.querySelector('.split-hand-score').textContent = handTotal(hand) || '—';
+        const cardsDiv = handDiv.querySelector('.split-cards');
+        for (let ci = cardsDiv.children.length; ci < hand.length; ci++) {
+          cardsDiv.appendChild(createCardEl(hand[ci], false, (dealt++) * 200));
+        }
       });
-
-      $playerCards.appendChild(container);
     }
 
     // ── DEAL ──────────────────────────────────────────────────────────────────
     function startDeal() {
-      if (bet === 0) return;
+      if (bet === 0 || phase === 'playing') return;
+      busy = true; roundSettled = false;
       hideResult();
       playerHands  = [[]];
       activeHand   = 0;
@@ -1535,7 +1579,7 @@
       $dealerScore.textContent = '—';
       $playerScore.textContent = '—';
       phase = 'playing';
-      setControls('playing');
+      setControls('dealer');   // nothing clickable until the cards have landed
 
       const c1=dealCard(), c2=dealCard(), c3=dealCard(), c4=dealCard();
       playerHands[0].push(c1, c3);
@@ -1549,15 +1593,58 @@
       setTimeout(() => {
         renderScore(playerHands[0], $playerScore);
         renderScore(dealerHand, $dealerScore, true);
-        setControls('playing');
+        // Dealer peeks: with an ace or ten-value card showing, a dealer blackjack
+        // ends the hand straight away, before the player can double or split into it
+        const up = dealerHand[0];
+        if ((up.rank === 'A' || cardValue(up.rank) === 10) && handTotal(dealerHand) === 21) {
+          setTimeout(dealerNatural, 400);
+          return;
+        }
         if (handTotal(playerHands[0]) === 21) {
           setTimeout(() => resolveRound(true), 400);
+          return;
         }
+        busy = false;
+        setControls('playing');
       }, 1050);
+    }
+
+    // Dealer has blackjack (found on the peek)
+    function dealerNatural() {
+      if (roundSettled) return;
+      roundSettled = true;
+      setControls('dealer');
+      flipHoleCard();
+      setTimeout(() => {
+        renderScore(dealerHand, $dealerScore);
+        const b = handBets[0];
+        stats.hands++;
+        if (handTotal(playerHands[0]) === 21) {
+          balance += b;                       // both blackjack: bet returned
+          stats.pushes++;
+          updateStats(); updateBalanceDisplay();
+          showResultWithSuspense('PUSH — BET RETURNED', 'push', 300);
+        } else {
+          stats.losses++; stats.net -= b;     // bet already taken off the balance
+          updateStats(); updateBalanceDisplay('down');
+          showResultWithSuspense(`DEALER WINS — $${b}`, 'lose', 300);
+        }
+        setTimeout(endRound, 2000);
+      }, 900);
+    }
+
+    function endRound() {
+      bet = 0; handBets = [0];
+      isSplitMode = false; playerHands = [[]]; activeHand = 0;
+      phase = 'over'; busy = false;
+      updateBetDisplay();
+      setControls('bet'); checkZeroBalance();
     }
 
     // ── HIT ───────────────────────────────────────────────────────────────────
     function doHit() {
+      if (busy || phase !== 'playing') return;
+      busy = true; setControls('dealer');
       const card = dealCard();
       playerHands[activeHand].push(card);
 
@@ -1571,17 +1658,25 @@
         if (isSplitMode) renderSplitHands();
         else renderScore(playerHands[activeHand], $playerScore);
         const total = handTotal(playerHands[activeHand]);
+        busy = false;
         if (total >= 21) advanceOrResolve();
+        else setControls('playing');
       }, 1000);
     }
 
     // ── STAND ─────────────────────────────────────────────────────────────────
-    function doStand() { advanceOrResolve(); }
+    function doStand() {
+      if (busy || phase !== 'playing') return;
+      advanceOrResolve();
+    }
 
     // ── DOUBLE DOWN ───────────────────────────────────────────────────────────
     function doDouble() {
-      balance -= handBets[activeHand];
-      stats.net -= handBets[activeHand]; // pre-deducted; will add back on win
+      if (busy || phase !== 'playing') return;
+      const hand = playerHands[activeHand];
+      if (hand.length !== 2 || balance < handBets[activeHand]) return;
+      busy = true; setControls('dealer');
+      balance -= handBets[activeHand];   // the extra stake comes off the balance; settled at the end
       handBets[activeHand] *= 2;
       updateBalanceDisplay('down');
       updateBetDisplay();
@@ -1594,13 +1689,18 @@
       setTimeout(() => {
         if (isSplitMode) renderSplitHands();
         else renderScore(playerHands[activeHand], $playerScore);
+        busy = false;
         advanceOrResolve();
       }, 1000);
     }
 
     // ── SPLIT ─────────────────────────────────────────────────────────────────
     function doSplit() {
+      if (busy || phase !== 'playing' || isSplitMode) return;
       const hand = playerHands[activeHand];
+      if (!canSplit(hand) || balance < handBets[activeHand]) return;
+      busy = true; setControls('dealer');
+      const splitAces = hand[0].rank === 'A';
       const splitCard = hand.splice(1, 1)[0]; // remove second card
       balance -= handBets[activeHand];          // match the bet
       updateBalanceDisplay('down');
@@ -1614,14 +1714,22 @@
       playerHands[0].push(dealCard());
       playerHands[1].push(dealCard());
 
-      renderSplitHands();
       activeHand = 0;
-      setControls('playing');
+      renderSplitHands();
+      updateBetDisplay();
 
       setTimeout(() => {
         renderSplitHands();
-        setControls('playing');
-      }, 600);
+        busy = false;
+        if (splitAces) {
+          // split aces get exactly one card each, then both hands stand
+          resolveRound(false);
+        } else if (handTotal(playerHands[0]) >= 21) {
+          advanceOrResolve();
+        } else {
+          setControls('playing');
+        }
+      }, 1000);
     }
 
     // ── ADVANCE THROUGH SPLIT HANDS OR RESOLVE ────────────────────────────────
@@ -1630,9 +1738,10 @@
         activeHand++;
         renderSplitHands();
         setControls('playing');
-        // If the new hand is already at 21 (split aces get one card rule)
+        // If the new hand is already at 21, it stands automatically
         if (handTotal(playerHands[activeHand]) >= 21) {
-          setTimeout(advanceOrResolve, 600);
+          busy = true; setControls('dealer');
+          setTimeout(() => { busy = false; advanceOrResolve(); }, 600);
         }
       } else {
         resolveRound(false);
@@ -1656,7 +1765,7 @@
           renderScore(dealerHand, $dealerScore);
           // Step 2: draw loop after a breath
           setTimeout(() => dealerDrawLoop(cb), 700);
-        }, 800);
+        }, 900);
       }, 400);
     }
 
@@ -1680,6 +1789,8 @@
 
     // ── RESOLVE ───────────────────────────────────────────────────────────────
     function resolveRound(isPlayerBJ) {
+      if (roundSettled) return;
+      roundSettled = true; busy = true;
       setControls("dealer");
       const dealerTotal = handTotal(dealerHand);
 
@@ -1693,11 +1804,8 @@
           stats.hands++; stats.wins++; stats.net += winAmt;
           updateStats(); updateBalanceDisplay('up');
           showResultWithSuspense('BLACKJACK! +$' + winAmt, 'blackjack', 300);
-          setTimeout(() => {
-            bet = 0; updateBetDisplay(); handBets=[0];
-            setControls('bet'); checkZeroBalance();
-          }, 2000);
-        }, 800);
+          setTimeout(endRound, 2000);
+        }, 900);
         return;
       }
 
@@ -1712,12 +1820,8 @@
           stats.net -= lostTotal;
           updateStats(); updateBalanceDisplay('down');
           showResultWithSuspense(`BUST — LOST $${lostTotal}`, 'lose', 200);
-          setTimeout(() => {
-            bet = 0; updateBetDisplay(); handBets=[0];
-            isSplitMode=false; playerHands=[[]]; activeHand=0;
-            phase='over'; setControls('bet'); checkZeroBalance();
-          }, 2000);
-        }, 700);
+          setTimeout(endRound, 2000);
+        }, 900);
         return;
       }
 
@@ -1772,17 +1876,13 @@
         updateStats();
         updateBalanceDisplay(resultType === 'win' ? 'up' : resultType === 'lose' ? 'down' : null);
         showResultWithSuspense(resultText, resultType);
-        setTimeout(() => {
-          bet = 0; updateBetDisplay(); handBets = [0];
-          isSplitMode = false; playerHands = [[]]; activeHand = 0;
-          phase = 'over'; setControls('bet'); checkZeroBalance();
-        }, 2200);
+        setTimeout(endRound, 2200);
       });
     }
 
     // ── ZERO BALANCE ──────────────────────────────────────────────────────────
     function checkZeroBalance() {
-      if (balance === 0) {
+      if (bet === 0 && balance < MIN_CHIP) {
         setTimeout(() => {
           $bustOverlay.classList.add('show');
           setTimeout(() => showModal('zero'), 600);
