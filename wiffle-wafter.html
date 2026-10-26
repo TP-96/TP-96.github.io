@@ -82,32 +82,20 @@
       max-width: 1100px;
       margin: 0 auto;
     }
-    /* HERO WATERMARK SPRING (replaces the old '03' numeral) */
-    .hero-spring-wrap {
+    /* HERO: spring launcher firing a wiffle ball (drawn and animated by the script near the end) */
+    /* placed by script into the clear space beside the title; if there's no room it drops below the details */
+    .hero-launcher {
       position: absolute;
-      right: 4%;
-      top: 50%;
-      transform: translateY(-50%);
-      width: min(18vw, 240px);
-      height: min(28vw, 340px);
+      left: 0; top: 0;
+      width: 400px;
+      aspect-ratio: 400 / 220;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.85;
+      visibility: hidden;
     }
-    .hero-spring-wrap svg { width: 100%; height: 100%; overflow: visible; }
-    .hero-spring-coil {
-      transform-box: fill-box;
-      transform-origin: bottom center;
-      animation: hero-spring-bounce 3s ease-in-out infinite;
-    }
-    @keyframes hero-spring-bounce {
-      0%   { transform: scaleY(1); }
-      80%  { transform: scaleY(1); }
-      88%  { transform: scaleY(0.55); }
-      93%  { transform: scaleY(1.12); }
-      97%  { transform: scaleY(0.97); }
-      100% { transform: scaleY(1); }
-    }
+    .hero-launcher.placed { visibility: visible; }
+    .hero-launcher.stacked { position: static; order: 10; width: min(100%, 340px); margin-top: 2.2rem; align-self: flex-start; }
+    .hero-launcher svg { width: 100%; height: 100%; overflow: visible; display: block; }
 
     .project-hero::after {
       content: '03';
@@ -168,113 +156,6 @@
       stroke-width: 1.2;
       stroke-dasharray: 3 6;
       opacity: 0.22;
-    }
-
-    /* --- LOB LAUNCH (right margin) --- */
-    .wiffle-ball-group {
-      offset-path: path('M 18,138 C 34,66 66,12 105,12 C 141,12 171,66 183,133');
-      offset-rotate: 0deg;
-      animation: fly-ball 5s cubic-bezier(.22,.6,.4,1) infinite;
-      animation-delay: 0.6s;
-      opacity: 0;
-    }
-    .wiffle-ball {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: spin-ball 5s linear infinite;
-      animation-delay: 0.6s;
-    }
-    @keyframes fly-ball {
-      0%    { offset-distance: 0%;   opacity: 0; }
-      3%    { opacity: 0.85; }
-      92%   { opacity: 0.85; }
-      100%  { offset-distance: 100%; opacity: 0; }
-    }
-    @keyframes spin-ball {
-      0%   { opacity: 0; transform: rotate(0deg); }
-      3%   { opacity: 0.85; }
-      92%  { opacity: 0.85; }
-      100% { opacity: 0; transform: rotate(760deg); }
-    }
-    .launch-flash {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: flash-pulse 5s ease-out infinite;
-      animation-delay: 0.5s;
-    }
-    @keyframes flash-pulse {
-      0%   { opacity: 0; transform: scale(0.4); }
-      2%   { opacity: 0.75; transform: scale(1); }
-      10%  { opacity: 0; transform: scale(1.6); }
-      100% { opacity: 0; transform: scale(1.6); }
-    }
-    .dust-puff {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: dust-rise 5s ease-out infinite;
-    }
-    .dust-puff.d1 { animation-delay: 4.6s; }
-    .dust-puff.d2 { animation-delay: 4.65s; }
-    .dust-puff.d3 { animation-delay: 4.7s; }
-    @keyframes dust-rise {
-      0%   { opacity: 0; transform: translateY(0) scale(0.5); }
-      4%   { opacity: 0.45; }
-      20%  { opacity: 0; transform: translateY(-14px) scale(1.3); }
-      100% { opacity: 0; }
-    }
-
-    /* --- SPRING LAUNCH (left margin) --- */
-    .spring-coil {
-      transform-box: fill-box;
-      transform-origin: left center;
-      animation: spring-squash 4.6s cubic-bezier(.4,0,.2,1) infinite;
-    }
-    @keyframes spring-squash {
-      0%   { transform: scaleX(1); }
-      34%  { transform: scaleX(1); }
-      42%  { transform: scaleX(0.4); }
-      50%  { transform: scaleX(0.32); }
-      58%  { transform: scaleX(1.06); }
-      64%  { transform: scaleX(0.98); }
-      70%  { transform: scaleX(1); }
-      100% { transform: scaleX(1); }
-    }
-    .spring-plate {
-      animation: plate-move 4.6s cubic-bezier(.4,0,.2,1) infinite;
-    }
-    @keyframes plate-move {
-      0%   { transform: translateX(0); }
-      34%  { transform: translateX(0); }
-      42%  { transform: translateX(-25px); }
-      50%  { transform: translateX(-30px); }
-      58%  { transform: translateX(-1px); }
-      64%  { transform: translateX(3px); }
-      70%  { transform: translateX(0); }
-      100% { transform: translateX(0); }
-    }
-    .spring-ball {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: spring-ball-fly 4.6s cubic-bezier(.3,0,.15,1) infinite;
-    }
-    @keyframes spring-ball-fly {
-      0%   { transform: translateX(0) rotate(0deg); opacity: 1; }
-      34%  { transform: translateX(0) rotate(0deg); opacity: 1; }
-      50%  { transform: translateX(-3px) rotate(20deg); opacity: 1; }
-      92%  { transform: translateX(-145px) rotate(540deg); opacity: 1; }
-      100% { transform: translateX(-168px) rotate(620deg); opacity: 0; }
-    }
-    .spring-flash {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: spring-flash-pulse 4.6s ease-out infinite;
-    }
-    @keyframes spring-flash-pulse {
-      0%   { opacity: 0; }
-      48%  { opacity: 0; }
-      52%  { opacity: 0.8; transform: scale(1); }
-      62%  { opacity: 0; transform: scale(1.7); }
-      100% { opacity: 0; }
     }
 
     /* CONTENT SECTIONS */
@@ -440,10 +321,6 @@
     /* REVEAL */
     .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
     .reveal.visible { opacity: 1; transform: none; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .wiffle-ball { animation: none; opacity: 1; offset-distance: 40%; }
-    }
 
     @media (max-width: 900px) {
       nav { padding: 1.15rem 1.4rem; }
@@ -708,16 +585,8 @@ footer{
 
   <!-- HERO -->
   <div class="project-hero">
-    <div class="hero-spring-wrap">
-      <svg viewBox="0 0 160 260" preserveAspectRatio="xMidYMid meet">
-        <!-- fixed base mount at the bottom -->
-        <rect x="55" y="240" width="50" height="14" rx="4" fill="none" stroke="var(--gold)" stroke-width="2" opacity="0.35"/>
-        <!-- coil, anchored at the bottom, compresses upward -->
-        <g class="hero-spring-coil">
-          <path d="M 80,240 L 105,226 L 55,212 L 105,198 L 55,184 L 105,170 L 55,156 L 105,142 L 55,128 L 105,114 L 80,100"
-                fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
-        </g>
-      </svg>
+    <div class="hero-launcher" aria-hidden="true">
+      <svg id="launcher-svg" viewBox="0 0 400 220"></svg>
     </div>
     <div class="project-eyebrow">Project 03 — Assistive Technology / Mechanical Design</div>
     <h1>Wiffle<br><span>Wafter</span></h1>
@@ -1025,108 +894,236 @@ footer{
 
   
   <script>
-  (function(){
+  // Hero animation: the Wiffle Wafter firing. The handle is pulled back, compressing the spring
+  // inside the barrel; on release the spring snaps the plate forward and the ball leaves the muzzle,
+  // flies a true projectile arc, bounces once and rolls to a stop. Then it reloads and repeats.
+  (function () {
     'use strict';
-    var c = document.getElementById('fx-container');
-    if (!c) return;
+    var svg = document.getElementById('launcher-svg');
+    if (!svg) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var GOLD = '#B08D57', NAVY = '#0F2A4A', INK = '#12151C', CREAM = '#fbf7ee';
 
-    // Only render these scenes when there's real margin space beside the
-    // content column, so they stay tucked in the gutters and never sit
-    // under text. Content column caps out well under 1200px in practice.
-    var MIN_VIEWPORT = 1400;
+    // ── geometry (viewBox units) ──
+    var GROUND = 200, R = 9;                       // ground line, ball radius
+    var BX = 50, BY = 150;                         // rear end of the barrel (raised on its stand)
+    var TH = 50 * Math.PI / 180;                   // barrel elevation
+    var ux = Math.cos(TH), uy = -Math.sin(TH);     // along the barrel (SVG y points down)
+    var nx = -uy, ny = ux;                         // across the barrel
+    var LEN = 120, HALF = 13;                      // barrel length, half-width
+    var REST = 92, PULL = 40;                      // plate position at rest / pulled back
+    var at = function (s, o) { return [BX + ux * s + nx * (o || 0), BY + uy * s + ny * (o || 0)]; };
 
-    var lobHTML =
-      '<svg viewBox="0 0 200 180" width="200" height="180" style="overflow:visible;">' +
-        '<line class="ground-line" x1="0" y1="150" x2="200" y2="150" />' +
-        '<path class="flight-path" d="M 18,138 C 34,66 66,12 105,12 C 141,12 171,66 183,133" />' +
-        '<g class="fx-launcher-body" transform="translate(18,138)">' +
-          '<rect x="-5" y="-26" width="10" height="30" rx="3" transform="rotate(-58)" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.2"/>' +
-          '<rect x="-7" y="0" width="14" height="5" rx="1.5" fill="var(--navy)" opacity="0.45"/>' +
-        '</g>' +
-        '<g transform="translate(183,145)">' +
-          '<circle class="dust-puff d1" r="2.6" cx="-3.5" cy="0" fill="var(--gold)" />' +
-          '<circle class="dust-puff d2" r="2" cx="3" cy="-1.5" fill="var(--gold)" />' +
-          '<circle class="dust-puff d3" r="2.3" cx="0" cy="2" fill="var(--gold)" />' +
-        '</g>' +
-        '<circle class="launch-flash" cx="18" cy="138" r="6" fill="var(--gold)" opacity="0" />' +
-        '<g class="wiffle-ball-group">' +
-          '<g class="wiffle-ball">' +
-            '<circle r="5" fill="var(--surface)" stroke="var(--navy)" stroke-width="1"/>' +
-            '<circle r="1" cx="-2" cy="-2" fill="var(--navy)" opacity="0.45"/>' +
-            '<circle r="1" cx="2.2" cy="-1.6" fill="var(--navy)" opacity="0.45"/>' +
-            '<circle r="1" cx="0" cy="2.4" fill="var(--navy)" opacity="0.45"/>' +
-            '<circle r="1" cx="-2.4" cy="1.2" fill="var(--navy)" opacity="0.3"/>' +
-            '<circle r="1" cx="2.6" cy="1.4" fill="var(--navy)" opacity="0.3"/>' +
-          '</g>' +
-        '</g>' +
-      '</svg>';
+    // ── projectile: chosen so the arc peaks ~50 units above the muzzle and lands in frame ──
+    var G = 400, H = 40;
+    var VY0 = Math.sqrt(2 * G * H), VX0 = VY0 / Math.tan(TH);
 
-    var springHTML =
-      '<svg viewBox="0 0 200 100" width="200" height="100" style="overflow:visible;">' +
-        '<line class="ground-line" x1="0" y1="76" x2="200" y2="76" />' +
-        // fixed wall / mount
-        '<rect x="0" y="44" width="9" height="32" rx="1.5" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.1" />' +
-        // barrel guide (static)
-        '<rect x="9" y="56" width="144" height="9" rx="4" fill="none" stroke="var(--border)" stroke-width="1.1" />' +
-        // spring coil, compresses on release
-        '<g class="spring-coil" transform="translate(9,60)">' +
-          '<path d="M 0,0 L 4,-5 L 9,5 L 14,-5 L 19,5 L 24,-5 L 29,5 L 34,-5 L 39,5 L 44,-5 L 49,5 L 53,0" ' +
-                'fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />' +
-        '</g>' +
-        // plate that pushes the ball
-        '<g class="spring-plate" transform="translate(61,60)">' +
-          '<rect x="-2" y="-6" width="4" height="12" rx="1.2" fill="var(--navy)" opacity="0.55" />' +
-        '</g>' +
-        // release flash
-        '<circle class="spring-flash" cx="61" cy="60" r="6" fill="var(--gold)" opacity="0" />' +
-        // ball launched off the plate
-        '<g class="spring-ball" transform="translate(70,60)">' +
-          '<circle r="4.5" fill="var(--surface)" stroke="var(--navy)" stroke-width="1"/>' +
-          '<circle r="0.9" cx="-1.8" cy="-1.8" fill="var(--navy)" opacity="0.45"/>' +
-          '<circle r="0.9" cx="1.9" cy="-1.4" fill="var(--navy)" opacity="0.45"/>' +
-          '<circle r="0.9" cx="0" cy="2.2" fill="var(--navy)" opacity="0.45"/>' +
-          '<circle r="0.9" cx="-2.2" cy="1.1" fill="var(--navy)" opacity="0.3"/>' +
-          '<circle r="0.9" cx="2.3" cy="1.3" fill="var(--navy)" opacity="0.3"/>' +
-        '</g>' +
-      '</svg>';
+    // ── timeline (seconds) ──
+    var T_LOAD = 0.35, T_PULLED = 1.45, T_RELEASE = 1.85, T_SNAP = 0.07, LOOP = 4.8;
 
-    // Content column caps at 1100px; anything beyond that is open gutter.
-    var CONTENT_WIDTH = 1100;
-    var MIN_GUTTER = 90;   // smallest gutter we're willing to draw into
-    var NATIVE_W = 200;    // native width the scene art is drawn at
+    function el(tag, attrs, parent) {
+      var e = document.createElementNS(NS, tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      (parent || svg).appendChild(e);
+      return e;
+    }
+    var line = function (a, b, attrs, p) { attrs.x1 = a[0]; attrs.y1 = a[1]; attrs.x2 = b[0]; attrs.y2 = b[1]; return el('line', attrs, p); };
 
-    var scenes = [];
+    // static scene
+    el('line', { x1: 8, y1: GROUND, x2: 396, y2: GROUND, stroke: GOLD, 'stroke-width': 1.2, opacity: 0.45 });
+    // dotted flight path (where the ball will go)
+    (function () {
+      var x0 = at(103)[0], y0 = at(103)[1], d = '', t;
+      for (t = 0; ; t += 0.02) {
+        var x = x0 + VX0 * t, y = y0 - VY0 * t + 0.5 * G * t * t;
+        if (y > GROUND - R) break;
+        d += (d ? ' L ' : 'M ') + x.toFixed(1) + ',' + y.toFixed(1);
+      }
+      el('path', { d: d, fill: 'none', stroke: GOLD, 'stroke-width': 1, 'stroke-dasharray': '2 6', opacity: 0.35 });
+    })();
+    // stand: the cup-holder mount under the barrel
+    var m1 = at(26, HALF), m2 = at(54, HALF);
+    el('path', { d: 'M ' + m1 + ' L ' + (m1[0] - 4) + ',' + (GROUND - 10) + ' L ' + (m2[0] + 10) + ',' + (GROUND - 10) + ' L ' + m2 + ' Z',
+      fill: CREAM, stroke: GOLD, 'stroke-width': 1.3, 'stroke-linejoin': 'round', opacity: 0.9 });
+    el('rect', { x: m1[0] - 12, y: GROUND - 10, width: (m2[0] + 10) - (m1[0] - 12) + 8, height: 10, rx: 2, fill: CREAM, stroke: GOLD, 'stroke-width': 1.3, opacity: 0.9 });
 
-    function mount() {
-      c.innerHTML = '';
-      scenes = [];
+    // moving parts
+    var handleGrp = el('g', {});
+    var cord = el('line', { stroke: INK, 'stroke-width': 1.1, opacity: 0.55 }, handleGrp);
+    var handle = el('line', { stroke: NAVY, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.85 }, handleGrp);
+    var coil = el('polyline', { fill: 'none', stroke: GOLD, 'stroke-width': 1.8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
+    var plate = el('line', { stroke: NAVY, 'stroke-width': 3.5, 'stroke-linecap': 'round', opacity: 0.85 });
+    // the ball: white with wiffle holes, drawn in its own group so it can spin
+    var ball = el('g', {});
+    el('circle', { r: R, fill: CREAM, stroke: NAVY, 'stroke-width': 1.2 }, ball);
+    [[-3.6, -3.4], [3.4, -3], [0, 4.4], [-4.2, 2.2], [4.4, 2.4], [0, -0.4]].forEach(function (h, i) {
+      el('ellipse', { cx: h[0], cy: h[1], rx: 1.7, ry: 1.3, fill: NAVY, opacity: i === 5 ? 0.25 : 0.4 }, ball);
+    });
+    // barrel walls drawn over the coil (cut-away PVC tube) + end caps
+    var wallA = [at(0, -HALF), at(LEN, -HALF)], wallB = [at(0, HALF), at(LEN, HALF)];
+    el('path', { d: 'M ' + wallA[0] + ' L ' + wallA[1] + ' L ' + wallB[1] + ' L ' + wallB[0] + ' Z', fill: GOLD, opacity: 0.07 });
+    line(wallA[0], wallA[1], { stroke: GOLD, 'stroke-width': 2, 'stroke-linecap': 'round' });
+    line(wallB[0], wallB[1], { stroke: GOLD, 'stroke-width': 2, 'stroke-linecap': 'round' });
+    line(at(0, -HALF - 2), at(0, HALF + 2), { stroke: GOLD, 'stroke-width': 3.2, 'stroke-linecap': 'round' });
+    line(at(LEN, -HALF - 2.5), at(LEN, -HALF + 1.5), { stroke: GOLD, 'stroke-width': 3, 'stroke-linecap': 'round' });
+    line(at(LEN, HALF - 1.5), at(LEN, HALF + 2.5), { stroke: GOLD, 'stroke-width': 3, 'stroke-linecap': 'round' });
+    var puff = el('circle', { r: 6, fill: GOLD, opacity: 0 });
+    var dust = [0, 1, 2].map(function () { return el('circle', { r: 2.4, fill: GOLD, opacity: 0 }); });
 
-      var gutter = (window.innerWidth - CONTENT_WIDTH) / 2 - 24;
-      if (gutter < MIN_GUTTER) return;
+    var easeInOut = function (t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; };
+    var clamp01 = function (t) { return Math.max(0, Math.min(1, t)); };
 
-      var scale = Math.min(1, gutter / NATIVE_W);
-
-      // Lob-arc scene tucked in the right gutter, mid-page.
-      var lob = document.createElement('div');
-      lob.className = 'fx-scene';
-      lob.style.cssText = 'right:14px;top:36vh;opacity:0.6;transform:scale(' + scale + ');transform-origin:top right;';
-      lob.innerHTML = lobHTML;
-      c.appendChild(lob);
-
-      // Spring-launch scene tucked in the left gutter, further down the page.
-      var spring = document.createElement('div');
-      spring.className = 'fx-scene';
-      spring.style.cssText = 'left:14px;top:130vh;opacity:0.6;transform:scale(' + scale + ');transform-origin:top left;';
-      spring.innerHTML = springHTML;
-      c.appendChild(spring);
+    function drawCoil(plateS) {
+      var start = 5, end = plateS - 2.5, turns = 9, pts = [];
+      pts.push(at(start, 0));
+      for (var i = 0; i <= turns * 2; i++) {
+        var s = start + (end - start) * (i + 0.5) / (turns * 2 + 1);
+        pts.push(at(s, i % 2 ? 9 : -9));
+      }
+      pts.push(at(end, 0));
+      coil.setAttribute('points', pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '));
     }
 
-    mount();
-    var resizeTimer;
-    window.addEventListener('resize', function(){
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(mount, 200);
+    // ball state after it leaves the barrel, simulated from the release so the motion is real physics
+    var flight = null;
+    function simulate(dt) {
+      var b = flight;
+      if (b.rolling) {
+        b.vx = Math.max(0, b.vx - 260 * dt);
+      } else {
+        b.vy += G * dt;
+      }
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      b.spin += b.vx * dt / R;
+      if (!b.rolling && b.y >= GROUND - R) {
+        b.y = GROUND - R;
+        if (b.bounces === 0) {
+          b.vy = -b.vy * 0.32; b.vx *= 0.55; b.bounces = 1; b.landX = b.x; b.landT = b.t;
+        } else { b.vy = 0; b.rolling = true; }
+      }
+      b.t += dt;
+    }
+
+    function frame(time) {
+      var p = time % LOOP;
+      var plateS = REST, ballVisible = 1, bx, by, rot = 0;
+
+      if (p < T_LOAD) {                                   // fresh ball rolls into the muzzle
+        flight = null;
+        var k = easeInOut(p / T_LOAD);
+        var s = REST + 11 + (1 - k) * 14;
+        bx = at(s)[0]; by = at(s)[1]; ballVisible = k;
+      } else if (p < T_RELEASE) {                         // pull the handle back, hold
+        var pull = easeInOut(clamp01((p - T_LOAD) / (T_PULLED - T_LOAD)));
+        plateS = REST - (REST - PULL) * pull;
+        if (p > T_PULLED) plateS += Math.sin(p * 90) * 0.5;   // straining at full compression
+        bx = at(plateS + 11)[0]; by = at(plateS + 11)[1];
+      } else {
+        var tr = p - T_RELEASE;
+        if (tr < T_SNAP) {                               // spring snaps the plate forward
+          var q = tr / T_SNAP; q = q * q;
+          plateS = PULL + (REST - PULL) * q;
+          bx = at(plateS + 11)[0]; by = at(plateS + 11)[1];
+        } else {
+          var te = tr - T_SNAP;                          // spring rings down after release
+          plateS = REST + 7 * Math.exp(-7 * te) * Math.sin(32 * te);
+          if (!flight) {
+            var st = at(REST + 11);
+            flight = { x: st[0], y: st[1], vx: VX0, vy: -VY0, t: 0, spin: 0, bounces: 0, rolling: false, last: te };
+          }
+          var steps = Math.min(40, Math.ceil((te - flight.last) / 0.004));
+          var h = (te - flight.last) / Math.max(1, steps);
+          for (var i = 0; i < steps; i++) simulate(h);
+          flight.last = te;
+          bx = flight.x; by = flight.y; rot = flight.spin;
+          ballVisible = p > LOOP - 0.45 ? (LOOP - p) / 0.45 : 1;
+        }
+        // muzzle puff and landing dust
+        var pf = clamp01((tr - T_SNAP) / 0.35), muz = at(LEN + 6);
+        puff.setAttribute('cx', muz[0]); puff.setAttribute('cy', muz[1]);
+        puff.setAttribute('r', 5 + pf * 12); puff.setAttribute('opacity', tr > T_SNAP ? (0.45 * (1 - pf)).toFixed(3) : 0);
+        if (flight && flight.landX !== undefined) {
+          var dt2 = clamp01((flight.t - flight.landT) / 0.5);
+          dust.forEach(function (d, j) {
+            d.setAttribute('cx', flight.landX + (j - 1) * 6 * (1 + dt2));
+            d.setAttribute('cy', GROUND - 2 - dt2 * (6 + j * 3));
+            d.setAttribute('opacity', (0.5 * (1 - dt2)).toFixed(3));
+          });
+        } else dust.forEach(function (d) { d.setAttribute('opacity', 0); });
+      }
+      if (p < T_RELEASE) { puff.setAttribute('opacity', 0); dust.forEach(function (d) { d.setAttribute('opacity', 0); }); }
+
+      drawCoil(plateS);
+      var pa = at(plateS, -HALF + 2), pb = at(plateS, HALF - 2);
+      plate.setAttribute('x1', pa[0]); plate.setAttribute('y1', pa[1]); plate.setAttribute('x2', pb[0]); plate.setAttribute('y2', pb[1]);
+      var hs = plateS - 98;                                 // T-handle on a cord through the rear cap
+      var c0 = at(plateS), c1 = at(hs), h0 = at(hs, -7), h1 = at(hs, 7);
+      cord.setAttribute('x1', c0[0]); cord.setAttribute('y1', c0[1]); cord.setAttribute('x2', c1[0]); cord.setAttribute('y2', c1[1]);
+      handle.setAttribute('x1', h0[0]); handle.setAttribute('y1', h0[1]); handle.setAttribute('x2', h1[0]); handle.setAttribute('y2', h1[1]);
+      ball.setAttribute('transform', 'translate(' + bx.toFixed(2) + ',' + by.toFixed(2) + ') rotate(' + (rot * 57.3).toFixed(1) + ')');
+      ball.setAttribute('opacity', ballVisible.toFixed(3));
+    }
+
+    // reduced motion: a single still frame, spring compressed and ready to fire
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { frame(1.6); return; }
+
+    // run only while the header is on screen
+    var running = false, t0 = null, offset = 0;
+    function loop(now) {
+      if (!running) return;
+      if (t0 === null) t0 = now;
+      frame(offset + (now - t0) / 1000);
+      requestAnimationFrame(loop);
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && !running) { running = true; t0 = null; requestAnimationFrame(loop); }
+        else if (!e.isIntersecting && running) { running = false; }
+      });
     });
+    io.observe(svg);
+    frame(0.01);
+
+    // ── placement: measure where the header's text actually is and fit beside the title ──
+    var wrap = svg.parentNode, hero = wrap.parentNode;
+    function layout() {
+      wrap.classList.remove('stacked');
+      var hr = hero.getBoundingClientRect(), h1 = hero.querySelector('h1');
+      if (!h1) return;
+      var t = h1.getBoundingClientRect(), rects = [];
+      var walker = document.createTreeWalker(hero, NodeFilter.SHOW_TEXT), n;
+      while ((n = walker.nextNode())) {
+        if (!n.textContent.trim() || wrap.contains(n)) continue;
+        var rg = document.createRange(); rg.selectNodeContents(n);
+        var list = rg.getClientRects();
+        for (var i = 0; i < list.length; i++) rects.push({ top: list[i].top - hr.top, bottom: list[i].bottom - hr.top, right: list[i].right - hr.left });
+      }
+      var padR = parseFloat(getComputedStyle(hero).paddingRight) || 24;
+      var x1 = hr.width - Math.min(padR, 40), W = 400, top = 0, ok = false;
+      for (var it = 0; it < 8; it++) {
+        var Hh = W * 0.55;
+        top = Math.max(8, (t.top - hr.top) + (t.height - Hh) / 2);   // centred on the title
+        var maxR = 0;
+        rects.forEach(function (r) { if (r.bottom > top - 14 && r.top < top + Hh + 14) maxR = Math.max(maxR, r.right); });
+        var avail = x1 - (maxR + 32);
+        if (avail >= W - 0.5) { ok = true; break; }
+        W = Math.min(400, avail);
+        if (W < 170) break;
+      }
+      if (ok) {
+        wrap.style.left = (x1 - W) + 'px'; wrap.style.top = top + 'px'; wrap.style.width = W + 'px';
+      } else {
+        wrap.style.left = wrap.style.top = wrap.style.width = '';
+        wrap.classList.add('stacked');
+      }
+      wrap.classList.add('placed');
+    }
+    layout();
+    var rt;
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(layout, 120); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    window.addEventListener('load', layout);
+    window.__launcherFrame = frame;   // lets a test render any moment of the cycle
   })();
   </script>
 <script>
