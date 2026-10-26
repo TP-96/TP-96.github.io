@@ -4,6 +4,57 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tanmay's Portfolio</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+/* motion.css — background mechanisms (spur gear train, herringbone pair) and the flying planes.
+   Shared by every page; each page includes only the containers it wants. */
+
+/* ═══ MECHANISMS — spur train (top right), herringbone pair (bottom left) ═══ */
+.mech{
+  position:fixed;pointer-events:none;z-index:-1;
+  opacity:0;animation:gearIn 1.6s .3s ease-out forwards;
+}
+.mech svg{display:block;width:100%;height:auto;overflow:visible}
+#gear-container{
+  top:calc(78px + clamp(12px,2.5vw,36px));right:clamp(14px,3vw,48px);
+  width:clamp(170px,19vw,280px);
+  animation:gearIn 1.6s .3s ease-out forwards, gearDrift 36s ease-in-out infinite alternate;
+}
+#herring-container{
+  left:clamp(14px,3vw,48px);bottom:clamp(14px,3vw,48px);
+  width:clamp(72px,7.5vw,118px);
+  animation:gearIn 1.6s .5s ease-out forwards, herringDrift 28s ease-in-out infinite alternate;
+  transform-origin:50% 50%;
+}
+@keyframes gearIn{to{opacity:1}}
+/* the spur train wanders a loose loop around its corner */
+@keyframes gearDrift{
+  0%  {transform:translate(0,0)}
+  25% {transform:translate(-6vw,5vh)}
+  50% {transform:translate(-14vw,2vh)}
+  75% {transform:translate(-8vw,-1vh)}
+  100%{transform:translate(-2vw,3vh)}
+}
+/* the herringbone pair rocks back and forth while it drifts */
+@keyframes herringDrift{
+  0%  {transform:translate(0,0) rotate(0deg)}
+  25% {transform:translate(2vw,-3vh) rotate(-14deg)}
+  50% {transform:translate(4vw,-6vh) rotate(4deg)}
+  75% {transform:translate(2vw,-4vh) rotate(16deg)}
+  100%{transform:translate(1vw,-1vh) rotate(-6deg)}
+}
+@media(max-width:768px){
+  .mech{opacity:.8;animation:none}
+  #gear-container{top:100px;width:36vw;animation:gearDrift 36s ease-in-out infinite alternate}
+  #herring-container{width:15vw;animation:herringDrift 28s ease-in-out infinite alternate}
+}
+@media(prefers-reduced-motion:reduce){.mech,#gear-container,#herring-container{animation:none;opacity:1}}
+
+/* ═══ PLANE ═══ */
+#plane-container{position:fixed;inset:0;pointer-events:none;z-index:-1}
+#plane-container svg{display:block;width:100%;height:100%;overflow:visible}
+</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -20,35 +71,12 @@ body{
 ::selection{background:rgba(15,42,74,.2);color:#fff}
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:#f0ece5}
-::-webkit-scrollbar-thumb{background:#c5c0b8;border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(15,42,74,.28);border-radius:0}
 
 :focus-visible{outline:2px solid #12151C;outline-offset:3px}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.15);opacity:.55}}
-
-#gear-container{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-#gear-container svg{position:fixed;pointer-events:none;opacity:1}
-#gear-container .gear-g{transform-box:fill-box;transform-origin:center center}
-
-/* ═══ PLANE ═══ */
-#plane-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:hidden}
-.plane-wrap{
-  position:absolute;top:0;left:-12%;
-  will-change:transform;
-}
-.plane-body{
-  position:relative;
-  will-change:transform;
-  transform-origin:50% 50%;
-}
-.plane-trail{
-  position:absolute;right:100%;top:50%;
-  width:140px;height:2px;
-  transform:translateY(-50%);
-  background:linear-gradient(to left,rgba(176,141,87,.35),transparent);
-}
-.plane-icon{display:block;filter:drop-shadow(0 2px 4px rgba(8,15,42,.15))}
 
 /* ═══ NAV ═══ */
 nav{
@@ -74,16 +102,20 @@ nav{
 }
 .nav-links{margin-left:auto;display:flex;align-items:center;list-style:none;gap:.4rem}
 .nav-links a{
-  font-family:'Crimson Pro',Georgia,serif;font-size:.95rem;font-weight:400;
-  color:rgba(28,26,24,.55);text-decoration:none;
-  padding:.4rem .9rem;border-radius:9999px;transition:all .2s;
+  font-family:'Crimson Pro',Georgia,serif;font-size:1rem;font-weight:400;
+  color:rgba(28,26,24,.6);text-decoration:none;
+  padding:.35rem .85rem;
+  background-image:linear-gradient(#B08D57,#B08D57);background-repeat:no-repeat;
+  background-size:0 1px;background-position:50% 100%;
+  transition:color .2s,background-size .3s;
 }
-.nav-links a:hover{color:#080F2A;background:rgba(15,42,74,.06)}
+.nav-links a:hover{color:#080F2A;background-size:calc(100% - 1.7rem) 1px}
 .cta-nav{
-  font-weight:500;
-  color:#faf8f0 !important;background:#12151C;
+  font-weight:600;color:#080F2A !important;
+  background-size:calc(100% - 1.7rem) 1px !important;
+  background-image:linear-gradient(#12151C,#12151C) !important;
 }
-.cta-nav:hover{background:#173a63;color:#faf8f0 !important}
+.cta-nav:hover{background-image:linear-gradient(#B08D57,#B08D57) !important}
 
 /* ═══ HERO ═══ */
 .hero{
@@ -92,18 +124,7 @@ nav{
   text-align:center;
   padding:8rem 3rem 5rem;position:relative;max-width:1280px;margin:0 auto;width:100%;
 }
-.hero-glow{
-  position:absolute;top:-15%;right:-8%;width:620px;height:620px;
-  background:radial-gradient(circle,rgba(15,42,74,.06),transparent 70%);
-  pointer-events:none;z-index:-1;
-  animation:pulse 9s ease-in-out infinite;
-}
-.hero-glow-2{
-  position:absolute;bottom:-15%;left:-8%;width:460px;height:460px;
-  background:radial-gradient(circle,rgba(15,42,74,.04),transparent 70%);
-  pointer-events:none;z-index:-1;
-  animation:pulse 11s ease-in-out infinite;animation-delay:2s;
-}
+.hero-glow,.hero-glow-2{display:none}
 .hero-label{
   display:inline-flex;align-items:center;gap:.6rem;
   font-size:.78rem;font-weight:600;color:#080F2A;
@@ -143,132 +164,118 @@ nav{
 .hero-cta{
   display:inline-flex;align-items:center;gap:.6rem;width:fit-content;
   font-family:'JetBrains Mono',monospace;font-weight:500;
-  font-size:.88rem;color:#faf8f0;text-decoration:none;
-  padding:.9rem 1.7rem;border-radius:9999px;
-  background:#12151C;
-  transition:all .25s;
+  font-size:.92rem;color:#080F2A;text-decoration:none;
+  padding:0 0 .35rem;border-bottom:2px solid #12151C;
+  transition:gap .3s,border-color .3s,color .3s;
   opacity:0;animation:fadeUp .8s .6s forwards;
 }
-.hero-cta:hover{background:#173a63;gap:.85rem;transform:translateY(-1px)}
+.hero-cta:hover{gap:.85rem;border-color:#B08D57}
 .hero-cta .arr{display:inline-block;transition:transform .3s}
 .hero-cta:hover .arr{transform:translateX(4px)}
 
 /* ═══ SECTIONS ═══ */
 .section{padding:6.5rem 3rem;max-width:1180px;margin:0 auto}
-.section-header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.7rem;margin-bottom:3.2rem}
+.section-header{
+  display:flex;align-items:baseline;gap:1.4rem;margin-bottom:2.6rem;
+  opacity:0;animation:fadeUp .7s forwards;
+}
 .section-number{
-  font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;
-  color:#080F2A;opacity:.6;letter-spacing:.05em;order:1;
+  font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:500;
+  color:#B08D57;letter-spacing:.08em;
 }
 .section-title{
-  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:2.9rem;
-  line-height:1;color:#080F2A;letter-spacing:0em;order:2;
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:3.1rem;
+  line-height:1;color:#080F2A;
 }
-.section-rule{width:64px;height:2px;background:#12151C;opacity:.18;order:3;margin-top:.3rem}
+.section-rule{flex:1;height:1px;background:rgba(15,42,74,.22);align-self:center;margin-top:.6rem}
 
 /* ═══ STATS BAR ═══ */
 .stats-bar{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;
-  padding:3.5rem 3rem;max-width:1180px;margin:0 auto;
-  border-top:1px solid rgba(15,42,74,.1);
-  border-bottom:1px solid rgba(15,42,74,.1);
+  display:grid;grid-template-columns:repeat(3,1fr);column-gap:3rem;
+  max-width:1180px;margin:0 auto;padding:1rem 3rem 3.5rem;
 }
 .stat-item{
-  text-align:center;padding:0 1rem;
+  text-align:left;padding:1.6rem 0 0;
+  border-top:2px solid #12151C;
   opacity:0;animation:fadeUp .8s forwards;
-  border-left:1px solid rgba(15,42,74,.08);
 }
-.stat-item:first-child{border-left:none}
 .stat-item:nth-child(1){animation-delay:.05s}
 .stat-item:nth-child(2){animation-delay:.15s}
 .stat-item:nth-child(3){animation-delay:.25s}
 .stat-num{
-  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:clamp(2.4rem,5vw,3.4rem);
-  line-height:1;color:#080F2A;margin-bottom:.5rem;
+  font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;font-size:clamp(2.8rem,5vw,3.8rem);
+  line-height:1;color:#080F2A;margin-bottom:.8rem;
 }
 .stat-label{
-  font-size:.74rem;color:rgba(28,26,24,.45);
-  font-family:'JetBrains Mono',monospace;letter-spacing:.02em;
-  max-width:180px;margin:0 auto;line-height:1.5;
+  font-size:.76rem;color:rgba(28,26,24,.6);
+  font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.02em;
+  max-width:22ch;line-height:1.6;
 }
 
-/* ═══ PROJECT CARDS — alternating showcase ═══ */
+/* ═══ PROJECT LIST — ruled editorial index ═══ */
 .projects-grid{
-  display:flex;flex-direction:column;gap:1.5rem;
+  display:flex;flex-direction:column;
+  border-top:2px solid #12151C;
 }
 .project-card{
   text-decoration:none;color:#080F2A;
   position:relative;
-  display:grid;grid-template-columns:1fr 1.15fr;gap:3.5rem;align-items:center;
-  padding:2.75rem 2.75rem;
-  border:1px solid rgba(15,42,74,.14);border-radius:18px;
-  background:rgba(15,42,74,.035);
+  display:grid;grid-template-columns:4rem minmax(0,1fr) auto;
+  column-gap:2.5rem;align-items:start;
+  padding:2.75rem 0 2.6rem;
+  border-bottom:1px solid rgba(15,42,74,.22);
   opacity:0;animation:fadeUp .7s forwards;
-  transition:all .35s cubic-bezier(.2,.8,.2,1);
 }
-.project-card:first-child{padding-top:2.75rem}
-.project-card:last-child{padding-bottom:2.75rem}
 .project-card:nth-child(1){animation-delay:.08s}
 .project-card:nth-child(2){animation-delay:.18s}
 .project-card:nth-child(3){animation-delay:.28s}
 
-/* alternate sides: even rows flip visual/body via order */
-.project-visual{order:1}
-.project-body{order:2;min-width:0}
-.project-card:nth-child(even) .project-visual{order:2}
-.project-card:nth-child(even) .project-body{order:1}
-
-.project-card:hover{
-  border-color:rgba(15,42,74,.35);
-  background:rgba(15,42,74,.07);
-  box-shadow:0 18px 36px -20px rgba(15,42,74,.18);
-  transform:translateY(-2px);
-}
-
-.project-visual{
-  display:flex;flex-direction:column;
-  align-items:flex-start;justify-content:center;gap:1.4rem;
-}
-.project-card:nth-child(even) .project-visual{align-items:flex-end;text-align:right}
 .project-num{
-  font-family:'Playfair Display',Georgia,serif;font-weight:600;font-style:italic;
-  font-size:clamp(4.5rem,9vw,7.5rem);line-height:.85;
-  color:rgba(15,42,74,.13);transition:color .4s ease,transform .4s ease;
+  font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:500;
+  letter-spacing:.08em;color:#B08D57;padding-top:.7rem;
+  transition:color .25s;
 }
-.project-card:hover .project-num{color:rgba(15,42,74,.3);transform:translateX(4px)}
-.project-card:nth-child(even):hover .project-num{transform:translateX(-4px)}
-.project-visual-rule{width:64px;height:2px;background:#12151C;opacity:.16}
+.project-card:hover .project-num{color:#080F2A}
+
+.project-body{min-width:0;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.project-card:hover .project-body{transform:translateX(6px)}
 
 .project-tag{
   font-family:'JetBrains Mono',monospace;font-size:.66rem;font-weight:500;
-  color:rgba(28,26,24,.4);text-transform:uppercase;letter-spacing:.08em;
-  margin-bottom:.6rem;
+  color:rgba(28,26,24,.5);text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:.75rem;
 }
 .project-title{
   font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;
-  font-size:clamp(1.7rem,3vw,2.15rem);
-  line-height:1.15;margin-bottom:.8rem;color:#080F2A;text-align:left;
+  font-size:clamp(1.9rem,3.4vw,2.7rem);
+  line-height:1.08;margin-bottom:1rem;color:#080F2A;text-align:left;
+  text-decoration:underline;text-decoration-thickness:1px;
+  text-underline-offset:.22em;text-decoration-color:transparent;
+  transition:text-decoration-color .3s;
 }
+.project-card:hover .project-title{text-decoration-color:#B08D57}
 .project-desc{
-  font-size:.96rem;color:rgba(28,26,24,.58);line-height:1.7;margin-bottom:1.3rem;
-  max-width:560px;
+  font-size:1rem;color:rgba(28,26,24,.64);line-height:1.7;margin-bottom:1.2rem;
+  max-width:62ch;
 }
-.project-pills{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.3rem}
+.project-pills{display:block;line-height:2}
 .project-pill{
-  font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:500;
-  color:#080F2A;background:rgba(15,42,74,.06);
-  padding:.28rem .7rem;border-radius:9999px;
-  border:1px solid rgba(15,42,74,.1);
-  text-transform:uppercase;letter-spacing:.03em;
+  display:inline;white-space:nowrap;
+  font-family:'JetBrains Mono',monospace;font-size:.64rem;font-weight:500;
+  color:rgba(28,26,24,.55);text-transform:uppercase;letter-spacing:.06em;
+}
+.project-pill:not(:last-child)::after{
+  content:'/';margin:0 .55rem;color:#B08D57;
 }
 .project-arrow{
+  align-self:end;white-space:nowrap;
   display:inline-flex;align-items:center;gap:.5rem;
   font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:500;
-  color:rgba(15,42,74,.5);
-  border-bottom:1px solid rgba(15,42,74,.25);padding-bottom:.2rem;
-  transition:all .3s;width:fit-content;
+  color:#080F2A;
+  border-bottom:1px solid rgba(15,42,74,.35);padding-bottom:.2rem;
+  transition:gap .3s,border-color .3s;
 }
-.project-card:hover .project-arrow{color:#080F2A;border-color:#12151C;gap:.7rem}
+.project-card:hover .project-arrow{border-color:#B08D57;gap:.75rem}
 .project-arrow .arr-ic{display:inline-block;transition:transform .3s}
 .project-card:hover .project-arrow .arr-ic{transform:translate(3px,-3px)}
 
@@ -292,28 +299,39 @@ nav{
   transition:all .3s;
 }
 .about-link:hover{border-color:#12151C;gap:.65rem}
+/* Details — ruled spec list, same language as the project index */
 .about-details{
-  display:flex;flex-direction:column;gap:0;
-  background:rgba(15,42,74,.035);border-radius:16px;
-  border:1px solid rgba(15,42,74,.09);box-shadow:0 1px 2px rgba(15,42,74,.03);
-  overflow:hidden;
+  border-top:2px solid #12151C;
   opacity:0;animation:fadeUp .7s .38s forwards;
 }
-.about-row{display:flex;gap:1rem;padding:1.15rem 1.7rem;border-bottom:1px solid rgba(15,42,74,.07);align-items:baseline}
-.about-row:last-child{border-bottom:none}
-.about-row .lbl{
-  font-family:'JetBrains Mono',monospace;font-size:.66rem;font-weight:600;
-  color:rgba(15,42,74,.5);text-transform:uppercase;letter-spacing:.08em;
-  min-width:80px;flex-shrink:0;
+.about-row{
+  display:grid;grid-template-columns:6.5rem minmax(0,1fr);column-gap:1.25rem;
+  align-items:baseline;
+  padding:1rem 0 .95rem;
+  border-bottom:1px solid rgba(15,42,74,.22);
 }
-.about-row .val{font-size:.92rem;color:rgba(28,26,24,.75);font-weight:500;text-align:right;margin-left:auto}
-.about-row .val a{color:#080F2A;text-decoration:none;border-bottom:1px solid rgba(15,42,74,.25)}
+.about-row .lbl{
+  font-family:'JetBrains Mono',monospace;font-size:.66rem;font-weight:500;
+  color:#B08D57;text-transform:uppercase;letter-spacing:.08em;
+}
+.about-row .val{
+  font-family:'Crimson Pro',Georgia,serif;font-size:1.12rem;line-height:1.4;
+  color:#12151C;font-weight:400;
+}
+.about-row .val a{
+  color:#080F2A;text-decoration:underline;text-decoration-thickness:1px;
+  text-underline-offset:.2em;text-decoration-color:rgba(15,42,74,.3);
+  transition:text-decoration-color .25s;
+}
+.about-row .val a:hover{text-decoration-color:#B08D57}
 
 /* ═══ CONTACT ═══ */
 .contact-section{
-  padding:6.5rem 3rem 5rem;text-align:center;
-  border-top:1px solid rgba(15,42,74,.1);
+  padding:6.5rem 3rem 5rem;text-align:left;
   margin:0 auto;max-width:1180px;position:relative;
+}
+.contact-section::before{
+  content:'';display:block;height:2px;background:#12151C;margin-bottom:3.2rem;
 }
 .contact-headline{
   font-family:'Playfair Display',Georgia,serif;font-weight:700;font-style:italic;
@@ -323,35 +341,45 @@ nav{
 }
 .contact-headline .accent{color:#1B2A4E}
 .contact-email{
-  display:inline-block;font-size:1.2rem;color:rgba(28,26,24,.55);
-  text-decoration:none;border-bottom:1px solid rgba(15,42,74,.18);
-  padding-bottom:.25rem;transition:all .3s;margin-bottom:2.2rem;
+  display:inline-block;font-size:1.45rem;color:#12151C;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em;
+  text-decoration-color:rgba(15,42,74,.3);
+  transition:text-decoration-color .3s;margin-bottom:2rem;
   font-family:'Crimson Pro',Georgia,serif;font-style:italic;
   opacity:0;animation:fadeUp .7s .15s forwards;
 }
-.contact-email:hover{color:#080F2A;border-color:#12151C}
+.contact-email:hover{text-decoration-color:#B08D57}
 .contact-links{
-  display:flex;justify-content:center;gap:.9rem;flex-wrap:wrap;
+  display:flex;flex-wrap:wrap;align-items:baseline;row-gap:.6rem;
   opacity:0;animation:fadeUp .7s .25s forwards;
 }
 .contact-links a{
-  display:inline-flex;align-items:center;gap:.4rem;
   font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:500;
-  color:rgba(28,26,24,.55);text-decoration:none;
-  padding:.65rem 1.2rem;border-radius:9999px;
-  border:1px solid rgba(15,42,74,.15);transition:all .22s;
+  color:#080F2A;text-decoration:none;letter-spacing:.02em;font-size:.84rem;
+  padding-bottom:.2rem;border-bottom:1px solid transparent;
+  transition:border-color .25s;
 }
-.contact-links a:hover{
-  color:#080F2A;border-color:rgba(15,42,74,.35);
-  background:rgba(15,42,74,.06);transform:translateY(-1px);
+.contact-links a:hover{border-color:#B08D57}
+.contact-links a:not(:last-child)::after{
+  content:'/';color:#B08D57;margin:0 1rem;display:inline-block;
 }
 
 /* ═══ FOOTER ═══ */
 footer{
-  text-align:center;padding:2.2rem 2.5rem;
-  font-size:.72rem;font-family:'JetBrains Mono',monospace;
-  color:rgba(28,26,24,.32);
-  border-top:1px solid rgba(15,42,74,.07);
+  max-width:1180px;margin:0 auto;text-align:left;
+  padding:1.6rem 3rem 2.4rem;
+  font-size:.74rem;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;
+  color:rgba(28,26,24,.45);
+}
+footer::before{content:'';display:block;height:1px;background:rgba(15,42,74,.22);margin-bottom:1.6rem}
+
+/* ═══ REVEAL ON SCROLL — below-the-fold pieces wait until they're in view ═══ */
+.reveal-wait{animation-play-state:paused !important}
+@media(prefers-reduced-motion:reduce){
+  .hero-label,.hero h1,.hero-desc,.hero-meta,.hero-cta,.section-header,.stat-item,
+  .project-card,.about-text p,.about-details,.contact-headline,.contact-email,.contact-links{
+    animation:none !important;opacity:1 !important;
+  }
 }
 
 /* ═══ RESPONSIVE ═══ */
@@ -363,32 +391,29 @@ footer{
   .nav-links a{font-size:.85rem;padding:.32rem .65rem}
   .hero{padding:6.5rem 1.4rem 3.5rem}
   .hero-desc{font-size:1.02rem}
-  .stats-bar{grid-template-columns:1fr;gap:1.75rem;padding:2.5rem 1.4rem}
-  .stat-item{border-left:none;border-top:1px solid rgba(15,42,74,.08);padding-top:1.5rem}
-  .stat-item:first-child{border-top:none;padding-top:0}
+  .stats-bar{grid-template-columns:1fr;row-gap:2rem;padding:1rem 1.4rem 2.5rem}
+  .stat-item{padding-top:1.2rem}
+  .section-header{gap:1rem}
   .section{padding:4rem 1.4rem}
-  .section-title{font-size:2.3rem}
+  .section-title{font-size:2.4rem}
   .project-card{
-    grid-template-columns:1fr;gap:1.4rem;padding:2rem 1.6rem;
+    grid-template-columns:1fr;row-gap:.9rem;padding:2.1rem 0 2rem;
   }
-  .project-card:first-child{padding-top:2rem}
-  .project-card:last-child{padding-bottom:2rem}
-  .project-card:hover{transform:none}
-  .project-card .project-visual,
-  .project-card:nth-child(even) .project-visual{order:1;align-items:flex-start;text-align:left}
-  .project-card .project-body,
-  .project-card:nth-child(even) .project-body{order:2}
-  .project-num{font-size:3.4rem}
-  .project-title{font-size:1.6rem}
+  .project-num{padding-top:0}
+  .project-card:hover .project-body{transform:none}
+  .project-title{font-size:1.75rem}
+  .project-arrow{align-self:start;justify-self:start;margin-top:.3rem}
   .about-details{margin-top:0}
   .contact-section{padding:4rem 1.4rem}
-  footer{padding:1.75rem 1.4rem}
+  footer{padding:1.4rem 1.4rem 2rem}
+  .contact-section::before{margin-bottom:2.4rem}
 }
 </style>
 </head>
 <body>
 
-<div id="gear-container"></div>
+<div id="gear-container" class="mech"></div>
+<div id="herring-container" class="mech"></div>
 <div id="plane-container"></div>
 
 <nav>
@@ -425,10 +450,7 @@ footer{
   </div>
   <div class="projects-grid">
     <a class="project-card" href="robot-arm.html">
-      <div class="project-visual">
-        <div class="project-num">01</div>
-        <div class="project-visual-rule"></div>
-      </div>
+      <div class="project-num">01</div>
       <div class="project-body">
         <div class="project-tag">First Year Engineering Design Project 1 · Oct – Dec 2025</div>
         <h3 class="project-title">Robot Arm End-Effector</h3>
@@ -444,14 +466,11 @@ footer{
           <span class="project-pill">Project Management</span>
           <span class="project-pill">Rack & Pinion</span>
         </div>
-        <span class="project-arrow">View Project <span class="arr-ic">↗</span></span>
       </div>
+      <span class="project-arrow">View Project <span class="arr-ic">↗</span></span>
     </a>
     <a class="project-card" href="highschool.html">
-      <div class="project-visual">
-        <div class="project-num">02</div>
-        <div class="project-visual-rule"></div>
-      </div>
+      <div class="project-num">02</div>
       <div class="project-body">
         <div class="project-tag">High School Shop · Grade 12</div>
         <h3 class="project-title">High School Projects</h3>
@@ -467,14 +486,11 @@ footer{
           <span class="project-pill">Table Saw</span>
           <span class="project-pill">Documentation & Technical Drawing</span>
         </div>
-        <span class="project-arrow">View Project <span class="arr-ic">↗</span></span>
       </div>
+      <span class="project-arrow">View Project <span class="arr-ic">↗</span></span>
     </a>
     <a class="project-card" href="wiffle-wafter.html">
-      <div class="project-visual">
-        <div class="project-num">03</div>
-        <div class="project-visual-rule"></div>
-      </div>
+      <div class="project-num">03</div>
       <div class="project-body">
         <div class="project-tag">First Year Engineering Design Project 3 ·  Jan-April 2026</div>
         <h3 class="project-title">Mechanical Ball Launcher</h3>
@@ -488,8 +504,8 @@ footer{
           <span class="project-pill">3D Printing</span>
           <span class="project-pill">Design Process & Thinking</span>
         </div>
-        <span class="project-arrow">View Project <span class="arr-ic">↗</span></span>
       </div>
+      <span class="project-arrow">View Project <span class="arr-ic">↗</span></span>
     </a>
   </div>
 </section>
@@ -558,199 +574,449 @@ footer{
 <footer>2026 TanmayPoddar · Toronto, Canada</footer>
 
 <script>
+// motion.js — background mechanisms and flying planes, shared by every page.
+// Each part only runs if its container (#gear-container, #herring-container, #plane-container) is on the page.
+
 (function(){
   'use strict';
-  var c = document.getElementById('gear-container');
-  if (!c) return;
-  var ns = 'http://www.w3.org/2000/svg';
-  var gears = [];
+  var NS = 'http://www.w3.org/2000/svg';
+  var GOLD = '#B08D57';
+  var D2R = Math.PI / 180;
+  var TOP_OPACITY = .42, LOW_OPACITY = .12;
 
-  function gp(ir, or, t, hr) {
-    var step = 2 * Math.PI / t;
-    var hw = step * 0.2;
-    var parts = [];
-    for (var i = 0; i < t; i++) {
-      var a = i * step;
-      var p1x = ir * Math.cos(a - hw), p1y = ir * Math.sin(a - hw);
-      var p2x = or * Math.cos(a - hw * 0.45), p2y = or * Math.sin(a - hw * 0.45);
-      var p3x = or * Math.cos(a + hw * 0.45), p3y = or * Math.sin(a + hw * 0.45);
-      var p4x = ir * Math.cos(a + hw), p4y = ir * Math.sin(a + hw);
-      if (i === 0) parts.push('M' + p1x.toFixed(3) + ' ' + p1y.toFixed(3));
-      parts.push('L' + p2x.toFixed(3) + ' ' + p2y.toFixed(3));
-      parts.push('L' + p3x.toFixed(3) + ' ' + p3y.toFixed(3));
-      parts.push('L' + p4x.toFixed(3) + ' ' + p4y.toFixed(3));
-      var na = (i + 1) * step;
-      var nx = ir * Math.cos(na - hw), ny = ir * Math.sin(na - hw);
-      if (i < t - 1) parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + nx.toFixed(3) + ' ' + ny.toFixed(3));
-      else { var fx = ir * Math.cos(0 - hw), fy = ir * Math.sin(0 - hw); parts.push('A' + ir + ' ' + ir + ' 0 0 1 ' + fx.toFixed(3) + ' ' + fy.toFixed(3)); }
-    }
-    parts.push('Z');
-    if (hr > 0) { var h = hr; parts.push('M' + h + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + (-h) + ' 0 A' + h + ' ' + h + ' 0 1 0 ' + h + ' 0 Z'); }
-    return parts.join('');
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function stroke(tag, attrs, parent, w, op) {
+    attrs['stroke-width'] = w; attrs['vector-effect'] = 'non-scaling-stroke';
+    if (op != null) attrs.opacity = op;
+    return el(tag, attrs, parent);
+  }
+  function makeSvg(c, x, y, w, h) {
+    return el('svg', { viewBox: [x, y, w, h].map(function (v) { return v.toFixed(1); }).join(' '),
+      'aria-hidden': 'true', focusable: 'false', opacity: TOP_OPACITY }, c);
   }
 
-  function cg(ir, or, t, hr, o) {
-    var size = (or + 4) * 2;
-    var svg = document.createElementNS(ns, 'svg');
-    // Center the viewBox on the gear's own coordinate space so that
-    // CSS transform-origin:center (fill-box) rotates it in place.
-    svg.setAttribute('viewBox', (-or - 2) + ' ' + (-or - 2) + ' ' + (or + 2) * 2 + ' ' + (or + 2) * 2);
-    svg.setAttribute('width', size); svg.setAttribute('height', size);
-    // Offset the fixed-position svg by half its size so that "x/y" percentages
-    // refer to the gear's visual center, not its top-left corner.
-    svg.style.cssText = 'left:calc(' + o.x + '% - ' + (size / 2) + 'px);top:calc(' + o.y + '% - ' + (size / 2) + 'px);opacity:1;pointer-events:none;z-index:-1;will-change:transform;';
-    var g = document.createElementNS(ns, 'g');
-    g.setAttribute('class', 'gear-g');
-    g.style.willChange = 'transform';
-    g.style.transformOrigin = '0px 0px'; // path is drawn centered at (0,0) already
-
-    var path = document.createElementNS(ns, 'path');
-    path.setAttribute('d', gp(ir, or, t, hr));
-    path.setAttribute('fill', 'none'); path.setAttribute('stroke', '#B08D57');
-    path.setAttribute('stroke-width', o.strokeWidth || 2.5);
-    path.setAttribute('opacity', o.opacity || 0.06);
-    g.appendChild(path);
-
-    if (o.innerRing) {
-      var ring = document.createElementNS(ns, 'circle');
-      ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0');
-      ring.setAttribute('r', o.innerRing); ring.setAttribute('fill', 'none');
-      ring.setAttribute('stroke', '#B08D57'); ring.setAttribute('stroke-width', '1.8');
-      ring.setAttribute('opacity', (o.opacity || 0.06) * 0.6);
-      g.appendChild(ring);
-    }
-    if (o.spokes) {
-      for (var s = 0; s < o.spokes; s++) {
-        var ang = (s / o.spokes) * 2 * Math.PI;
-        var r1 = hr || ir * 0.35, r2 = ir * 0.82;
-        var line = document.createElementNS(ns, 'line');
-        line.setAttribute('x1', r1 * Math.cos(ang)); line.setAttribute('y1', r1 * Math.sin(ang));
-        line.setAttribute('x2', r2 * Math.cos(ang)); line.setAttribute('y2', r2 * Math.sin(ang));
-        line.setAttribute('stroke', '#B08D57'); line.setAttribute('stroke-width', '1.3');
-        line.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
-        g.appendChild(line);
+  /* ─── 1. Spur gear train: true involute teeth, correct ratios ─── */
+  function buildSpur(c) {
+    var M = 4, PA = 20 * D2R, BACKLASH = 0.06 * M;
+    function inv(a) { return Math.tan(a) - a; }
+    function gearPath(N) {
+      var r = M * N / 2, rb = r * Math.cos(PA), ra = r + M, rf = r - 1.25 * M;
+      var step = 2 * Math.PI / N, halfPitch = Math.PI / (2 * N) - BACKLASH / (2 * r);
+      function psi(R) { return halfPitch + inv(PA) - inv(Math.acos(Math.min(1, rb / R))); }
+      var r0 = Math.max(rb, rf), psiB = psi(r0), psiA = psi(ra), pts = [], S = 10;
+      function P(R, a) { pts.push((R * Math.cos(a)).toFixed(2) + ' ' + (R * Math.sin(a)).toFixed(2)); }
+      for (var k = 0; k < N; k++) {
+        var a = k * step, i, R;
+        P(rf, a - psiB);
+        for (i = 0; i <= S; i++) { R = r0 + (ra - r0) * i / S; P(R, a - psi(R)); }
+        for (i = 1; i < 4; i++) P(ra, a - psiA + 2 * psiA * i / 4);
+        for (i = S; i >= 0; i--) { R = r0 + (ra - r0) * i / S; P(R, a + psi(R)); }
+        P(rf, a + psiB);
+        var gap = step - 2 * psiB;
+        for (i = 1; i < 4; i++) P(rf, a + psiB + gap * i / 4);
       }
+      return 'M' + pts.join(' L') + ' Z';
     }
-    for (var d = 0; d < t; d++) {
-      var da = (d / t) * 2 * Math.PI - Math.PI / 2;
-      var dot = document.createElementNS(ns, 'circle');
-      dot.setAttribute('cx', (or * 0.78) * Math.cos(da));
-      dot.setAttribute('cy', (or * 0.78) * Math.sin(da));
-      dot.setAttribute('r', or * 0.08);
-      dot.setAttribute('fill', '#B08D57');
-      dot.setAttribute('opacity', (o.opacity || 0.06) * 0.5);
-      g.appendChild(dot);
-    }
-
-    svg.appendChild(g);
-    c.appendChild(svg);
-    gears.push({
-      g: g,
-      svg: svg,
-      dur: o.duration || 30,
-      dir: o.dir === 'reverse' ? -1 : 1,
-      angle: 0,
-      parallax: o.parallax || 0.02
+    var spec = [ { N: 48, spokes: 6 }, { N: 32, spokes: 5, dir: 160 }, { N: 16, spokes: 3, dir: 210 } ];
+    var gears = [];
+    spec.forEach(function (s, i) {
+      var r = M * s.N / 2, x = 0, y = 0, phase = 0, ratio = 1;
+      if (i) {
+        var p = gears[i - 1], dist = p.r + r;
+        x = p.x + dist * Math.cos(s.dir * D2R);
+        y = p.y + dist * Math.sin(s.dir * D2R);
+        phase = s.dir + 180 - (p.N / s.N) * (p.phase - s.dir) - 180 / s.N;   // a gap faces the driving tooth
+        ratio = -p.ratio * p.N / s.N;
+      }
+      gears.push({ N: s.N, r: r, x: x, y: y, phase: phase, ratio: ratio, spokes: s.spokes });
     });
-    return svg;
+    var pad = M * 2, minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+    gears.forEach(function (g) {
+      var ra = g.r + M;
+      minX = Math.min(minX, g.x - ra); maxX = Math.max(maxX, g.x + ra);
+      minY = Math.min(minY, g.y - ra); maxY = Math.max(maxY, g.y + ra);
+    });
+    var svg = makeSvg(c, minX - pad, minY - pad, maxX - minX + 2 * pad, maxY - minY + 2 * pad);
+    gears.forEach(function (g) {
+      var holder = el('g', { transform: 'translate(' + g.x.toFixed(2) + ' ' + g.y.toFixed(2) + ')' }, svg);
+      var rim = g.r - 1.25 * M - M * 1.4, hub = Math.max(7, g.r * 0.2);
+      var n = el('g', { fill: 'none', stroke: GOLD, 'stroke-linejoin': 'round' }, holder);
+      stroke('path', { d: gearPath(g.N), class: 'gear-teeth' }, n, 1.3);
+      stroke('circle', { r: rim.toFixed(2) }, n, 0.9, .7);
+      stroke('circle', { r: hub.toFixed(2) }, n, 1.1);
+      stroke('circle', { r: (hub * 0.42).toFixed(2) }, n, 0.9, .8);
+      for (var s = 0; s < g.spokes; s++) {
+        var a = s / g.spokes * 2 * Math.PI;
+        stroke('line', { x1: (hub * Math.cos(a)).toFixed(2), y1: (hub * Math.sin(a)).toFixed(2),
+          x2: (rim * Math.cos(a)).toFixed(2), y2: (rim * Math.sin(a)).toFixed(2) }, n, 0.9, .7);
+      }
+      g.node = n;
+    });
+    var SPEED = 360 / 30;   // big gear: one turn every 30 s → 20 s for the 32-tooth, 10 s for the 16-tooth
+    return { svg: svg, update: function (t) {
+      gears.forEach(function (g) {
+        g.node.setAttribute('transform', 'rotate(' + ((g.phase + t * SPEED * g.ratio) % 360).toFixed(3) + ')');
+      });
+    } };
   }
 
-  cg(165, 198, 30, 34, { x:88, y:8, opacity:0.4, duration:70, dir:'normal', strokeWidth:8, innerRing:118, spokes:10, parallax:0.01 });
-  cg(120, 148, 22, 26, { x:6, y:4, opacity:0.34, duration:50, dir:'reverse', strokeWidth:7, innerRing:86, spokes:8, parallax:0.018 });
-  cg(78, 98, 16, 16, { x:50, y:2, opacity:0.24, duration:34, dir:'normal', strokeWidth:6, innerRing:54, spokes:6, parallax:0.022 });
-  cg(44, 56, 12, 9, { x:20, y:34, opacity:0.2, duration:20, dir:'reverse', strokeWidth:5, innerRing:28, spokes:4, parallax:0.03 });
-  cg(28, 36, 8, 5, { x:78, y:38, opacity:0.2, duration:14, dir:'normal', strokeWidth:5, innerRing:18, spokes:3, parallax:0.035 });
-  cg(16, 21, 6, 3, { x:95, y:30, opacity:0.18, duration:9, dir:'reverse', strokeWidth:4.5, spokes:2, parallax:0.04 });
+  /* ─── 2. Herringbone pair, side view: V-teeth sweep across the faces ─── */
+  function buildHerringbone(c) {
+    var W = 64, EXT = 22, HELIX = 30 * D2R;
+    var set = [ { r: 60, N: 24, cy: 0, hand: 1 }, { r: 40, N: 16, cy: 100, hand: -1 } ];
+    var svg = makeSvg(c, -W / 2 - EXT - 4, -66, W + 2 * EXT + 8, 212);
+    var defs = el('defs', {}, svg);
+    var grad = el('linearGradient', { id: 'hb-shade', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    [[0, .2], [.5, .02], [1, .2]].forEach(function (s) {
+      el('stop', { offset: s[0], 'stop-color': GOLD, 'stop-opacity': s[1] }, grad);
+    });
+    set.forEach(function (g, gi) {
+      var top = g.cy - g.r, h = 2 * g.r;
+      var clip = el('clipPath', { id: 'hb-clip-' + gi }, defs);
+      el('rect', { x: -W / 2, y: top, width: W, height: h }, clip);
+      var grp = el('g', { fill: 'none', stroke: GOLD }, svg);
+      // shaft and hub collars
+      stroke('line', { x1: -W / 2 - EXT, y1: g.cy, x2: W / 2 + EXT, y2: g.cy }, grp, 1.1, .8);
+      stroke('rect', { x: W / 2, y: g.cy - g.r * .28, width: EXT * .55, height: g.r * .56 }, grp, 1);
+      stroke('rect', { x: -W / 2 - EXT * .55, y: g.cy - g.r * .28, width: EXT * .55, height: g.r * .56 }, grp, 1);
+      el('rect', { x: -W / 2, y: top, width: W, height: h, fill: 'url(#hb-shade)', stroke: 'none' }, grp);
+      var teeth = el('g', { 'clip-path': 'url(#hb-clip-' + gi + ')' }, grp);
+      g.paths = [];
+      for (var k = 0; k < g.N; k++) {
+        g.paths.push(stroke('path', { fill: GOLD, 'stroke-linejoin': 'round' }, teeth, 1));
+      }
+      stroke('rect', { x: -W / 2, y: top, width: W, height: h }, grp, 1.3);
+      stroke('line', { x1: 0, y1: top, x2: 0, y2: top + h }, grp, .7, .35);   // the herringbone's centre seam
+      g.kh = Math.tan(HELIX) / g.r;
+    });
 
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var scrollY = window.pageYOffset || 0;
-  var lastTs = null;
+    function flank(g, theta, sign) {
+      // points across the face; the tooth lags toward the centre seam, forming the V
+      var pts = [], S = 8;
+      for (var i = 0; i <= S; i++) {
+        var x = -W / 2 + W * i / S;
+        var th = theta + g.hand * g.kh * (W / 2 - Math.abs(x));
+        pts.push(x.toFixed(2) + ' ' + (g.cy - g.r * Math.sin(th)).toFixed(2));
+      }
+      return sign > 0 ? pts : pts.reverse();
+    }
+    var SPEED = 2 * Math.PI / 24;   // upper gear: one turn every 24 s
+    return { svg: svg, update: function (t) {
+      var phi1 = t * SPEED;
+      set.forEach(function (g, gi) {
+        var phi = gi === 0 ? phi1 : -phi1 * set[0].N / g.N;
+        var step = 2 * Math.PI / g.N, half = step * 0.22;
+        for (var k = 0; k < g.N; k++) {
+          var th = phi + k * step;
+          var mid = th + g.hand * g.kh * W / 4;
+          var face = Math.cos(mid);
+          var p = g.paths[k];
+          if (face < -0.05) { p.setAttribute('d', ''); continue; }
+          var f = Math.max(0, face);
+          p.setAttribute('d', 'M' + flank(g, th - half, 1).concat(flank(g, th + half, -1)).join(' L') + ' Z');
+          p.setAttribute('fill-opacity', (0.05 + 0.2 * f).toFixed(3));
+          p.setAttribute('stroke-opacity', (0.3 + 0.7 * f).toFixed(3));
+        }
+      });
+    } };
+  }
 
-  window.addEventListener('scroll', function() {
-    scrollY = window.pageYOffset || 0;
-  }, { passive: true });
+  var parts = [];
+  [['gear-container', buildSpur], ['herring-container', buildHerringbone]]
+    .forEach(function (b) { var c = document.getElementById(b[0]); if (c) parts.push(b[1](c)); });
+  if (!parts.length) return;
 
+  // Fade everything back as the visitor scrolls past the hero
+  function fadeOnScroll() {
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var k = Math.min(1, y / (window.innerHeight * 0.8));
+    var o = (TOP_OPACITY - (TOP_OPACITY - LOW_OPACITY) * k).toFixed(3);
+    parts.forEach(function (p) { p.svg.setAttribute('opacity', o); });
+  }
+  window.addEventListener('scroll', fadeOnScroll, { passive: true });
+  window.addEventListener('resize', fadeOnScroll);
+  fadeOnScroll();
+
+  parts.forEach(function (p) { p.update(0); });
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var t0 = null;
   function frame(ts) {
-    if (lastTs === null) lastTs = ts;
-    var dt = (ts - lastTs) / 1000;
-    lastTs = ts;
-
-    gears.forEach(function(gr) {
-      if (!reduce) {
-        gr.angle = (gr.angle + gr.dir * (360 / gr.dur) * dt) % 360;
-      }
-      var drift = scrollY * gr.parallax;
-      gr.g.style.transform = 'translate3d(0,' + drift.toFixed(2) + 'px,0) rotate(' + gr.angle.toFixed(2) + 'deg)';
-    });
-
+    if (t0 === null) t0 = ts;
+    var t = (ts - t0) / 1000;
+    for (var i = 0; i < parts.length; i++) parts[i].update(t);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 })();
-</script>
 
-<script>
-// ═══ FLYING PLANE ═══
+// ═══ FLYING PLANE — one aircraft at a time on a gentle arc, leaving fading contrails ═══
 (function(){
   'use strict';
   var container = document.getElementById('plane-container');
   if (!container) return;
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  var planeSVG =
-    '<svg class="plane-icon" width="52" height="52" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">' +
-      '<g fill="#B08D57" opacity="0.55" transform="rotate(90 32 32)">' +
-        '<path d="M32 2 C33.5 2 34.5 3.5 34.5 6 L34.5 24 L54 34 L54 39 L34.5 33 L34.5 47 L42 52 L42 56 L32 53.5 L22 56 L22 52 L29.5 47 L29.5 33 L10 39 L10 34 L29.5 24 L29.5 6 C29.5 3.5 30.5 2 32 2 Z" />' +
-      '</g>' +
-    '</svg>';
+  var NS = 'http://www.w3.org/2000/svg';
+  var GOLD = '#B08D57';
+  var svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  container.appendChild(svg);
+  var defs = document.createElementNS(NS, 'defs');
+  svg.appendChild(defs);
+  var flightId = 0;
 
-  function launchPlane(){
-    var wrap = document.createElement('div');
-    wrap.className = 'plane-wrap';
+  function sizeSvg() {
+    svg.setAttribute('viewBox', '0 0 ' + window.innerWidth + ' ' + window.innerHeight);
+  }
+  sizeSvg();
+  window.addEventListener('resize', sizeSvg);
 
-    var body = document.createElement('div');
-    body.className = 'plane-body';
-    body.innerHTML = planeSVG + '<div class="plane-trail"></div>';
-    wrap.appendChild(body);
+  // Fade the planes out completely over the first screen of scrolling; they return on the way back up
+  function fadeOnScroll() {
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var k = Math.min(1, y / (window.innerHeight * 0.9));
+    var o = 1 - k * k * (3 - 2 * k);            // smoothstep: gentle at both ends
+    svg.style.opacity = o.toFixed(3);
+    svg.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+  }
+  window.addEventListener('scroll', fadeOnScroll, { passive: true });
+  fadeOnScroll();
 
-    // Randomize flight path so it feels alive and energetic
-    var topPos = 4 + Math.random() * 20; // % from top, nav/hero band
-    var duration = 5 + Math.random() * 3; // fast crossing, 5-8s
-    var scale = 0.85 + Math.random() * 0.55;
-    var bobAmp = 14 + Math.random() * 14;
-    var bobCycles = 2 + Math.floor(Math.random() * 2);
-
-    wrap.style.top = topPos + '%';
-    container.appendChild(wrap);
-
-    var startTime = null;
-    function step(ts){
-      if (startTime === null) startTime = ts;
-      var elapsed = (ts - startTime) / 1000;
-      var progress = elapsed / duration;
-      if (progress >= 1){
-        wrap.remove();
-        return;
-      }
-      // Travel from just off-screen left to just off-screen right
-      var vw = window.innerWidth;
-      var x = -140 + progress * (vw + 280);
-      // Position (translate) lives on the wrap; banking/scale lives on the body
-      var bob = Math.sin(progress * Math.PI * bobCycles) * bobAmp;
-      var bank = Math.cos(progress * Math.PI * bobCycles) * 12;
-      wrap.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + bob.toFixed(1) + 'px,0)';
-      body.style.transform = 'scale(' + scale.toFixed(2) + ') rotate(' + bank.toFixed(1) + 'deg)';
-      requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
+  function mk(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    (parent || svg).appendChild(e);
+    return e;
   }
 
-  // First plane arrives quickly after load, then keeps buzzing by often
-  setTimeout(launchPlane, 900);
-  setInterval(function(){
-    launchPlane();
-  }, 4500 + Math.random() * 3000);
+  // Top-down aircraft, each drawn 64 units nose-to-tail with the nose pointing to +x.
+  // `half` is one side of the outline (fuselage → wing → fuselage → tailplane → tail cone);
+  // the other side is mirrored. `engines` are nacelle ellipses [x, y, rx, ry] for one side.
+  function outline(nose, w, half) {
+    var f = function (p) { return p[0] + ' ' + p[1]; };
+    var other = half.slice(0, -1).reverse().map(function (p) { return [p[0], -p[1]]; });
+    return 'M31 0 C31 ' + (-w * .62).toFixed(2) + ' 29.6 ' + (-w) + ' ' + nose + ' ' + (-w) +
+           ' L' + half.map(f).join(' L') + ' L' + other.map(f).join(' L') +
+           ' L' + nose + ' ' + w + ' C29.6 ' + w + ' 31 ' + (w * .62).toFixed(2) + ' 31 0 Z';
+  }
+  var AIRCRAFT = {
+    twin: {          // narrow-body twin, engines under the wings
+      scale: 1, weight: .45,
+      cross: 15, gap: [7, 12],      // seconds to cross the screen; pause before the next plane
+      d: outline(27, 2.6, [[7, -2.6], [-5, -27], [-9.5, -27.5], [-6, -2.6],
+                           [-21, -2.2], [-27.5, -11], [-30.5, -11.2], [-28.5, -1.5], [-32, 0]]),
+      engines: [[2.2, 10, 4.2, 1.7]]
+    },
+    quad: {          // four-engine jumbo: wider body, longer span, two nacelles per wing
+      scale: 1.3, weight: .3,
+      cross: 24, gap: [12, 18],     // slow and stately, and a longer wait after it
+      d: outline(26.5, 3.2, [[9, -3.2], [-8, -30], [-12.5, -30.6], [-6.5, -3.2],
+                             [-21, -2.8], [-28, -12.5], [-31, -12.8], [-28.5, -1.8], [-32, 0]]),
+      engines: [[4.2, 9.5, 3.7, 1.5], [-1.2, 18, 3.5, 1.4]]
+    },
+    bizjet: {        // business jet: slender, engines on the rear fuselage, small tailplane
+      scale: .78, weight: .25,
+      cross: 8, gap: [4, 7],        // quick, and the sky is free again sooner
+      d: outline(26, 2.2, [[1, -2.2], [-9, -21], [-12.5, -21.5], [-8, -2.2],
+                           [-25, -1.8], [-28.5, -9.5], [-31.2, -9.6], [-30.2, -1.2], [-32, 0]]),
+      engines: [[-17.5, 4.1, 4.6, 1.9]]
+    }
+  };
+  var SPAN = { twin: 27.5, quad: 30.6, bizjet: 21.5 };   // wingtip distance from the centreline, in drawing units
+  var lastType = null;
+  function pickType() {
+    var names = Object.keys(AIRCRAFT).filter(function (n) { return n !== lastType; });
+    var total = names.reduce(function (a, n) { return a + AIRCRAFT[n].weight; }, 0), r = Math.random() * total;
+    for (var i = 0; i < names.length; i++) { r -= AIRCRAFT[names[i]].weight; if (r <= 0) break; }
+    lastType = names[Math.min(i, names.length - 1)];
+    return AIRCRAFT[lastType];
+  }
+
+  function bez(p0, p1, p2, t) {
+    var u = 1 - t;
+    return { x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
+             y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y };
+  }
+  function bezD(p0, p1, p2, t) {
+    return { x: 2 * (1 - t) * (p1.x - p0.x) + 2 * t * (p2.x - p1.x),
+             y: 2 * (1 - t) * (p1.y - p0.y) + 2 * t * (p2.y - p1.y) };
+  }
+
+  // Things the flight path should stay clear of: the mechanisms and the hero text
+  var AVOID = '.hero-label, .hero h1, .hero-desc, .hero-meta, .hero-cta, ' +          // homepage
+              '.hero-eyebrow, .about-hero h1, .hero-intro, ' +                        // about
+              '.project-eyebrow, .project-hero h1, .project-meta';                    // project pages
+  function pickRoute(W, H, ltr, margin, halfSpan) {
+    var boxes = [].map.call(document.querySelectorAll(AVOID), function (e) {
+      var r = e.getBoundingClientRect(), pad = 24;
+      return { l: r.left - pad, r: r.right + pad, t: r.top - pad, b: r.bottom + pad };
+    }).filter(function (b) { return b.b > 0 && b.t < H && b.r > b.l; });
+    // fly in the band between the nav bar and the hero text
+    var nav = document.querySelector('nav');
+    var top = (nav ? nav.getBoundingClientRect().bottom : 70) + halfSpan + 12;   // wingtips stay clear of the nav
+    var bottom = Math.max(top + 40, H * 0.36);
+    var best = null, bestHits = Infinity;
+    for (var tries = 0; tries < 60; tries++) {
+      var y0 = top + 20 + Math.random() * (bottom - top - 20);
+      var y2 = Math.max(top + 20, Math.min(bottom, y0 + (Math.random() - 0.5) * (bottom - top) * 0.8));
+      var p0 = { x: ltr ? -margin : W + margin, y: y0 };
+      var p2 = { x: ltr ? W + margin : -margin, y: y2 };
+      // a gentle upward bow, but never up under the nav bar
+      var p1 = { x: W * (0.35 + Math.random() * 0.3), y: Math.max(top - 10, Math.min(y0, y2) - 10 - Math.random() * 30) };
+      var hits = 0;
+      for (var i = 0; i <= 60; i++) {
+        var q = bez(p0, p1, p2, i / 60);
+        for (var j = 0; j < boxes.length; j++) {
+          var b = boxes[j];
+          if (q.x > b.l && q.x < b.r && q.y > b.t && q.y < b.b) { hits++; break; }
+        }
+      }
+      if (hits < bestHits) { best = [p0, p1, p2]; bestHits = hits; }
+      if (!hits) break;
+    }
+    return best;
+  }
+
+  function fly(done) {
+    var W = window.innerWidth, H = window.innerHeight;
+    var ltr = Math.random() < 0.6;                     // mostly left → right
+    var type = pickType();
+    var size = (W < 700 ? 108 : 162) * type.scale;     // nose-to-tail length in px
+    var k = size / 64;
+    var halfSpan = SPAN[type === AIRCRAFT.quad ? 'quad' : type === AIRCRAFT.bizjet ? 'bizjet' : 'twin'] * k;
+    var margin = size * 0.75 + 20;                     // start and finish fully off-screen
+    var route = pickRoute(W, H, ltr, margin, halfSpan);
+    var p0 = route[0], p1 = route[1], p2 = route[2];
+    var speed = (W + 2 * margin) / (type.cross * Math.min(1, Math.max(0.6, W / 1440)));   // px per second; phones a little quicker
+    var duration = (W + 2 * margin) / speed;
+    var TRAIL = 0.42;                                  // contrail length, as a fraction of the flight
+    // One contrail per engine, starting at the rear of that engine's nacelle (its exhaust).
+    // ex = exhaust position along the fuselage, lat = sideways offset (both in px, plane-local)
+    var exhausts = [];
+    type.engines.forEach(function (e) {
+      var ex = (e[0] - e[2]) * k;
+      exhausts.push({ ex: ex, lat: e[1] * k }, { ex: ex, lat: -e[1] * k });
+    });
+    var pathLen = 0;
+    for (var s0 = 0, prev = bez(p0, p1, p2, 0); s0 < 100; s0++) {
+      var nxt = bez(p0, p1, p2, (s0 + 1) / 100);
+      pathLen += Math.hypot(nxt.x - prev.x, nxt.y - prev.y); prev = nxt;
+    }
+
+    var id = 'contrail-' + (++flightId);
+    var grad = mk('linearGradient', { id: id, gradientUnits: 'userSpaceOnUse' }, defs);
+    mk('stop', { offset: 0, 'stop-color': GOLD, 'stop-opacity': 0 }, grad);
+    mk('stop', { offset: 1, 'stop-color': GOLD, 'stop-opacity': .45 }, grad);
+    var trails = exhausts.map(function () {
+      return mk('polyline', { fill: 'none', stroke: 'url(#' + id + ')', 'stroke-width': W < 700 ? 1.8 : 2.4, 'stroke-linecap': 'round' });
+    });
+    var plane = mk('g', {});
+    var body = mk('g', { fill: GOLD, opacity: .62, transform: 'scale(' + k.toFixed(3) + ')' }, plane);
+    mk('path', { d: type.d }, body);
+    type.engines.forEach(function (e) {
+      mk('ellipse', { cx: e[0], cy: -e[1], rx: e[2], ry: e[3] }, body);
+      mk('ellipse', { cx: e[0], cy: e[1], rx: e[2], ry: e[3] }, body);
+    });
+    // place it at its off-screen starting point straight away, so it never flashes at (0,0)
+    var d0 = bezD(p0, p1, p2, 0);
+    plane.setAttribute('transform', 'translate(' + p0.x.toFixed(1) + ' ' + p0.y.toFixed(1) + ') rotate(' +
+      (Math.atan2(d0.y, d0.x) * 180 / Math.PI).toFixed(2) + ')');
+
+    // Flight time only advances while the tab is visible: a hidden tab pauses the plane mid-air
+    var last = null, flown = 0, fadeStart = null;
+    function frame(ts) {
+      if (last !== null) flown += Math.min(ts - last, 50);
+      last = ts;
+      var t = flown / 1000 / duration;
+      var head = Math.min(t, 1);
+      if (head < 1) {
+        var p = bez(p0, p1, p2, head), d = bezD(p0, p1, p2, head);
+        var ang = Math.atan2(d.y, d.x) * 180 / Math.PI;
+        plane.setAttribute('transform', 'translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ') rotate(' + ang.toFixed(2) + ')');
+      } else if (plane.parentNode) {
+        plane.parentNode.removeChild(plane);
+        fadeStart = flown;
+      }
+      // each contrail runs back along the flight path from its engine's exhaust
+      var tNow = Math.min(1, t), tTail = Math.max(0, t - TRAIL), S = 48;
+      var pc = bez(p0, p1, p2, tNow), dc = bezD(p0, p1, p2, tNow);
+      var lc = Math.hypot(dc.x, dc.y) || 1, ux = dc.x / lc, uy = dc.y / lc;   // current heading
+      exhausts.forEach(function (eng, j) {
+        var tHead = Math.max(0, tNow + eng.ex / pathLen);                     // the path point level with the exhaust
+        if (tHead <= tTail) { trails[j].setAttribute('points', ''); return; }
+        var pts = [];
+        for (var i = 0; i <= S; i++) {
+          var tt = tTail + (tHead - tTail) * i / S;
+          var q = bez(p0, p1, p2, tt), dq = bezD(p0, p1, p2, tt);
+          var len = Math.hypot(dq.x, dq.y) || 1;
+          pts.push((q.x - dq.y / len * eng.lat).toFixed(1) + ',' + (q.y + dq.x / len * eng.lat).toFixed(1));
+        }
+        if (t < 1) {   // pin the end exactly on the nacelle's rear edge
+          pts.push((pc.x + ux * eng.ex - uy * eng.lat).toFixed(1) + ',' + (pc.y + uy * eng.ex + ux * eng.lat).toFixed(1));
+        }
+        trails[j].setAttribute('points', pts.join(' '));
+      });
+      if (tNow > tTail) {
+        var a = bez(p0, p1, p2, tTail), b = pc;
+        grad.setAttribute('x1', a.x.toFixed(1)); grad.setAttribute('y1', a.y.toFixed(1));
+        grad.setAttribute('x2', b.x.toFixed(1)); grad.setAttribute('y2', b.y.toFixed(1));
+      }
+      // after the plane leaves, the remaining contrail dissipates
+      if (fadeStart !== null) {
+        var f = 1 - (flown - fadeStart) / 2500;
+        trails.forEach(function (tr) { tr.setAttribute('opacity', Math.max(0, f).toFixed(3)); });
+        if (f <= 0) {
+          trails.forEach(function (tr) { tr.parentNode.removeChild(tr); });
+          grad.parentNode.removeChild(grad);
+          done(type);
+          return;
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // Strictly one plane at a time: the next is only scheduled once the last has gone,
+  // and nothing launches while the tab is in the background
+  function launch() {
+    if (document.hidden) {
+      document.addEventListener('visibilitychange', function wait() {
+        if (document.hidden) return;
+        document.removeEventListener('visibilitychange', wait);
+        setTimeout(launch, 1500);
+      });
+      return;
+    }
+    fly(function (type) { schedule((type.gap[0] + Math.random() * (type.gap[1] - type.gap[0])) * 1000); });
+  }
+  function schedule(delay) { setTimeout(launch, delay); }
+  schedule(1200);
+})();
+</script>
+<script>
+// ═══ REVEAL ON SCROLL — pieces below the fold play their fade-up when they come into view ═══
+(function(){
+  'use strict';
+  if (!('IntersectionObserver' in window)) return;
+  var sel = '.section-header, .stat-item, .project-card, .about-text p, .about-details, .contact-headline, .contact-email, .contact-links';
+  var els = [].filter.call(document.querySelectorAll(sel), function (e) {
+    return e.getBoundingClientRect().top > window.innerHeight * 0.92;
+  });
+  els.forEach(function (e) { e.classList.add('reveal-wait'); });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) { en.target.classList.remove('reveal-wait'); io.unobserve(en.target); }
+    });
+  }, { rootMargin: '0px 0px -8% 0px' });
+  els.forEach(function (e) { io.observe(e); });
 })();
 </script>
 </body>
