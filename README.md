@@ -6,5 +6,6 @@ Main Pages include
        - Sudoku
        - Blackjack
        - 2048
+       - Flight Simulator
          
-Version 2 
+Version 2.5
