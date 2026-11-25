@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MATH 2Z03 Textbook · Files</title>
+<meta name="description" content="MATH 2Z03 study companion: interactive textbook, PDF textbook and practice pages for ODEs, Laplace transforms and PDEs.">
+<link rel="icon" href="../favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root {
+  --bg: #f6f7f9; --paper: #fff; --ink: #202124; --muted: #6b6e76; --line: #e4e5e9;
+  --accent: #34588f; --accent-2: #284676; --accent-soft: #eef2f8;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 17px/1.55 "Source Serif 4", Georgia, serif;
+}
+main { max-width: 760px; margin: 0 auto; padding: 48px 20px 64px; }
+.kicker { font: 600 0.78rem/1 Archivo, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 700 clamp(1.8rem, 5vw, 2.5rem)/1.15 Archivo, system-ui, sans-serif; margin: 10px 0 8px; }
+.lede { color: var(--muted); margin: 0 0 32px; max-width: 60ch; }
+h2 { font: 600 0.82rem/1 Archivo, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 36px 0 12px; }
+.list { display: grid; gap: 12px; }
+.item {
+  display: flex; align-items: center; gap: 16px; padding: 16px 18px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+  color: inherit; text-decoration: none; transition: border-color .15s, box-shadow .15s;
+}
+a.item:hover, a.item:focus-visible { border-color: var(--accent); box-shadow: 0 2px 10px rgba(52, 88, 143, .12); outline: none; }
+.glyph {
+  flex: none; width: 44px; height: 44px; border-radius: 8px; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); font: 700 1.05rem/1 Archivo, system-ui, sans-serif;
+}
+.text { flex: 1; min-width: 0; }
+.text b { display: block; font: 600 1.05rem/1.3 Archivo, system-ui, sans-serif; }
+.text span { display: block; color: var(--muted); font-size: 0.94rem; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.btn {
+  font: 600 0.88rem/1 Archivo, system-ui, sans-serif; padding: 10px 14px; border-radius: 7px;
+  text-decoration: none; white-space: nowrap; border: 1px solid var(--accent);
+}
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-2); }
+.btn.ghost { color: var(--accent); background: #fff; }
+.btn.ghost:hover { background: var(--accent-soft); }
+.featured { border-color: var(--accent); }
+footer { margin-top: 40px; color: var(--muted); font-size: 0.88rem; }
+@media (max-width: 560px) {
+  main { padding-top: 32px; }
+  .item.featured { flex-wrap: wrap; }
+  .item.featured .actions { width: 100%; justify-content: stretch; }
+  .item.featured .btn { flex: 1; text-align: center; }
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">MATH 2Z03 · Engineering Mathematics</div>
+  <h1>Differential Equations, Worked Out by Hand</h1>
+  <p class="lede">A study companion with the same section numbers as Zill, <i>Advanced Engineering Mathematics</i> (7th edition). Read it online, open the PDF, or practise with the problem pages below.</p>
+
+  <h2>Textbook</h2>
+  <div class="list">
+    <div class="item featured">
+      <div class="glyph" aria-hidden="true">PDF</div>
+      <div class="text"><b>PDF textbook</b><span>All sections with worked examples, exercises and full solutions. 440 pages, 30 MB.</span></div>
+      <div class="actions">
+        <a class="btn primary" href="MATH2Z03-Textbook.pdf" target="_blank" rel="noopener">Open PDF</a>
+        <a class="btn ghost" href="MATH2Z03-Textbook.pdf" download>Download</a>
+      </div>
+    </div>
+    <a class="item" href="textbook.html">
+      <div class="glyph" aria-hidden="true">§</div>
+      <div class="text"><b>Interactive textbook</b><span>Sections 1.1 to 13.5 with graphs and practice problems you can check as you go.</span></div>
+    </a>
+  </div>
+
+  <h2>Practice</h2>
+  <div class="list">
+    <a class="item" href="test2.html">
+      <div class="glyph" aria-hidden="true">T2</div>
+      <div class="text"><b>Test 2 practice</b><span>Sections 3.6, 3.8, 3.9 and 4.1 to 4.3, with mock tests.</span></div>
+    </a>
+    <a class="item" href="laplace.html">
+      <div class="glyph" aria-hidden="true">ℒ</div>
+      <div class="text"><b>Laplace transforms</b><span>Sections 4.1 to 4.5, 50 problems.</span></div>
+    </a>
+    <a class="item" href="pde.html">
+      <div class="glyph" aria-hidden="true">∂</div>
+      <div class="text"><b>Partial differential equations</b><span>Sections 13.1 to 13.5, 50 problems.</span></div>
+    </a>
+  </div>
+
+  <h2>Download everything</h2>
+  <div class="list">
+    <a class="item" href="calc-textbook.zip" download>
+      <div class="glyph" aria-hidden="true">ZIP</div>
+      <div class="text"><b>All files (.zip)</b><span>The PDF and all four interactive pages, for offline use. 29 MB.</span></div>
+    </a>
+  </div>
+
+  <footer>Practice progress is saved in your browser only, so it stays on the device you used.</footer>
+</main>
+</body>
+</html>
