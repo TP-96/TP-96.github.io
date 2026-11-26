@@ -152,7 +152,7 @@
     #tc { position: absolute; left: 158px; bottom: 16px; width: 132px; height: 132px; }
     #map { position: absolute; right: 16px; top: 16px; width: 156px; height: 156px; }
     .throttle {
-      position: absolute; right: 16px; bottom: 16px; width: 118px; padding: 0.6rem 0.8rem;
+      position: absolute; right: 16px; bottom: 16px; width: 158px; padding: 0.6rem 0.8rem;
       display: flex; flex-direction: column; gap: 0.35rem;
     }
     .thr-row { display: flex; justify-content: space-between; align-items: baseline; }
@@ -279,6 +279,18 @@
       color: var(--orange); background: rgba(13,13,13,0.55); border: 1px solid rgba(244,93,0,0.5); touch-action: none;
     }
     .tbtn.on { background: var(--orange); color: var(--bg); }
+    /* hold-to-brake button for mouse / trackpad players */
+    .brake-btn {
+      position: absolute; right: 182px; bottom: 16px; width: 92px; height: 46px; pointer-events: auto; touch-action: none;
+      font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.14em; cursor: pointer;
+      color: var(--orange); background: var(--hud); border: 1px solid rgba(244,93,0,0.55); backdrop-filter: blur(3px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    }
+    .brake-btn small { font-size: 0.5rem; letter-spacing: 0.1em; color: var(--muted); }
+    .brake-btn:hover { border-color: var(--orange); }
+    .brake-btn.on { background: var(--orange); color: var(--bg); }
+    .brake-btn.on small { color: var(--bg); }
+    .stage.touch .brake-btn { display: none; }
     .stage.touch #adi { left: 12px; bottom: auto; top: 12px; width: 96px; height: 96px; }
     .stage.touch #tc { left: 12px; bottom: auto; top: 114px; width: 96px; height: 96px; }
     .stage.touch .throttle { display: none; }
@@ -381,7 +393,7 @@
       <div class="eyebrow">Games / Simulation</div>
       <h1 class="sim-title">Flight <span>Sim</span></h1>
     </div>
-    <p class="sim-desc">Take off from the island airstrip, fly ten rings around the coast, and bring it back down on the runway. Lift, drag, thrust and stalls are all modelled — fly it like a real light aircraft.</p>
+    <p class="sim-desc">Take off from the island airstrip, fly ten rings around the coast, and bring it back down on the runway. Lift, drag, thrust and stalls are all modelled — fly a Cessna 172 like a real light aircraft, or take the F-22 Raptor supersonic.</p>
     <div class="header-stats">
       <div class="hstat"><span class="hstat-key">Course Record</span><span class="hstat-val" id="hdr-best">—</span></div>
       <div class="hstat"><span class="hstat-key">Flights</span><span class="hstat-val" id="hdr-flights">0</span></div>
@@ -403,6 +415,7 @@
           <span class="tape-big" id="h-spd">0</span>
           <span class="tape-unit">KNOTS IAS</span>
           <div class="tape-sub"><span>G </span><b id="h-g">1.0</b></div>
+          <div class="tape-sub"><span>MACH </span><b id="h-mach">0.00</b></div>
         </div>
         <div class="tape right hud-box">
           <span class="tape-lbl">ALTITUDE</span>
@@ -419,8 +432,10 @@
         <div class="throttle hud-box">
           <div class="thr-row"><span class="tape-lbl">THROTTLE</span><b id="h-thr" style="font-size:.72rem">0%</b></div>
           <div class="thr-track"><div class="thr-fill" id="h-thr-fill"></div></div>
-          <div class="thr-flags"><span id="f-brk">BRK</span><span id="f-gnd">GND</span><span id="f-ast">AST</span><span id="f-cam">CHASE</span></div>
+          <div class="thr-flags"><span id="f-brk">BRK</span><span id="f-gnd">GND</span><span id="f-ast">AST</span><span id="f-ab">AB</span><span id="f-cam">CHASE</span></div>
         </div>
+
+        <button class="brake-btn" id="btn-brake" title="Hold to brake — or hold B / Space">BRAKE<small>HOLD · B</small></button>
 
         <div class="warn" id="warn">STALL</div>
         <div class="msg" id="msg"></div>
@@ -448,6 +463,10 @@
         <div class="ov-eyebrow">Ready for departure</div>
         <div class="ov-title">Flight<br><span>Sim.</span></div>
         <p class="ov-sub" id="start-sub">Ten rings, one runway, against the clock.</p>
+        <div class="mode-row" id="ac-row">
+          <button class="mode-btn active" data-ac="c172">Cessna 172</button>
+          <button class="mode-btn" data-ac="f22">F-22 Raptor</button>
+        </div>
         <div class="mode-row">
           <button class="mode-btn active" data-mode="course">Ring Course</button>
           <button class="mode-btn" data-mode="free">Free Flight</button>
@@ -533,7 +552,8 @@
         <li>Bank with A / D to turn. The orange marker and the minimap point to the next ring.</li>
         <li>Pull too hard or fly too slow and the wing stalls — push the nose down to recover.</li>
         <li>The turn coordinator (bottom left) shows your rate of turn: wings on the L or R mark is a standard-rate turn, a full circle in two minutes. Keep the ball centred with the rudder (Q / E) — if it drifts, press the rudder on the ball's side.</li>
-        <li>To land, line up with the runway, slow to about 60 knots and touch down gently: descent under 880 ft/min, wings level.</li>
+        <li>To land, line up with the runway, slow to about 60 knots and touch down gently: descent under 880 ft/min, wings level. Hold B, Space or the BRAKE button to stop.</li>
+        <li>In the F-22, past 85% throttle the afterburners light. It departs from the long runway, 36L, rotates at about 125 knots, and lands at 140–150 knots — use 36L, the short strip is only 680 m.</li>
       </ol>
     </div>
     <div class="record">
@@ -543,13 +563,7 @@
       <div class="rec-row"><span class="rec-key">Flights</span><span class="rec-val" id="log-flights">0</span></div>
       <div class="rec-row"><span class="rec-key">Crashes</span><span class="rec-val" id="log-crashes">0</span></div>
       <h3 style="margin-top:1.4rem">Aircraft <span>/ Numbers</span></h3>
-      <div class="rec-row"><span class="rec-key">Stall, clean</span><span class="rec-val">53 kt</span></div>
-      <div class="rec-row"><span class="rec-key">Rotate</span><span class="rec-val">55 kt</span></div>
-      <div class="rec-row"><span class="rec-key">Best climb</span><span class="rec-val">74 kt</span></div>
-      <div class="rec-row"><span class="rec-key">Best glide</span><span class="rec-val">68 kt</span></div>
-      <div class="rec-row"><span class="rec-key">Never exceed</span><span class="rec-val">163 kt</span></div>
-      <div class="rec-row"><span class="rec-key">Load limits</span><span class="rec-val">+3.8 / −1.52 g</span></div>
-      <p style="font-size:.95rem;color:var(--muted);line-height:1.5">Modelled on a Cessna 172S at maximum weight, using the figures in its pilot's operating handbook.</p>
+      <div id="ac-numbers"></div>
     </div>
   </section>
 
@@ -595,8 +609,8 @@
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   };
-  const settings = Object.assign({ assist: true, invert: false, sound: false }, store.get('flightsim_settings', {}));
-  const log = Object.assign({ best: null, last: null, flights: 0, crashes: 0 }, store.get('flightsim_log', {}));
+  const settings = Object.assign({ assist: true, invert: false, sound: false, aircraft: 'c172' }, store.get('flightsim_settings', {}));
+  const log = Object.assign({ best: null, best_f22: null, last: null, flights: 0, crashes: 0 }, store.get('flightsim_log', {}));
 
   let renderer;
   try {
@@ -657,8 +671,15 @@
   }
   const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-  // Runway: centre, half-length, half-width, elevation (metres). Aircraft takes off heading north (-z).
-  const RWY = { x: 0, z: 1500, halfL: 340, halfW: 16, h: 24 };
+  // Runways: centre, half-length, half-width, elevation (metres). Aircraft take off heading north (-z).
+  // 36R/18L is the original 680 m light-aircraft strip; 36L/18R is a 1,400 m × 45 m runway to the west for the jet.
+  const RWY = { x: 0, z: 1500, halfL: 340, halfW: 16, h: 24, names: ['18L', '36R'] };
+  const RWY2 = { x: -160, z: 1300, halfL: 700, halfW: 22.5, h: 24, names: ['18R', '36L'] };
+  const RUNWAYS = [RWY, RWY2];
+  const TWY_X = 40;                                          // parallel taxiway east of 36R
+  const APRON = { x0: 50, x1: 150, z0: 1340, z1: 1700 };     // apron in front of the hangars
+  // ground levelled for the airfield: [centre x, centre z, half-size x, half-size z]
+  const PADS = [[RWY.x, RWY.z, RWY.halfW + 80, RWY.halfL + 110], [RWY2.x, RWY2.z, RWY2.halfW + 70, RWY2.halfL + 90], [100, 1500, 75, 380]];
 
   function rawHeight(x, z) {
     const d = Math.hypot(x, z) / 2900 + fbm(x * 0.0005 + 31.7, z * 0.0005 - 12.3, 3) * 0.32;
@@ -671,9 +692,9 @@
     const mount = Math.pow(r, 2.4) * 600 * core * valley;
     const ground = 16 + hills * 58 * (0.35 + 0.65 * valley) + mount;
     let h = -55 + (ground + 55) * land;
-    // flatten a pad for the runway
-    const dx = Math.abs(x - RWY.x) - (RWY.halfW + 80), dz = Math.abs(z - RWY.z) - (RWY.halfL + 110);
-    const w = 1 - smooth(0, 240, Math.max(dx, dz));
+    // level the airfield
+    let w = 0;
+    for (const [cx, cz, hx, hz] of PADS) w = Math.max(w, 1 - smooth(0, 240, Math.max(Math.abs(x - cx) - hx, Math.abs(z - cz) - hz)));
     return h + (RWY.h - h) * w;
   }
 
@@ -698,18 +719,27 @@
     const hx = terrainH(x + e, z) - terrainH(x - e, z), hz = terrainH(x, z + e) - terrainH(x, z - e);
     return 1 / Math.sqrt(1 + (hx / (2 * e)) ** 2 + (hz / (2 * e)) ** 2);
   }
-  const onRunway = (x, z) => Math.abs(x - RWY.x) <= RWY.halfW + 4 && Math.abs(z - RWY.z) <= RWY.halfL + 6;
+  const inRwy = (r, x, z) => Math.abs(x - r.x) <= r.halfW + 4 && Math.abs(z - r.z) <= r.halfL + 6;
+  const onRunway = (x, z) => inRwy(RWY, x, z) || inRwy(RWY2, x, z);
+  // 1 on the mown airfield infield, fading to 0 outside it
+  const airfield = (x, z) => {
+    let a = 0;
+    for (const [cx, cz, hx, hz] of PADS) a = Math.max(a, 1 - smooth(-30, 30, Math.max(Math.abs(x - cx) - hx + 20, Math.abs(z - cz) - hz + 20)));
+    return a;
+  };
 
   const C = {
     deep: new THREE.Color('#4d5a52'), sand: new THREE.Color('#d6bd86'), grassA: new THREE.Color('#71893f'),
     grassB: new THREE.Color('#4f6b2c'), dry: new THREE.Color('#9a8a52'), rock: new THREE.Color('#857463'),
-    rockD: new THREE.Color('#5f5248'), snow: new THREE.Color('#f1ece2')
+    rockD: new THREE.Color('#5f5248'), snow: new THREE.Color('#f1ece2'), mown: new THREE.Color('#7f9a45')
   };
   function groundColor(h, ny, x, z, out) {
     const v = fbm(x * 0.004, z * 0.004, 2) * 0.5 + 0.5;
     if (h < 0) return out.copy(C.sand).lerp(C.deep, Math.min(1, -h / 30));
     if (h < 4) return out.copy(C.sand);
     out.copy(C.grassA).lerp(C.grassB, v);
+    const af = airfield(x, z);
+    if (af > 0) out.lerp(C.mown, af * 0.75);
     if (h > 150) out.lerp(C.dry, smooth(150, 300, h) * 0.7);
     if (ny < 0.82 || h > 330) out.lerp(v > 0.5 ? C.rock : C.rockD, ny < 0.82 ? smooth(0.82, 0.62, ny) : smooth(330, 420, h));
     if (h > 430 && ny > 0.7) out.lerp(C.snow, smooth(430, 500, h));
@@ -783,54 +813,224 @@
   sunLight.position.copy(SUN_DIR).multiplyScalar(1000);
   scene.add(sunLight);
 
-  // Runway with painted markings
+  // ════════════════════════════════════════════════════════════════════
+  //  AIRPORT — two parallel runways, taxiways, apron, hangars, tower, windsocks
+  // ════════════════════════════════════════════════════════════════════
+  const windsocks = [];
+  const WIND_TO = 0.3;    // a light north-north-westerly: the socks stream toward the south-south-east
   {
-    const cv = document.createElement('canvas'); cv.width = 128; cv.height = 2048;
-    const g = cv.getContext('2d');
-    g.fillStyle = '#3a3a3c'; g.fillRect(0, 0, 128, 2048);
-    for (let i = 0; i < 1400; i++) { g.fillStyle = `rgba(255,255,255,${Math.random() * 0.05})`; g.fillRect(Math.random() * 128, Math.random() * 2048, 2, 2); }
-    g.fillStyle = '#e9e6df';
-    g.fillRect(4, 0, 3, 2048); g.fillRect(121, 0, 3, 2048);
-    for (let y = 230; y < 1820; y += 90) g.fillRect(62, y, 4, 50);
-    for (const end of [0, 1]) {
-      for (let s = 0; s < 8; s++) { const x = 12 + s * 13 + (s >= 4 ? 4 : 0); g.fillRect(x, end ? 2048 - 110 : 20, 8, 90); }
-      g.save(); g.translate(64, end ? 1880 : 168); if (!end) g.rotate(Math.PI);
-      g.font = 'bold 54px monospace'; g.textAlign = 'center'; g.fillText(end ? '36' : '18', 0, 0); g.restore();
-    }
-    const tex = new THREE.CanvasTexture(cv);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const rw = new THREE.Mesh(
-      new THREE.PlaneGeometry(RWY.halfW * 2, RWY.halfL * 2),
-      new THREE.MeshLambertMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })
-    );
-    rw.rotation.x = -Math.PI / 2;
-    rw.position.set(RWY.x, RWY.h + 0.06, RWY.z);
-    scene.add(rw);
-
-    // hangar, tower, windsock — gives a sense of scale on the ground
-    const box = (w, h, d, color, x, y, z) => {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color }));
-      m.position.set(x, y, z); scene.add(m); return m;
+    const Y0 = RWY.h;
+    const aniso = renderer.capabilities.getMaxAnisotropy();
+    const finishTex = t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = aniso; return t; };
+    const flat = (w, l, tex, x, y, z, rotY = 0, order = -2) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, l),
+        new THREE.MeshLambertMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: order, polygonOffsetUnits: order }));
+      m.rotation.set(-Math.PI / 2, 0, rotY); m.position.set(x, y, z); scene.add(m); return m;
     };
-    box(34, 11, 26, 0xb8b2a6, 70, RWY.h + 5.5, 1640);
-    box(35, 1.2, 27, 0xF45D00, 70, RWY.h + 11.6, 1640);
-    box(22, 8, 18, 0xa9a397, 72, RWY.h + 4, 1600);
-    box(6, 16, 6, 0xd9d3c7, 58, RWY.h + 8, 1395);
-    box(8, 3.5, 8, 0x2a3a48, 58, RWY.h + 17.7, 1395);
-    box(0.3, 8, 0.3, 0xcccccc, -40, RWY.h + 4, 1280);
-    const sock = new THREE.Mesh(new THREE.ConeGeometry(0.9, 4, 8, 1, true), new THREE.MeshLambertMaterial({ color: 0xF45D00, side: THREE.DoubleSide }));
-    sock.rotation.z = Math.PI / 2; sock.position.set(-38, RWY.h + 7.6, 1280); scene.add(sock);
-    // runway edge lights
-    const lightGeo = new THREE.SphereGeometry(0.45, 6, 4);
-    const lightMat = new THREE.MeshBasicMaterial({ color: 0xffc27a });
-    const lights = new THREE.InstancedMesh(lightGeo, lightMat, 2 * 18);
-    const mtx = new THREE.Matrix4(); let li = 0;
-    for (let s = -1; s <= 1; s += 2) for (let i = 0; i < 18; i++) {
-      mtx.makeTranslation(RWY.x + s * (RWY.halfW + 2), RWY.h + 0.4, RWY.z - RWY.halfL + i * (RWY.halfL * 2 / 17));
-      lights.setMatrixAt(li++, mtx);
+
+    // ── runway surface with FAA-style markings, painted to scale ──
+    function runwayTexture(r) {
+      const L = r.halfL * 2, Wm = r.halfW * 2;
+      const W = 256, H = Math.min(4096, Math.round(L * 2.8));
+      const px = W / Wm, pz = H / L;                    // pixels per metre across / along
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const g = cv.getContext('2d'), rr = mulberry32(r.halfL | 0);
+      g.fillStyle = '#3d3e41'; g.fillRect(0, 0, W, H);
+      // patched asphalt, fine aggregate, and rubber laid down in the touchdown zones
+      for (let i = 0; i < 70; i++) { g.fillStyle = rr() < 0.5 ? `rgba(18,18,20,${0.06 + rr() * 0.08})` : `rgba(95,95,98,${0.05 + rr() * 0.07})`; g.fillRect(rr() * W, rr() * H, 30 + rr() * 90, 40 + rr() * 260); }
+      for (let i = 0; i < 6000; i++) { g.fillStyle = `rgba(255,255,255,${rr() * 0.045})`; g.fillRect(rr() * W, rr() * H, 1.5, 1.5); }
+      for (const end of [0, 1]) for (let i = 0; i < 90; i++) {
+        const d = 90 + rr() * 380, y = (end ? L - d : d) * pz;
+        g.fillStyle = `rgba(8,8,8,${0.08 + rr() * 0.1})`; g.fillRect(W / 2 + (rr() - 0.5) * Wm * 0.32 * px, y, (0.6 + rr()) * px, (6 + rr() * 25) * pz);
+      }
+      const M = (x0, z0, w, l) => g.fillRect(W / 2 + x0 * px, z0 * pz, w * px, l * pz);   // x0 metres from the centreline, z0 metres from the north end
+      g.fillStyle = '#ecebe5';
+      M(-r.halfW + 0.6, 0, 0.9, L); M(r.halfW - 1.5, 0, 0.9, L);                         // side stripes
+      for (let z = 150; z < L - 186; z += 60) M(-0.45, z, 0.9, 36);                       // centreline: 36 m dashes, 24 m gaps
+      const long = L >= 1200, nKeys = Wm >= 45 ? 12 : 8;
+      for (const end of [0, 1]) {
+        const at = (d, l) => end ? L - d - l : d;                                         // d = distance from this threshold
+        g.fillRect(0, at(1.5, 1.2) * pz, W, 1.2 * pz);                                     // threshold bar
+        // piano keys, split down the middle
+        const sw = 1.8, half = Wm / 2 - 3, gap = (half * 2 - 3.6 - nKeys * sw) / (nKeys - 2);
+        for (let i = 0; i < nKeys; i++) {
+          const x = i < nKeys / 2 ? -half + i * (sw + gap) : half - (nKeys - 1 - i) * (sw + gap) - sw;
+          M(x, at(6, 45), sw, 45);
+        }
+        // designator: number, with the L/R letter nearer the threshold
+        const [num, letter] = [r.names[end].slice(0, 2), r.names[end].slice(2)];
+        const drawText = (txt, d) => {
+          g.save(); g.translate(W / 2, at(d, 0) * pz);
+          if (!end) g.rotate(Math.PI);
+          g.scale(1, pz / px);
+          g.font = `bold ${Math.round(18 * px)}px "DM Mono", monospace`; g.textAlign = 'center'; g.textBaseline = 'bottom';
+          g.fillText(txt, 0, 0); g.restore();
+        };
+        drawText(letter, 75); drawText(num, 99);
+        // touchdown-zone bars and the aiming point
+        const bars = long ? [[150, 3], [300, 'A'], [450, 2], [600, 2]] : [[120, 3], [180, 'A'], [270, 2]];
+        for (const [d, n] of bars) {
+          if (n === 'A') { const aw = long ? 9 : 6; for (const sd of [-1, 1]) M(sd > 0 ? (long ? 9 : 5.5) : -(long ? 9 : 5.5) - aw, at(d, 45), aw, 45); continue; }
+          for (const sd of [-1, 1]) for (let k = 0; k < n; k++) { const x = (long ? 6 : 4.5) + k * 3.3; M(sd > 0 ? x : -x - 1.8, at(d, 22.5), 1.8, 22.5); }
+        }
+      }
+      return finishTex(new THREE.CanvasTexture(cv));
     }
-    scene.add(lights);
+    for (const r of RUNWAYS) {
+      flat(r.halfW * 2, r.halfL * 2, runwayTexture(r), r.x, Y0 + 0.09, r.z, 0, -3);
+      // light-grey blast pads and shoulders
+      const sh = new THREE.MeshLambertMaterial({ color: 0x6b6a64, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+      for (const end of [-1, 1]) {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(r.halfW * 2, 40), sh);
+        m.rotation.x = -Math.PI / 2; m.position.set(r.x, Y0 + 0.05, r.z + end * (r.halfL + 20)); scene.add(m);
+      }
+      const shm = new THREE.Mesh(new THREE.PlaneGeometry(r.halfW * 2 + 7, r.halfL * 2), sh);
+      shm.rotation.x = -Math.PI / 2; shm.position.set(r.x, Y0 + 0.05, r.z); scene.add(shm);
+    }
+
+    // ── taxiways: asphalt with a yellow centreline and edge lines ──
+    const twyTex = (() => {
+      const cv = document.createElement('canvas'); cv.width = 128; cv.height = 64;
+      const g = cv.getContext('2d');
+      g.fillStyle = '#45464a'; g.fillRect(0, 0, 128, 64);
+      for (let i = 0; i < 300; i++) { g.fillStyle = `rgba(255,255,255,${Math.random() * 0.05})`; g.fillRect(Math.random() * 128, Math.random() * 64, 1.5, 1.5); }
+      g.fillStyle = '#e3b82c'; g.fillRect(61, 0, 6, 64);
+      g.fillRect(6, 0, 3, 64); g.fillRect(10, 0, 3, 64); g.fillRect(115, 0, 3, 64); g.fillRect(119, 0, 3, 64);
+      const t = finishTex(new THREE.CanvasTexture(cv)); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+    })();
+    const taxi = (x0, z0, x1, z1, w = 18) => {
+      const ew = Math.abs(x1 - x0) > Math.abs(z1 - z0), len = ew ? Math.abs(x1 - x0) : Math.abs(z1 - z0);
+      const t = twyTex.clone(); t.needsUpdate = true; t.repeat.set(1, len / 16);
+      flat(w, len, t, (x0 + x1) / 2, Y0 + 0.07, (z0 + z1) / 2, ew ? Math.PI / 2 : 0, -2);
+    };
+    taxi(TWY_X, RWY.z - RWY.halfL + 10, TWY_X, RWY.z + RWY.halfL - 10);       // parallel taxiway
+    for (const z of [RWY.z - RWY.halfL + 22, RWY.z, RWY.z + RWY.halfL - 22]) taxi(RWY.x + RWY.halfW, z, TWY_X + 9, z);
+    for (const z of [1230, 1760]) taxi(RWY2.x + RWY2.halfW, z, RWY.x - RWY.halfW, z);   // crossovers to 36L
+
+    // ── apron: concrete slabs with joints and yellow lead-in lines ──
+    {
+      const aw = APRON.x1 - APRON.x0, al = APRON.z1 - APRON.z0;
+      const cv = document.createElement('canvas'); cv.width = 512; cv.height = 1024;
+      const g = cv.getContext('2d'), sx = 512 / aw, sz = 1024 / al;
+      g.fillStyle = '#9b9a94'; g.fillRect(0, 0, 512, 1024);
+      for (let i = 0; i < 160; i++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? '60,60,58' : '200,198,190'},${Math.random() * 0.08})`; g.fillRect(Math.random() * 512, Math.random() * 1024, 7.5 * sx, 7.5 * sz); }
+      g.fillStyle = 'rgba(40,40,38,0.35)';
+      for (let x = 0; x < aw; x += 7.5) g.fillRect(x * sx, 0, 1, 1024);
+      for (let z = 0; z < al; z += 7.5) g.fillRect(0, z * sz, 512, 1);
+      g.strokeStyle = '#e3b82c'; g.lineWidth = 4;
+      g.beginPath(); g.moveTo(12 * sx, 0); g.lineTo(12 * sx, 1024); g.stroke();
+      for (const zc of [60, 160, 280]) {          // a lead-in line to each hangar door
+        g.beginPath(); g.moveTo(12 * sx, (zc - 25) * sz); g.quadraticCurveTo(12 * sx, zc * sz, 40 * sx, zc * sz); g.lineTo(aw * sx, zc * sz); g.stroke();
+      }
+      flat(aw, al, finishTex(new THREE.CanvasTexture(cv)), (APRON.x0 + APRON.x1) / 2, Y0 + 0.06, (APRON.z0 + APRON.z1) / 2, 0, -1);
+    }
+
+    // ── buildings ──
+    const lam = c => new THREE.MeshLambertMaterial({ color: c, flatShading: true });
+    const put = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); scene.add(m); return m; };
+    // three arched hangars facing the apron, doors open to the west
+    for (const [zc, w] of [[APRON.z0 + 60, 40], [APRON.z0 + 160, 46], [APRON.z0 + 280, 40]]) {
+      const d = 34, xc = APRON.x1 + d / 2 - 2, wallH = 5;
+      put(new THREE.BoxGeometry(d, wallH, w), lam(0xc9c3b6), xc, Y0 + wallH / 2, zc);
+      const arch = new THREE.CylinderGeometry(w / 2, w / 2, d, 18, 1, false, 0, Math.PI);
+      arch.rotateZ(Math.PI / 2); arch.scale(1, 0.42, 1);
+      put(arch, lam(0xa9b0b4), xc, Y0 + wallH, zc);
+      put(new THREE.BoxGeometry(d + 0.4, 0.8, w + 0.4), lam(0xF45D00), xc, Y0 + wallH, zc);   // orange eave band
+      // sliding doors: dark panels, one pushed half open to show the shadowed interior
+      const door = lam(0x5d6266);
+      for (let k = 0; k < 4; k++) {
+        const pw = (w - 4) / 4, open = k === 1 ? -pw * 0.9 : 0;
+        put(new THREE.BoxGeometry(0.3, wallH + 5.5, pw - 0.3), door, xc - d / 2 - 0.25 - (k === 1 ? 0.35 : 0), Y0 + (wallH + 5.5) / 2, zc - w / 2 + 2 + pw * (k + 0.5) + open);
+      }
+      put(new THREE.BoxGeometry(0.2, wallH + 5, (w - 4) / 4 - 0.4), lam(0x16181a), xc - d / 2 - 0.05, Y0 + (wallH + 5) / 2, zc - w / 2 + 2 + (w - 4) / 4 * 1.5);
+    }
+    // control tower: tapered shaft, catwalk, sloped glass cab, orange roof and a beacon mast
+    {
+      const tx = 82, tz = APRON.z0 - 40;
+      put(new THREE.BoxGeometry(14, 4, 10), lam(0xd8d2c5), tx + 4, Y0 + 2, tz);
+      put(new THREE.CylinderGeometry(2.2, 2.8, 20, 10), lam(0xe2dccf), tx, Y0 + 10, tz);
+      put(new THREE.CylinderGeometry(4.6, 4.6, 0.5, 8), lam(0x9a968e), tx, Y0 + 20.25, tz);
+      const glass = new THREE.MeshPhongMaterial({ color: 0x2c4558, specular: 0xffd2a0, shininess: 80, flatShading: true });
+      put(new THREE.CylinderGeometry(4.4, 3.7, 3.8, 8), glass, tx, Y0 + 22.4, tz);
+      put(new THREE.CylinderGeometry(4.9, 4.6, 0.7, 8), lam(0xF45D00), tx, Y0 + 24.65, tz);
+      put(new THREE.CylinderGeometry(0.08, 0.08, 4, 5), lam(0x888888), tx, Y0 + 27, tz);
+      put(new THREE.SphereGeometry(0.25, 6, 4), new THREE.MeshBasicMaterial({ color: 0xff3b2f }), tx, Y0 + 29.1, tz);
+    }
+    // terminal with a glass frontage, and fuel tanks
+    {
+      const tz = APRON.z1 + 14;
+      put(new THREE.BoxGeometry(70, 7, 18), lam(0xddd6c8), APRON.x0 + 50, Y0 + 3.5, tz);
+      put(new THREE.BoxGeometry(70.4, 0.6, 18.4), lam(0xF45D00), APRON.x0 + 50, Y0 + 7.2, tz);
+      put(new THREE.BoxGeometry(62, 3.2, 0.3), new THREE.MeshPhongMaterial({ color: 0x2c4558, specular: 0xffd2a0, shininess: 70 }), APRON.x0 + 50, Y0 + 3.6, tz - 9.05);
+      for (const dz of [0, 11]) {
+        put(new THREE.CylinderGeometry(4, 4, 6, 14), lam(0xf0ece4), APRON.x1 + 12, Y0 + 3, APRON.z1 + 8 + dz);
+        put(new THREE.CylinderGeometry(4.05, 4.05, 0.5, 14), lam(0xF45D00), APRON.x1 + 12, Y0 + 5.2, APRON.z1 + 8 + dz);
+      }
+    }
+
+    // ── lights: white edge lights, green thresholds, blue taxiway edges, PAPIs ──
+    {
+      const geo = new THREE.SphereGeometry(0.4, 6, 4), mtx = new THREE.Matrix4();
+      const batch = (color, pts) => {
+        const m = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color }), pts.length);
+        pts.forEach((p, i) => m.setMatrixAt(i, mtx.makeTranslation(p[0], Y0 + 0.4, p[1]))); scene.add(m);
+      };
+      const edge = [], thr = [], twy = [];
+      for (const r of RUNWAYS) {
+        for (const sd of [-1, 1]) for (let z = r.z - r.halfL; z <= r.z + r.halfL + 0.1; z += 60) edge.push([r.x + sd * (r.halfW + 1.5), z]);
+        for (const end of [-1, 1]) for (let x = -r.halfW; x <= r.halfW + 0.1; x += 3) thr.push([r.x + x, r.z + end * (r.halfL + 0.8)]);
+      }
+      for (let z = RWY.z - RWY.halfL + 30; z < RWY.z + RWY.halfL - 20; z += 45) for (const sd of [-1, 1]) twy.push([TWY_X + sd * 10, z]);
+      batch(0xfff2d8, edge); batch(0x6dff9a, thr); batch(0x5b8cff, twy);
+      // PAPI: four boxes left of each northbound touchdown zone — two white, two red on the glide path
+      const papi = (r, d) => {
+        for (let k = 0; k < 4; k++) {
+          const m = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), new THREE.MeshBasicMaterial({ color: k < 2 ? 0xffffff : 0xff3b2f }));
+          m.position.set(r.x - r.halfW - 12 - k * 9, Y0 + 0.6, r.z + r.halfL - d); scene.add(m);
+        }
+      };
+      papi(RWY, 180); papi(RWY2, 300);
+    }
+
+    // ── windsocks: striped cone on a pivoting mast; it fills and swings with the gusts ──
+    function windsock(x, z, phase) {
+      const g = new THREE.Group(); g.position.set(x, Y0, z); scene.add(g);
+      const pole = lam(0xd9d6d0);
+      const at = (m, x, y, z) => { m.position.set(x, y, z); return m; };
+      g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 0.4, 8), lam(0x8f8c86)), 0, 0.2, 0));
+      g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.1, 6.6, 6), pole), 0, 3.5, 0));
+      const pivot = new THREE.Group(); pivot.position.set(0, 6.6, 0); g.add(pivot);
+      const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.04, 6, 16), pole); hoop.position.z = 0.25; pivot.add(hoop);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.3), pole); arm.position.z = 0.12; pivot.add(arm);
+      const segs = [], N = 5, len = 0.78;
+      let parent = pivot, r0 = 0.5;
+      for (let i = 0; i < N; i++) {
+        const r1 = 0.5 - (i + 1) * 0.055;
+        const geo = new THREE.CylinderGeometry(r1, r0, len, 14, 1, true);
+        geo.rotateX(Math.PI / 2); geo.translate(0, 0, len / 2);
+        const seg = new THREE.Group(); seg.position.z = i === 0 ? 0.25 : len; parent.add(seg);
+        seg.add(new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: i % 2 ? 0xf4f1ea : 0xF45D00, side: THREE.DoubleSide })));
+        segs.push(seg); parent = seg; r0 = r1;
+      }
+      // night/edge light at the mast head
+      pivot.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 4), new THREE.MeshBasicMaterial({ color: 0xff3b2f })), 0, 0.35, 0));
+      windsocks.push({ pivot, segs, phase });
+    }
+    windsock(RWY.x - RWY.halfW - 26, RWY.z + RWY.halfL - 170, 0);
+    windsock(RWY2.x - RWY2.halfW - 30, RWY2.z + RWY2.halfL - 280, 1.7);
+    windsock(RWY.x - RWY.halfW - 26, RWY.z - RWY.halfL + 120, 3.1);
+  }
+  function updateWindsocks(t) {
+    for (const w of windsocks) {
+      const tt = t + w.phase;
+      const gust = THREE.MathUtils.clamp(0.62 + 0.22 * Math.sin(tt * 0.41) + 0.12 * Math.sin(tt * 1.73) + 0.05 * Math.sin(tt * 4.1), 0, 1);
+      w.pivot.rotation.y = WIND_TO + Math.sin(tt * 0.27) * 0.16 + Math.sin(tt * 1.1) * 0.04;
+      const droop = (1 - gust) * 0.42 + 0.03;          // a full sock streams almost level, a limp one hangs
+      w.segs.forEach((sg, i) => {
+        sg.rotation.x = droop * (0.55 + i * 0.2) + Math.sin(tt * 7 - i * 1.1) * 0.035 * gust;
+        sg.rotation.y = Math.sin(tt * 5.3 - i * 0.9) * 0.05 * (0.4 + gust);
+      });
+    }
   }
 
   // Trees (instanced low-poly cones, clustered into forests)
@@ -846,7 +1046,7 @@
       const h = terrainH(x, z);
       if (h < 6 || h > 280) continue;
       if (fbm(x * 0.0022 + 50, z * 0.0022 - 20, 2) < 0.06) continue;
-      if (Math.abs(x - RWY.x) < 140 && Math.abs(z - RWY.z) < RWY.halfL + 260) continue;
+      if (x > -300 && x < 230 && z > 470 && z < 2130) continue;          // keep the airfield clear
       if (terrainNormalY(x, z) < 0.86) continue;
       const w = 3.2 + r() * 2.6, ht = 9 + r() * 9;
       p.set(x, h - 0.5, z); s.set(w, ht, w); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6.28);
@@ -883,7 +1083,32 @@
   // ════════════════════════════════════════════════════════════════════
   //  AIRCRAFT MODEL (forward = -z, up = +y, right = +x)
   // ════════════════════════════════════════════════════════════════════
-  const GEAR_H = 1.24;   // distance from the aircraft origin down to the bottom of the wheels
+  let GEAR_H = 1.24;     // distance from the aircraft origin down to the bottom of the wheels (set per aircraft)
+  // join rings of points (all the same length, ordered around) into a closed, capped solid
+  function loft(rings, colorAt) {
+    const pos = [], col = [], n = rings[0].length;
+    const tri = (a, b, c, ri = -1, pi = -1) => {
+      pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+      const cx = (a.x + b.x + c.x) / 3, cy = (a.y + b.y + c.y) / 3, cz = (a.z + b.z + c.z) / 3;
+      const nrm = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)).normalize();
+      const k = colorAt(cx, cy, cz, nrm, ri, pi);
+      for (let i = 0; i < 3; i++) col.push(k.r, k.g, k.b);
+    };
+    for (let r = 0; r < rings.length - 1; r++) for (let i = 0; i < n; i++) {
+      const a = rings[r][i], b = rings[r][(i + 1) % n], c = rings[r + 1][i], d = rings[r + 1][(i + 1) % n];
+      tri(a, c, b, r, i); tri(b, c, d, r, i);
+    }
+    for (const [ring, flip] of [[rings[0], false], [rings[rings.length - 1], true]]) {
+      const ctr = ring.reduce((m, p) => m.add(p), new THREE.Vector3()).divideScalar(n);
+      for (let i = 0; i < n; i++) flip ? tri(ctr, ring[(i + 1) % n], ring[i]) : tri(ctr, ring[i], ring[(i + 1) % n]);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    return geo;
+  }
+
   // A Cessna 172-style high-wing aircraft at true scale (8.3 m long, 11 m span, 2.7 m tall).
   // Shapes are lofted from cross-sections; each face is coloured on its own for a crisp low-poly look.
   function buildPlane() {
@@ -892,30 +1117,6 @@
       white: new THREE.Color(0xf2efe9), orange: new THREE.Color(0xF45D00), stripe2: new THREE.Color(0x2b2b2b),
       glass: new THREE.Color(0x24384a), dark: new THREE.Color(0x1c1c1c), grey: new THREE.Color(0x9a978f)
     };
-    // join rings of points (all the same length, ordered around) into a closed, capped solid
-    function loft(rings, colorAt) {
-      const pos = [], col = [], n = rings[0].length;
-      const tri = (a, b, c, ri = -1, pi = -1) => {
-        pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
-        const cx = (a.x + b.x + c.x) / 3, cy = (a.y + b.y + c.y) / 3, cz = (a.z + b.z + c.z) / 3;
-        const nrm = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)).normalize();
-        const k = colorAt(cx, cy, cz, nrm, ri, pi);
-        for (let i = 0; i < 3; i++) col.push(k.r, k.g, k.b);
-      };
-      for (let r = 0; r < rings.length - 1; r++) for (let i = 0; i < n; i++) {
-        const a = rings[r][i], b = rings[r][(i + 1) % n], c = rings[r + 1][i], d = rings[r + 1][(i + 1) % n];
-        tri(a, c, b, r, i); tri(b, c, d, r, i);
-      }
-      for (const [ring, flip] of [[rings[0], false], [rings[rings.length - 1], true]]) {
-        const ctr = ring.reduce((m, p) => m.add(p), new THREE.Vector3()).divideScalar(n);
-        for (let i = 0; i < n; i++) flip ? tri(ctr, ring[(i + 1) % n], ring[i]) : tri(ctr, ring[i], ring[(i + 1) % n]);
-      }
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-      geo.computeVertexNormals();
-      return geo;
-    }
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
     const add = (geo, m = mat) => { const mesh = new THREE.Mesh(geo, m); g.add(mesh); return mesh; };
     const lerp = (a, b, t) => a + (b - a) * t;
@@ -1048,8 +1249,98 @@
     disc.position.z = -2.8; g.add(disc);
     return { group: g, prop, disc };
   }
-  const plane = buildPlane();
-  scene.add(plane.group);
+
+  // An F-22A Raptor at true scale (18.9 m long, 13.56 m span, 5.08 m tall): chined, faceted fuselage,
+  // 42° diamond wing, twin fins canted out 28°, caret intakes and two-dimensional nozzles.
+  function buildF22() {
+    const g = new THREE.Group();
+    const COL = {
+      skin: new THREE.Color(0x8b9298), skinD: new THREE.Color(0x767d84), skinL: new THREE.Color(0x9da3a8),
+      dark: new THREE.Color(0x3a3e43), black: new THREE.Color(0x101113), orange: new THREE.Color(0xF45D00)
+    };
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true });
+    const add = (geo, m = mat) => { const mesh = new THREE.Mesh(geo, m); g.add(mesh); return mesh; };
+    const shade = (n, y) => n.y > 0.35 ? COL.skin : n.y < -0.35 ? COL.skinL : COL.skinD;
+
+    // fuselage stations: [z, half-width at the chine, top, bottom, chine height]
+    const F = [
+      [-9.45, 0.04, 0.03, -0.03, 0], [-8.6, 0.42, 0.3, -0.26, -0.02], [-7.4, 0.78, 0.55, -0.46, -0.02],
+      [-6.2, 1.0, 0.72, -0.58, -0.03], [-4.8, 1.3, 0.78, -0.7, -0.05], [-3.6, 2.05, 0.74, -0.8, -0.08],
+      [-1.5, 2.3, 0.7, -0.86, -0.08], [1.5, 2.35, 0.66, -0.86, -0.08], [4.0, 2.15, 0.6, -0.74, -0.08],
+      [6.2, 1.75, 0.52, -0.58, -0.08], [7.9, 1.45, 0.42, -0.42, -0.06], [8.5, 1.4, 0.36, -0.36, -0.06]
+    ];
+    // right half of the cross-section from the spine down to the keel: [x fraction, height fraction]
+    const P = [[0, 1], [0.45, 0.93], [0.85, 0.45], [1, 0], [0.8, -0.6], [0.4, -0.95], [0, -1]];
+    const ring = ([z, hw, top, bot, cy]) => {
+      const pt = ([u, v], sx) => new THREE.Vector3(sx * u * hw, v >= 0 ? cy + v * (top - cy) : cy + v * (cy - bot), z);
+      return [...P.map(q => pt(q, 1)), ...P.slice(1, -1).reverse().map(q => pt(q, -1))];
+    };
+    add(loft(F.map(ring), (x, y, z, n) => shade(n, y)));
+
+    // canopy: one-piece gold-tinted bubble
+    const canopy = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 12),
+      new THREE.MeshPhongMaterial({ color: 0x6d5c32, specular: 0xfff0c8, shininess: 110, transparent: true, opacity: 0.92 }));
+    canopy.scale.set(0.56, 0.5, 2.35); canopy.position.set(0, 0.7, -5.3); g.add(canopy);
+    // caret intakes
+    for (const sd of [-1, 1]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.05, 0.5), new THREE.MeshLambertMaterial({ color: 0x0e0f11 }));
+      m.position.set(sd * 1.72, -0.24, -3.55); g.add(m);
+      const lip = new THREE.Mesh(new THREE.BoxGeometry(0.95, 1.15, 0.12), new THREE.MeshLambertMaterial({ color: 0x80878d }));
+      lip.position.set(sd * 1.72, -0.24, -3.82); g.add(lip);
+    }
+
+    // a lifting surface lofted between root and tip leading-edge points; chord runs aft (+z)
+    const AFT = [[1, 0.003], [0.8, 0.03], [0.6, 0.045], [0.4, 0.05], [0.2, 0.042], [0.06, 0.024], [0, 0],
+                 [0.06, -0.024], [0.2, -0.042], [0.4, -0.05], [0.6, -0.045], [0.8, -0.03]];
+    const surf = (A, cA, B, cB, nrm, colorAt, mirror) => {
+      const r = (Pt, c) => AFT.map(([u, t]) => Pt.clone().add(new THREE.Vector3(0, 0, u * c)).addScaledVector(nrm, t * c));
+      const rs = [r(A, cA), r(B, cB)];
+      if (mirror) rs.forEach(q => q.reverse());
+      add(loft(rs, colorAt));
+    };
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    for (const sd of [-1, 1]) {
+      // wing: 42° leading-edge sweep, 17° forward-swept trailing edge
+      surf(V(sd * 1.9, -0.1, -2.5), 7.2, V(sd * 6.78, -0.32, 1.98), 1.25, V(0, 1, 0), (x, y, z, n) => shade(n, y), sd < 0);
+      // all-moving horizontal tails
+      surf(V(sd * 1.5, -0.15, 5.7), 3.1, V(sd * 4.42, -0.2, 7.6), 1.3, V(0, 1, 0), (x, y, z, n) => shade(n, y), sd < 0);
+      // twin fins canted outward 28°
+      const c = Math.cos(28 * Math.PI / 180), sn = Math.sin(28 * Math.PI / 180);
+      surf(V(sd * 1.55, 0.45, 4.3), 3.9, V(sd * (1.55 + 2.6 * sn), 0.45 + 2.6 * c, 6.3), 1.5, V(c, -sd * sn, 0).multiplyScalar(sd),
+        (x, y) => y > 2.45 ? COL.orange : COL.skinD, sd < 0);
+    }
+
+    // two-dimensional thrust-vectoring nozzles, exhaust glow and afterburner plumes
+    const glow = [], ab = [];
+    for (const sd of [-1, 1]) {
+      const nz = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.78, 1.2), new THREE.MeshLambertMaterial({ color: 0x4a4e53, flatShading: true }));
+      nz.position.set(sd * 0.72, -0.05, 8.4); g.add(nz);
+      const hole = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.56), new THREE.MeshBasicMaterial({ color: 0x140805 }));
+      hole.position.set(sd * 0.72, -0.05, 9.01); g.add(hole); glow.push(hole);
+      const plume = new THREE.Group(); plume.position.set(sd * 0.72, -0.05, 9.02); g.add(plume);
+      for (const [r, l, col, op] of [[0.46, 5.5, 0xff7a2e, 0.42], [0.3, 3.2, 0xffd9a0, 0.7]]) {
+        const geo = new THREE.ConeGeometry(r, l, 14, 1, true); geo.rotateX(Math.PI / 2); geo.translate(0, 0, l / 2);
+        const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+        m.scale.set(1.05, 0.62, 1); plume.add(m);
+      }
+      plume.visible = false; ab.push(plume);
+    }
+
+    // landing gear: nose gear under the cockpit, mains under the intakes (wheels reach 1.95 m below the origin)
+    const tyre = new THREE.MeshLambertMaterial({ color: 0x18191a }), strut = new THREE.MeshLambertMaterial({ color: 0xbfc3c6 });
+    const wheel = (x, y, z, r, w) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, w, 14), tyre); m.rotation.z = Math.PI / 2; m.position.set(x, y, z); g.add(m); };
+    const leg = (x, y0, y1, z) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, y0 - y1, 6), strut); m.position.set(x, (y0 + y1) / 2, z); g.add(m); };
+    leg(0, -0.55, -1.62, -5.9); wheel(0, -1.62, -5.9, 0.33, 0.22);
+    for (const sd of [-1, 1]) {
+      leg(sd * 1.6, -0.8, -1.45, 1.0); wheel(sd * 1.6, -1.45, 1.0, 0.5, 0.32);
+      const door = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.9, 1.6), new THREE.MeshLambertMaterial({ color: 0x80878d }));
+      door.position.set(sd * 1.25, -1.15, 1.0); g.add(door);
+    }
+    return { group: g, prop: new THREE.Group(), disc: { material: { opacity: 0 } }, glow, ab };
+  }
+  const planes = { c172: buildPlane(), f22: buildF22() };
+  for (const k in planes) { scene.add(planes[k].group); planes[k].group.visible = false; }
+  let plane = planes.c172;
 
   // Soft shadow under the aircraft (helps judge height when landing)
   const shadow = new THREE.Group();
@@ -1058,7 +1349,7 @@
       new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
     m.rotation.x = -Math.PI / 2; m.scale.set(5.2, 3.2, 1);
     shadow.add(m); scene.add(shadow);
-    shadow.userData.mat = m.material;
+    shadow.userData.mat = m.material; shadow.userData.mesh = m;
   }
 
   // ════════════════════════════════════════════════════════════════════
@@ -1116,30 +1407,88 @@
   // ════════════════════════════════════════════════════════════════════
   //  FLIGHT MODEL
   // ════════════════════════════════════════════════════════════════════
-  // Modelled on a Cessna 172S at maximum weight (figures from the pilot's operating handbook):
-  // 2,550 lb, 174 sq ft wing, 36 ft span, 180 hp, fixed-pitch propeller.
-  const AC = {
-    mass: 1157,               // kg   (2,550 lb)
-    S: 16.17,                 // m²   (174 sq ft)
-    CL0: 0.25,                // lift coefficient at zero angle of attack (cambered wing + incidence)
-    CLa: 4.9,                 // per radian, finite wing: 2π·AR/(AR+2) with AR = 7.5
-    aStall: 0.25,             // rad (14.3°) → CLmax 1.475 → 53 KCAS clean stall
-    CD0: 0.032,               // parasite drag, fixed gear and struts
-    K: 0.0568,                // induced drag factor 1/(π·e·AR), e = 0.75
-    CDprop: 0.016,            // windmilling propeller at idle → ~9:1 glide at 68 knots
-    P: 134226,                // W   (180 bhp) at sea level
-    Tstatic: 2150,            // N   static thrust of the fixed-pitch propeller
-    g: 9.80665,
-    nMax: 3.8, nMin: -1.52,   // limit load factors, normal category
-    vne: 163                  // knots IAS, never-exceed speed
+  const AIRCRAFT = {
+    // Modelled on a Cessna 172S at maximum weight (figures from the pilot's operating handbook):
+    // 2,550 lb, 174 sq ft wing, 36 ft span, 180 hp, fixed-pitch propeller.
+    c172: {
+      id: 'c172', name: 'Cessna 172S', type: 'prop',
+      mass: 1157,               // kg   (2,550 lb)
+      S: 16.17,                 // m²   (174 sq ft)
+      CL0: 0.25,                // lift coefficient at zero angle of attack (cambered wing + incidence)
+      CLa: 4.9,                 // per radian, finite wing: 2π·AR/(AR+2) with AR = 7.5
+      aStall: 0.25,             // rad (14.3°) → CLmax 1.475 → 53 KCAS clean stall
+      CD0: 0.032,               // parasite drag, fixed gear and struts
+      K: 0.0568,                // induced drag factor 1/(π·e·AR), e = 0.75
+      cdWave: 0.03,             // transonic drag rise (never reached by a 172)
+      CDprop: 0.016,            // windmilling propeller at idle → ~9:1 glide at 68 knots
+      P: 134226,                // W   (180 bhp) at sea level
+      Tstatic: 2150,            // N   static thrust of the fixed-pitch propeller
+      g: 9.80665,
+      nMax: 3.8, nMin: -1.52,   // limit load factors, normal category
+      vne: 163, mMax: 1,        // knots IAS, never-exceed speed
+      // handling: control power builds up to vRef (m/s); roll rate limit (rad/s); pitch-rate authority; static stability
+      vRef: 38, vSlow: 34, vMin: 25, rollMax: 1.1, rollK: 0.0165, pitchK: 0.75, stab: 3.2, aTrim0: 0.05, fbw: false,
+      vRotate: 22, thetaMax: 0.24, vTouchMax: 72, gearH: 1.24, runway: RWY,
+      cam: 1, eye: [0.55, 0.55], shadow: [5.2, 3.2], debris: [0xf0ede8, 0xF45D00, 0x1c1c1c],
+      hint: 'Hold <kbd>R</kbd> for full throttle · at 55 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
+      numbers: [['Stall, clean', '53 kt'], ['Rotate', '55 kt'], ['Best climb', '74 kt'], ['Best glide', '68 kt'], ['Never exceed', '163 kt'], ['Load limits', '+3.8 / −1.52 g']],
+      note: "Modelled on a Cessna 172S at maximum weight, using the figures in its pilot's operating handbook."
+    },
+    // Modelled on an F-22A Raptor from published figures: 78.04 m² wing (AR 2.36), two F119-PW-100 turbofans
+    // of 116 kN dry / 156 kN with afterburner each, +9 / −3 g. Weight is 25,000 kg: empty (19,700 kg)
+    // plus half internal fuel, pilot and an internal air-to-air load.
+    f22: {
+      id: 'f22', name: 'F-22A Raptor', type: 'jet',
+      mass: 25000,              // kg
+      S: 78.04,                 // m²
+      CL0: 0.08,                // nearly symmetric thin section with a little camber from the leading-edge flaps
+      CLa: 3.2,                 // per radian: low-aspect wing (2πA/(2+√(A²+4)) ≈ 2.9) plus chine and body lift
+      aStall: 0.47,             // rad (27°) → CLmax ≈ 1.58 → ~110 kt 1 g stall at this weight
+      CD0: 0.018,               // subsonic parasite drag, clean stealth shape, weapons internal
+      K: 0.16,                  // induced drag: 1/(π·e·A) with leading-edge suction, e ≈ 0.83
+      cdWave: 0.027,            // transonic wave-drag rise, peaking near Mach 1.1
+      Tmil: 232000,             // N   2 × 116 kN, military (dry) power, sea-level static
+      Tab: 312000,              // N   2 × 156 kN with afterburner
+      idle: 0.06,               //     idle thrust as a fraction of military
+      abFrom: 0.85,             //     throttle above this lights the afterburners
+      spool: 1.1,               // s   engine response time constant
+      g: 9.80665,
+      nMax: 9, nMin: -3,        // flight-control-system g limits
+      vne: 800, mMax: 2.25,     // knots equivalent airspeed, and Mach limit
+      vRef: 80, vSlow: 66, vMin: 45, rollMax: 3.5, rollK: 0.024, pitchK: 1.4, stab: 3.6, aTrim0: 0.08, fbw: true,
+      vRotate: 58, thetaMax: 0.24, vTouchMax: 100, gearH: 1.95, runway: RWY2,
+      cam: 1.75, eye: [0.95, 5.6], shadow: [7.2, 9.6], debris: [0x8b9298, 0x5d6268, 0xF45D00],
+      hint: 'Runway 36L · hold <kbd>R</kbd> — past 85% the afterburners light · at 125 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
+      numbers: [['Stall, 1 g', '110 kt'], ['Rotate', '125 kt'], ['Approach', '140–150 kt'], ['Supercruise', 'Mach 1.6'], ['Top speed', 'Mach 2.25 high · 800 kt low'], ['Load limits', '+9 / −3 g'], ['Thrust / weight', '1.27 with afterburner']],
+      note: 'Modelled on an F-22A Raptor at 25,000 kg from published figures: two F119 engines (116 kN dry, 156 kN afterburning each), 78 m² wing, transonic wave drag and thrust that falls with altitude.'
+    }
   };
-  // International Standard Atmosphere density (troposphere)
-  const isaRho = h => 1.225 * Math.pow(1 - 2.25577e-5 * Math.max(0, h), 4.2559);
-  // Propeller thrust: limited by static thrust at low speed and by power × efficiency above that.
-  // Engine power falls with density (σ^1.3, matched to the handbook's 14,000 ft ceiling); efficiency of a fixed-pitch climb/cruise prop
-  // rises from ~0.67 at 74 kt to ~0.73 at 126 kt. At idle the windmilling propeller adds drag.
-  function propThrust(V, rho) {
+  const AC = {};
+  // International Standard Atmosphere: troposphere to 11 km, then the isothermal stratosphere
+  const isaRho = h => { h = Math.max(0, h); return h < 11000 ? 1.225 * Math.pow(1 - 2.25577e-5 * h, 4.2559) : 0.36392 * Math.exp(-(h - 11000) / 6341.6); };
+  const isaA = h => Math.sqrt(1.4 * 287.053 * (h < 11000 ? 288.15 - 0.0065 * Math.max(0, h) : 216.65));   // speed of sound, m/s
+  // transonic drag rise: zero below Mach 0.85, peaking just past Mach 1.1, then easing off supersonic
+  const waveDrag = M => M < 0.85 ? 0 : M < 1.1 ? AC.cdWave * smooth(0.85, 1.1, M) : AC.cdWave * Math.max(0.45, 1 - 0.3 * (M - 1.1));
+  // lift-curve slope: subsonic value, falling as 4/√(M²−1) once supersonic (linearised supersonic theory)
+  const liftSlope = M => M > 1 ? Math.min(AC.CLa, 4 / Math.sqrt(M * M - 1)) : AC.CLa;
+  // induced drag grows supersonic, as leading-edge suction is lost
+  const inducedK = M => AC.K * (M > 1 ? 1 + 0.6 * (M - 1) : 1);
+
+  function engineThrust(V, rho) {
     const sigma = rho / 1.225;
+    if (AC.type === 'jet') {
+      // turbofan: thrust lapses with density (σ^0.7) and recovers with ram pressure as the Mach number rises;
+      // the engines follow the throttle with a spool-up lag (s.spool)
+      const M = V / s.a, lapse = Math.pow(sigma, 0.7), e = s.spool;
+      const mil = AC.Tmil * lapse * (1 + 0.25 * M), wet = AC.Tab * lapse * (1 + 0.32 * M), idle = AC.idle * AC.Tmil * lapse;
+      // at low level the engine controls hold the jet to its 800-knot (Mach 1.21 at sea level) dynamic-pressure limit
+      const qLim = THREE.MathUtils.clamp(1 - ((s.ias || 0) - AC.vne) / 25, 0.1, 1);
+      if (e <= AC.abFrom) return (idle + (mil - idle) * e / AC.abFrom) * qLim;
+      return (mil + (wet - mil) * (e - AC.abFrom) / (1 - AC.abFrom)) * qLim;
+    }
+    // Propeller thrust: limited by static thrust at low speed and by power × efficiency above that.
+    // Engine power falls with density (σ^1.3, matched to the handbook's 14,000 ft ceiling); efficiency of a fixed-pitch climb/cruise prop
+    // rises from ~0.67 at 74 kt to ~0.73 at 126 kt. At idle the windmilling propeller adds drag.
     const power = AC.P * Math.pow(sigma, 1.3);
     const eta = THREE.MathUtils.clamp(0.665 + 0.0024 * (V - 38.1), 0.3, 0.8);
     const T = s.throttle * Math.min(AC.Tstatic * power / AC.P, eta * power / Math.max(V, 1));
@@ -1150,7 +1499,7 @@
 
   const s = {
     pos: new THREE.Vector3(), vel: new THREE.Vector3(), q: new THREE.Quaternion(),
-    throttle: 0, grounded: true, stalled: false, gLoad: 1, alpha: 0,
+    throttle: 0, spool: 0, a: 340, mach: 0, grounded: true, stalled: false, gLoad: 1, alpha: 0,
     nextRing: 0, time: 0, timing: false, mode: 'course', crashed: false
   };
   const ctl = { pitch: 0, roll: 0, yaw: 0 };   // smoothed control positions, -1..1
@@ -1182,6 +1531,9 @@
     if (k.has('KeyR')) s.throttle = Math.min(1, s.throttle + dt * 0.55);
     if (k.has('KeyF')) s.throttle = Math.max(0, s.throttle - dt * 0.55);
     s.brake = k.has('KeyB') || k.has('Space') || touch.brake;
+    // the propeller responds at once; a turbofan spools up and down
+    if (AC.type === 'jet') s.spool += (s.throttle - s.spool) * (1 - Math.exp(-dt / AC.spool));
+    else s.spool = s.throttle;
   }
 
   function step(dt) {
@@ -1189,7 +1541,7 @@
     prevPos.copy(s.pos);
     axes();
     const rho = isaRho(s.pos.y);
-    s.rho = rho;
+    s.rho = rho; s.a = isaA(s.pos.y);
     const hdg0 = -headingRad(), roll0 = rollRad();
     if (s.grounded) groundStep(dt, rho); else airStep(dt, rho);
     // turn coordinator: rate of turn (plus a little roll rate, as its canted gyro senses) and the slip ball
@@ -1203,9 +1555,11 @@
     if (!s.crashed && !s.grounded) {
       // ultimate loads are 1.5 × the limit loads; beyond the design dive speed the airframe fails
       if (s.gLoad > AC.nMax * 1.5 || s.gLoad < AC.nMin * 1.5)
-        return crash(`Structural failure at ${s.gLoad.toFixed(1)} g — this airframe is rated for +3.8 / −1.52 g.`);
+        return crash(`Structural failure at ${s.gLoad.toFixed(1)} g — this airframe is rated for +${AC.nMax} / −${Math.abs(AC.nMin)} g.`);
       if (s.ias > AC.vne * 1.25)
         return crash(`The airframe broke up at ${Math.round(s.ias)} knots — never exceed ${AC.vne}.`);
+      if (s.mach > AC.mMax * 1.12)
+        return crash(`The airframe broke up at Mach ${s.mach.toFixed(2)} — the limit is Mach ${AC.mMax}.`);
     }
     if (!s.crashed) { checkRings(); checkGround(); }
     if (s.timing && !s.crashed) s.time += dt;
@@ -1217,10 +1571,12 @@
     const alpha = Math.atan2(-vu, Math.max(vf, 0.5));
     const beta = Math.atan2(vr, Math.max(vf, 0.5));
     s.alpha = alpha;
+    const M = V / s.a; s.mach = M;
+    const CLa = liftSlope(M);
     let CL;
-    if (Math.abs(alpha) <= AC.aStall) { CL = AC.CL0 + AC.CLa * alpha; s.stalled = false; }
+    if (Math.abs(alpha) <= AC.aStall) { CL = AC.CL0 + CLa * alpha; s.stalled = false; }
     else {
-      const sg = Math.sign(alpha), peak = AC.CL0 + AC.CLa * AC.aStall * sg;
+      const sg = Math.sign(alpha), peak = AC.CL0 + CLa * AC.aStall * sg;
       CL = peak * Math.max(0.3, 1 - (Math.abs(alpha) - AC.aStall) * 2.4);
       s.stalled = alpha > 0 && V > 3;
     }
@@ -1231,10 +1587,10 @@
     const liftDir = new THREE.Vector3().crossVectors(right, vhat).normalize();
     const lift = qd * AC.S * CL;
     force.addScaledVector(liftDir, lift);
-    const CD = AC.CD0 + AC.K * CL * CL + (s.stalled ? 0.12 : 0) + Math.abs(beta) * 0.3;
+    const CD = AC.CD0 + waveDrag(M) + inducedK(M) * CL * CL + (s.stalled ? 0.12 : 0) + Math.abs(beta) * 0.3;
     force.addScaledVector(vhat, -qd * AC.S * CD);
     force.addScaledVector(right, -qd * AC.S * 1.1 * beta);       // fuselage side force
-    const thrust = propThrust(V, rho);
+    const thrust = engineThrust(V, rho);
     force.addScaledVector(fwd, thrust);
     s.gLoad = lift / (AC.mass * AC.g);
     // specific force (what the pilot feels): sideways part over the "down into the seat" part moves the ball
@@ -1252,28 +1608,33 @@
     // control response (rate command) + aerodynamic stability.
     // The nose settles at a "trim" angle of attack. With flight assist on, trim is whatever holds the
     // current flight path (and a level turn when banked), so hands-off the aircraft flies straight.
-    // Without assist, trim is fixed, like a real aircraft trimmed for ~90 knots.
-    const eff = THREE.MathUtils.clamp(V / 38, 0.12, 1) * Math.sqrt(rho / 1.225);
-    let aTrim = 0.05;
-    if (settings.assist) {
+    // Without assist, the Cessna's trim is fixed, like a real aircraft trimmed for ~90 knots. The F-22's
+    // fly-by-wire flight controls always trim for 1 g and always enforce its g and angle-of-attack limits.
+    const eff = THREE.MathUtils.clamp(V / AC.vRef, 0.12, 1) * Math.sqrt(rho / 1.225);
+    let aTrim = AC.aTrim0;
+    if (settings.assist || AC.fbw) {
       const gamma = Math.asin(THREE.MathUtils.clamp(vhat.y, -1, 1));
       let cb = Math.cos(rollRad()); cb = cb > 0.4 ? cb : (cb > 0 ? 0.4 : 1);
-      const CLreq = AC.mass * AC.g * Math.cos(gamma) / cb / Math.max(qd * AC.S, 1);
-      aTrim = THREE.MathUtils.clamp((CLreq - AC.CL0) / AC.CLa, -0.08, 0.2);
-      if (V < 34) aTrim -= (34 - V) * 0.004;      // getting slow: let the nose drop a little to keep flying speed
-      if (Math.abs(ctl.pitch) < 0.05) aTrim -= gamma * 0.03;   // hands off: the flight path slowly returns to level
+      if (!settings.assist) cb = 1;
+      // load factor that holds the flight path; hands off with assist, the path eases back to level (~7 s time constant)
+      let nReq = Math.cos(gamma) / cb;
+      if (settings.assist && Math.abs(ctl.pitch) < 0.05) nReq -= gamma * 0.15 * V / AC.g;
+      // the part of the thrust acting across the flight path carries some of the load
+      const CLreq = (nReq * AC.mass * AC.g - thrust * Math.sin(alpha)) / Math.max(qd * AC.S, 1);
+      aTrim = THREE.MathUtils.clamp((CLreq - AC.CL0) / CLa, -0.08, AC.aStall - 0.05);
+      if (settings.assist && V < AC.vSlow) aTrim -= (AC.vSlow - V) * 0.004;      // getting slow: let the nose drop a little to keep flying speed
     }
-    const STAB = 3.2;
-    let cmd = ctl.pitch * 0.75;
-    if (settings.assist) {
-      // envelope protection: stay below the stall and inside the +3.8 / −1.52 g limits
+    const STAB = AC.stab;
+    let cmd = ctl.pitch * AC.pitchK;
+    if (settings.assist || AC.fbw) {
+      // envelope protection: stay below the stall and inside the airframe's g limits
       const qS = Math.max(qd * AC.S, 1), W = AC.mass * AC.g;
-      const aMax = Math.min(AC.aStall - 0.05, (AC.nMax * W / qS - AC.CL0) / AC.CLa);
-      const aMin = Math.max(-0.2, (AC.nMin * W / qS - AC.CL0) / AC.CLa);
+      const aMax = Math.min(AC.aStall - 0.05, (AC.nMax * W / qS - AC.CL0) / CLa);
+      const aMin = Math.max(-0.2, (AC.nMin * W / qS - AC.CL0) / CLa);
       cmd = Math.min(cmd, Math.max(0, (aMax - aTrim) * STAB));
       cmd = Math.max(cmd, Math.min(0, (aMin - aTrim) * STAB));
       const p = pitchRad();
-      if ((p < -0.7 && cmd < 0) || (p > 0.85 && cmd > 0)) cmd = 0;           // no runaway dives or loops
+      if (settings.assist && ((p < -0.7 && cmd < 0) || (p > 0.85 && cmd > 0))) cmd = 0;           // no runaway dives or loops
     }
     let pitchRate = cmd * eff - (alpha - aTrim) * STAB * eff + pathRate.dot(right);
     let yawRate = -ctl.yaw * 0.45 * eff - beta * 2.6 * eff + pathRate.dot(up);
@@ -1281,11 +1642,11 @@
     let rollIn = ctl.roll;
     // assist: bank is limited to about 65°, and the wings level themselves when you let go
     if (settings.assist && rollIn * roll > 0) rollIn *= THREE.MathUtils.clamp((0.96 - Math.abs(roll)) / 0.3, 0, 1);
-    let rollRate = -rollIn * Math.min(1.1, 0.0165 * V * Math.sqrt(rho / 1.225));
+    let rollRate = -rollIn * Math.min(AC.rollMax, AC.rollK * V * Math.sqrt(rho / 1.225));
     if (settings.assist && Math.abs(ctl.roll) < 0.08) rollRate += THREE.MathUtils.clamp(roll, -1.2, 1.2) * 0.9 * eff;
     if (s.stalled) { rollRate += Math.sin(performance.now() * 0.0037) * 0.4; pitchRate -= 0.25; }
     // gravity pulls the nose down when there is little airflow to hold it
-    if (V < 25) pitchRate -= (1 - V / 25) * 0.6 * Math.cos(pitchRad());
+    if (V < AC.vMin) pitchRate -= (1 - V / AC.vMin) * 0.6 * Math.cos(pitchRad());
     tq.setFromAxisAngle(X, pitchRate * dt); s.q.multiply(tq);
     tq.setFromAxisAngle(Y, yawRate * dt); s.q.multiply(tq);
     tq.setFromAxisAngle(Z, rollRate * dt); s.q.multiply(tq);
@@ -1302,17 +1663,17 @@
     const steer = (ctl.roll * 0.45 + ctl.yaw * 0.6) * Math.min(1, spd / 6) / (1 + spd / 40);
     psi -= steer * dt;
     // rotation for take-off only once there is enough airflow over the tail
-    if (spd > 22) theta += ctl.pitch * 0.5 * dt - (ctl.pitch <= 0 ? theta * 1.5 * dt : 0);
+    if (spd > AC.vRotate) theta += ctl.pitch * 0.5 * dt - (ctl.pitch <= 0 ? theta * 1.5 * dt : 0);
     else theta -= theta * 4 * dt;
-    theta = THREE.MathUtils.clamp(theta, 0, 0.24);
+    theta = THREE.MathUtils.clamp(theta, 0, AC.thetaMax);      // beyond this the tail strikes the runway
     const qd = 0.5 * rho * spd * spd;
     const CL = AC.CL0 + AC.CLa * theta;
     const lift = qd * AC.S * CL;
     const drag = qd * AC.S * (AC.CD0 + AC.K * CL * CL);
-    const thrust = propThrust(spd, rho);
+    const thrust = engineThrust(spd, rho);
     const normal = Math.max(0, AC.mass * AC.g - lift);
-    // rolling resistance 0.02 on asphalt; braking adds an effective friction coefficient of 0.4
-    const resist = spd > 0.05 ? (0.02 + (s.brake ? 0.16 : 0)) * normal : 0;
+    // rolling resistance 0.02 on asphalt; full braking raises the effective friction coefficient to 0.4
+    const resist = spd > 0.05 ? (s.brake ? 0.4 : 0.02) * normal : 0;
     s.ias = spd * Math.sqrt(rho / 1.225) * 1.94384;
     spd += (thrust - drag - resist) / AC.mass * dt;
     if (spd < 0) spd = 0;
@@ -1349,11 +1710,11 @@
     if (vs > 4.5) return crash(`Hard landing — descending at ${Math.round(vs * 196.85)} ft/min. Keep it under 880.`);
     if (Math.abs(roll) > 0.3) return crash('A wingtip hit the ground — keep the wings level when you touch down.');
     if (pitch < -0.12) return crash('The nose hit first — flare by easing back just before touchdown.');
-    if (hs > 72) return crash('Far too fast for touchdown.');
+    if (hs > AC.vTouchMax) return crash('Far too fast for touchdown.');
     // a good touchdown
     s.grounded = true;
     euler.setFromQuaternion(s.q, 'YXZ');
-    euler.set(THREE.MathUtils.clamp(euler.x, 0, 0.24), euler.y, 0, 'YXZ'); s.q.setFromEuler(euler);
+    euler.set(THREE.MathUtils.clamp(euler.x, 0, AC.thetaMax), euler.y, 0, 'YXZ'); s.q.setFromEuler(euler);
     const psi = euler.y, fx = -Math.sin(psi), fz = -Math.cos(psi);
     const spd = Math.max(0, s.vel.x * fx + s.vel.z * fz);
     s.vel.set(fx * spd, 0, fz * spd);
@@ -1394,9 +1755,11 @@
 
   function resetFlight(mode) {
     s.mode = mode;
-    s.pos.set(RWY.x, RWY.h + GEAR_H, RWY.z + RWY.halfL - 30);
+    const rw = AC.runway;
+    s.pos.set(rw.x, rw.h + GEAR_H, rw.z + rw.halfL - 30 * AC.cam);
     s.vel.set(0, 0, 0);
     s.q.identity();
+    s.spool = 0; s.mach = 0; s.a = isaA(rw.h);
     s.throttle = 0; s.grounded = true; s.stalled = false; s.crashed = false; s.gLoad = 1; s.ias = 0; s.turnRate = 0; s.ball = 0; s.slipRatio = 0;
     s.nextRing = 0; s.time = 0; s.timing = false;
     ctl.pitch = ctl.roll = ctl.yaw = 0;
@@ -1404,7 +1767,7 @@
     clearDebris();
     refreshRings();
     axes();
-    camPos.copy(s.pos).addScaledVector(fwd, -18).add(new THREE.Vector3(0, 5, 0));
+    camPos.copy(s.pos).addScaledVector(fwd, -18 * AC.cam).add(new THREE.Vector3(0, 5 * AC.cam, 0));
   }
 
   function startFlight(mode) {
@@ -1412,9 +1775,7 @@
     showOverlay(null);
     phase = 'flying';
     $('hud').classList.remove('hidden');
-    setHint(mode === 'course'
-      ? 'Hold <kbd>R</kbd> for full throttle · at 55 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>'
-      : 'Free flight — explore the island · <kbd>R</kbd> throttle · <kbd>S</kbd> / <kbd>↓</kbd> to rotate');
+    setHint(mode === 'course' ? AC.hint : 'Free flight — explore the island · ' + AC.hint);
     log.flights++; saveLog();
     audioStart();
     $('bar-status').textContent = mode === 'course' ? 'Ring course in progress' : 'Free flight';
@@ -1448,12 +1809,12 @@
     phase = 'finished';
     s.timing = false;
     const t = s.time;
-    const isBest = log.best === null || t < log.best;
-    if (isBest) log.best = t;
+    const bk = bestKey(), isBest = log[bk] === null || t < log[bk];
+    if (isBest) log[bk] = t;
     log.last = t; saveLog();
     $('finish-time').textContent = fmt(t);
     $('finish-badge').classList.toggle('show', isBest);
-    $('finish-meta').innerHTML = `Course record <b>${fmt(log.best)}</b>`;
+    $('finish-meta').innerHTML = `${AC.name} course record <b>${fmt(log[bk])}</b>`;
     setTimeout(() => { if (phase === 'finished') showOverlay('ov-finish'); }, 900);
     $('bar-status').textContent = 'Course complete';
     audioStop();
@@ -1493,8 +1854,10 @@
     return `${String(m).padStart(2, '0')}:${sec.toFixed(1).padStart(4, '0')}`;
   };
   function saveLog() { store.set('flightsim_log', log); updateLogUI(); }
+  const bestKey = () => AC.id === 'c172' ? 'best' : 'best_' + AC.id;     // separate course records per aircraft
   function updateLogUI() {
-    $('hdr-best').textContent = fmt(log.best); $('start-best').textContent = fmt(log.best); $('log-best').textContent = fmt(log.best);
+    const b = log[bestKey()] ?? null;
+    $('hdr-best').textContent = fmt(b); $('start-best').textContent = fmt(b); $('log-best').textContent = fmt(b);
     $('log-last').textContent = fmt(log.last);
     $('hdr-flights').textContent = log.flights; $('log-flights').textContent = log.flights; $('log-crashes').textContent = log.crashes;
   }
@@ -1513,7 +1876,7 @@
   let fireball = null;
   function explode() {
     plane.group.visible = false; shadow.visible = false;
-    const mats = [0xf0ede8, 0xF45D00, 0x1c1c1c].map(c => new THREE.MeshLambertMaterial({ color: c }));
+    const mats = AC.debris.map(c => new THREE.MeshLambertMaterial({ color: c }));
     for (let i = 0; i < 38; i++) {
       const m = new THREE.Mesh(debrisGeo, mats[i % 3]);
       m.scale.set(0.3 + Math.random() * 1.2, 0.1 + Math.random() * 0.3, 0.3 + Math.random() * 1.0);
@@ -1560,7 +1923,7 @@
       plane.group.visible = true;
       menuAngle += dt * 0.06;
       const c = s.pos;
-      camera.position.set(c.x + Math.sin(menuAngle) * 22, c.y + 4.5, c.z + Math.cos(menuAngle) * 22);
+      camera.position.set(c.x + Math.sin(menuAngle) * 22 * AC.cam, c.y + 4.5 * AC.cam, c.z + Math.cos(menuAngle) * 22 * AC.cam);
       camera.up.set(0, 1, 0);
       camera.lookAt(c.x, c.y + 0.6, c.z);
       return;
@@ -1574,18 +1937,18 @@
     }
     plane.group.visible = camMode !== 'cockpit' && !s.crashed;
     if (camMode === 'cockpit') {
-      camera.position.copy(s.pos).addScaledVector(up, 0.55).addScaledVector(fwd, 0.55);   // pilot's eye, left seat height
+      camera.position.copy(s.pos).addScaledVector(up, AC.eye[0]).addScaledVector(fwd, AC.eye[1]);   // pilot's eye
       camera.quaternion.copy(s.q);
       camera.position.y = Math.max(camera.position.y, groundLevel(camera.position.x, camera.position.z) + 0.6);
       return;
     }
     // chase camera: sits behind and above, eases toward position, keeps the horizon mostly level
-    const desired = tv.copy(s.pos).addScaledVector(fwd, -17).addScaledVector(up, 3.2).add(new THREE.Vector3(0, 2.2, 0));
+    const desired = tv.copy(s.pos).addScaledVector(fwd, -17 * AC.cam).addScaledVector(up, 3.2 * AC.cam).add(new THREE.Vector3(0, 2.2 * AC.cam, 0));
     camPos.lerp(desired, 1 - Math.exp(-dt * 6));
     const floor = groundLevel(camPos.x, camPos.z) + 2.5;
     if (camPos.y < floor) camPos.y = floor;
     camera.position.copy(camPos);
-    camLook.copy(s.pos).addScaledVector(fwd, 18);
+    camLook.copy(s.pos).addScaledVector(fwd, 18 * AC.cam);
     camera.up.copy(up).lerp(Y, 0.65).normalize();
     camera.lookAt(camLook);
   }
@@ -1625,8 +1988,11 @@
     g.drawImage(mapBase, 0, 0, W, W);
     g.strokeStyle = 'rgba(244,93,0,0.55)'; g.lineWidth = 1 * dpr; g.strokeRect(0.5, 0.5, W - 1, W - 1);
     // runway
-    const [rx, rz] = toMap(RWY.x, RWY.z, W);
-    g.fillStyle = '#f0ede8'; g.fillRect(rx - 1.5 * dpr, rz - (RWY.halfL / MAP_RANGE * 0.5) * W, 3 * dpr, RWY.halfL / MAP_RANGE * W);
+    g.fillStyle = '#f0ede8';
+    for (const r of RUNWAYS) {
+      const [rx, rz] = toMap(r.x, r.z, W), wd = (r === AC.runway ? 3 : 2) * dpr;
+      g.fillRect(rx - wd / 2, rz - (r.halfL / MAP_RANGE * 0.5) * W, wd, r.halfL / MAP_RANGE * W);
+    }
     if (s.mode === 'course') {
       for (let i = s.nextRing; i < course.length; i++) {
         const [x, z] = toMap(course[i].x, course[i].z, W);
@@ -1725,7 +2091,7 @@
   function targetPos() {
     if (s.mode !== 'course') return null;
     if (s.nextRing < course.length) return course[s.nextRing];
-    return new THREE.Vector3(RWY.x, RWY.h, RWY.z);
+    return new THREE.Vector3(AC.runway.x, AC.runway.h, AC.runway.z);
   }
 
   function drawHeading() {
@@ -1797,6 +2163,10 @@
     $('h-agl').textContent = Math.max(0, Math.round(agl * 3.281));
     $('h-g').textContent = s.gLoad.toFixed(1);
     $('h-thr').textContent = Math.round(s.throttle * 100) + '%';
+    $('f-ab').style.display = AC.type === 'jet' ? '' : 'none';
+    $('f-ab').classList.toggle('on', AC.type === 'jet' && s.spool > AC.abFrom);
+    $('h-mach').textContent = (s.mach || 0).toFixed(2);
+    $('btn-brake').classList.toggle('on', !!s.brake);
     $('h-thr-fill').style.width = (s.throttle * 100) + '%';
     $('thr-touch-fill').style.height = (s.throttle * 100) + '%';
     $('thr-touch-lbl').textContent = 'THR ' + Math.round(s.throttle * 100) + '%';
@@ -1817,7 +2187,7 @@
       const dist = Math.hypot(s.pos.x, s.pos.z);
       if (s.stalled || s.alpha > AC.aStall - 0.035) warn = 'STALL';      // stall horn sounds ~5 kt early
       else if (s.gLoad > AC.nMax || s.gLoad < AC.nMin) warn = 'OVER G';
-      else if (s.ias > AC.vne) warn = 'OVERSPEED';
+      else if (s.ias > AC.vne || s.mach > AC.mMax) warn = 'OVERSPEED';
       else if (agl < 90 && s.vel.y < -6 && agl / -s.vel.y < 6) warn = 'PULL UP';
       else if (dist > 3700) warn = 'TURN BACK';
     }
@@ -1851,7 +2221,14 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden && phase === 'flying') pause(); });
 
   // touch: joystick + throttle strip
-  if ((navigator.maxTouchPoints > 0 || 'ontouchstart' in window) && window.matchMedia('(pointer: coarse)').matches) stage.classList.add('touch');
+  if ((navigator.maxTouchPoints > 0 || 'ontouchstart' in window) && window.matchMedia('(any-pointer: coarse)').matches) stage.classList.add('touch');
+  // hold-to-brake button on the HUD for mouse and trackpad players
+  {
+    const b = $('btn-brake');
+    b.addEventListener('pointerdown', e => { touch.brake = true; try { b.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => touch.brake = false);
+    b.addEventListener('contextmenu', e => e.preventDefault());
+  }
   window.addEventListener('touchstart', () => stage.classList.add('touch'), { once: true, passive: true });
   {
     const stick = $('stick'), knob = $('stick-knob');
@@ -1882,9 +2259,27 @@
   }
 
   // ── buttons & options ──
-  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => {
+  function setAircraft(id) {
+    if (!AIRCRAFT[id]) id = 'c172';
+    for (const k in AC) delete AC[k];
+    Object.assign(AC, AIRCRAFT[id]);
+    GEAR_H = AC.gearH;
+    for (const k in planes) planes[k].group.visible = false;
+    plane = planes[id];
+    shadow.userData.mesh.scale.set(AC.shadow[0], AC.shadow[1], 1);
+    document.querySelectorAll('.mode-btn[data-ac]').forEach(x => x.classList.toggle('active', x.dataset.ac === id));
+    $('ac-numbers').innerHTML = AC.numbers.map(([k, v]) => `<div class="rec-row"><span class="rec-key">${k}</span><span class="rec-val">${v}</span></div>`).join('')
+      + `<p style="font-size:.95rem;color:var(--muted);line-height:1.5">${AC.note}</p>`;
+    if (settings.aircraft !== id) { settings.aircraft = id; store.set('flightsim_settings', settings); }
+    updateLogUI();
+  }
+  document.querySelectorAll('.mode-btn[data-ac]').forEach(b => b.addEventListener('click', () => {
+    setAircraft(b.dataset.ac);
+    resetFlight(menuMode);
+  }));
+  document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.addEventListener('click', () => {
     menuMode = b.dataset.mode;
-    document.querySelectorAll('.mode-btn').forEach(x => x.classList.toggle('active', x === b));
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(x => x.classList.toggle('active', x === b));
     $('start-sub').textContent = menuMode === 'course' ? 'Ten rings, one runway, against the clock.' : 'No rings, no clock. The island is yours.';
     resetFlight(menuMode);
   }));
@@ -1936,6 +2331,15 @@
   function audioUpdate() {
     if (!eng) return;
     const V = s.vel.length(), t = actx.currentTime;
+    if (AC.type === 'jet') {          // turbine whine over a low roar, louder in afterburner
+      const e = s.spool, burn = e > AC.abFrom ? (e - AC.abFrom) / (1 - AC.abFrom) : 0;
+      const base = 55 + e * 70;
+      eng.o1.frequency.setTargetAtTime(base, t, 0.15);
+      eng.o2.frequency.setTargetAtTime(base * 7.3, t, 0.15);
+      eng.f.frequency.setTargetAtTime(700 + e * 2400 - burn * 900, t, 0.15);
+      eng.gn.gain.setTargetAtTime(0.02 + e * 0.04 + burn * 0.035, t, 0.15);
+      return;
+    }
     const base = 38 + s.throttle * 52 + V * 0.25;
     eng.o1.frequency.setTargetAtTime(base, t, 0.08);
     eng.o2.frequency.setTargetAtTime(base * 0.5, t, 0.08);
@@ -1982,6 +2386,12 @@
     plane.prop.rotation.z += spin * dt;
     plane.disc.material.opacity = Math.min(0.18, s.throttle * 0.25);
     plane.prop.visible = s.throttle < 0.55;
+    if (plane.ab) {
+      const e = s.spool || 0, burn = AC.abFrom && e > AC.abFrom ? (e - AC.abFrom) / (1 - AC.abFrom) : 0;
+      for (const p of plane.ab) { p.visible = burn > 0.03 && phase !== 'crashed'; p.scale.set(1, 1, (0.35 + 0.65 * burn) * (0.93 + Math.random() * 0.14)); }
+      for (const h of plane.glow) h.material.color.setRGB(0.08 + 0.9 * e * e, 0.03 + 0.35 * e * e, 0.02 + 0.1 * e);
+    }
+    updateWindsocks(now / 1000);
     const gh = groundLevel(s.pos.x, s.pos.z), hgt = s.pos.y - gh;
     shadow.position.set(s.pos.x, gh + 0.15, s.pos.z);
     shadow.rotation.y = headingRad();
@@ -1990,12 +2400,19 @@
     if (nr && s.mode === 'course') nr.scale.setScalar(1 + Math.sin(now * 0.004) * 0.04);
     if (!dbg.freeCam) updateCamera(dt);
     sky.position.copy(camera.position);
+    {   // see farther from high altitude
+      const alt = Math.max(0, camera.position.y);
+      scene.fog.near = 1100 + alt * 0.8; scene.fog.far = 7000 + alt * 2.2;
+      const far = Math.max(12000, scene.fog.far + 3000);
+      if (Math.abs(camera.far - far) > 200) { camera.far = far; camera.updateProjectionMatrix(); }
+    }
     renderer.render(scene, camera);
     updateHUD();
     audioUpdate();
   }
 
   // ready
+  setAircraft(settings.aircraft);
   resetFlight('course');
   updateLogUI();
   const startBtn = $('btn-start');
@@ -2004,7 +2421,7 @@
 
   // test hook (only with ?debug in the URL)
   if (new URLSearchParams(location.search).has('debug')) {
-    window.__fs = { dbg, camera, plane, AC, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
+    window.__fs = { dbg, camera, get plane() { return plane; }, AC, AIRCRAFT, setAircraft, engineThrust, isaA, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
   }
   </script>
 </body>
