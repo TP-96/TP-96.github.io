@@ -1420,15 +1420,17 @@
       CD0: 0.032,               // parasite drag, fixed gear and struts
       K: 0.0568,                // induced drag factor 1/(π·e·AR), e = 0.75
       cdWave: 0.03,             // transonic drag rise (never reached by a 172)
+      CDbeta: 0.3, CYbeta: 1.1, // drag and side force per radian of sideslip
       CDprop: 0.016,            // windmilling propeller at idle → ~9:1 glide at 68 knots
       P: 134226,                // W   (180 bhp) at sea level
+      pLapse: 1.45,             //     normally aspirated engine: power ∝ σ^1.45 (fits the POH's 385 fpm at 8,000 ft and 14,000 ft ceiling)
       Tstatic: 2150,            // N   static thrust of the fixed-pitch propeller
       g: 9.80665,
       nMax: 3.8, nMin: -1.52,   // limit load factors, normal category
       vne: 163, mMax: 1,        // knots IAS, never-exceed speed
       // handling: control power builds up to vRef (m/s); roll rate limit (rad/s); pitch-rate authority; static stability
       vRef: 38, vSlow: 34, vMin: 25, rollMax: 1.1, rollK: 0.0165, pitchK: 0.75, stab: 3.2, aTrim0: 0.05, fbw: false,
-      vRotate: 22, thetaMax: 0.24, vTouchMax: 72, gearH: 1.24, runway: RWY,
+      vRotate: 22, thetaMax: 0.24, vTouchMax: 72, gearH: 1.24, runway: RWY, range: 3700,
       cam: 1, eye: [0.55, 0.55], shadow: [5.2, 3.2], debris: [0xf0ede8, 0xF45D00, 0x1c1c1c],
       hint: 'Hold <kbd>R</kbd> for full throttle · at 55 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
       numbers: [['Stall, clean', '53 kt'], ['Rotate', '55 kt'], ['Best climb', '74 kt'], ['Best glide', '68 kt'], ['Never exceed', '163 kt'], ['Load limits', '+3.8 / −1.52 g']],
@@ -1447,6 +1449,7 @@
       CD0: 0.018,               // subsonic parasite drag, clean stealth shape, weapons internal
       K: 0.16,                  // induced drag: 1/(π·e·A) with leading-edge suction, e ≈ 0.83
       cdWave: 0.027,            // transonic wave-drag rise, peaking near Mach 1.1
+      CDbeta: 0.3, CYbeta: 1.1, // drag and side force per radian of sideslip
       Tmil: 232000,             // N   2 × 116 kN, military (dry) power, sea-level static
       Tab: 312000,              // N   2 × 156 kN with afterburner
       idle: 0.06,               //     idle thrust as a fraction of military
@@ -1456,7 +1459,7 @@
       nMax: 9, nMin: -3,        // flight-control-system g limits
       vne: 800, mMax: 2.25,     // knots equivalent airspeed, and Mach limit
       vRef: 80, vSlow: 66, vMin: 45, rollMax: 3.5, rollK: 0.024, pitchK: 1.4, stab: 3.6, aTrim0: 0.08, fbw: true,
-      vRotate: 58, thetaMax: 0.24, vTouchMax: 100, gearH: 1.95, runway: RWY2,
+      vRotate: 58, thetaMax: 0.24, vTouchMax: 100, gearH: 1.95, runway: RWY2, range: 12000,
       cam: 1.75, eye: [0.95, 5.6], shadow: [7.2, 9.6], debris: [0x8b9298, 0x5d6268, 0xF45D00],
       hint: 'Runway 36L · hold <kbd>R</kbd> — past 85% the afterburners light · at 125 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
       numbers: [['Stall, 1 g', '110 kt'], ['Rotate', '125 kt'], ['Approach', '140–150 kt'], ['Supercruise', 'Mach 1.6'], ['Top speed', 'Mach 2.25 high · 800 kt low'], ['Load limits', '+9 / −3 g'], ['Thrust / weight', '1.27 with afterburner']],
@@ -1477,9 +1480,10 @@
   function engineThrust(V, rho) {
     const sigma = rho / 1.225;
     if (AC.type === 'jet') {
-      // turbofan: thrust lapses with density (σ^0.7) and recovers with ram pressure as the Mach number rises;
+      // turbofan: thrust lapses with density (σ^0.7 in the troposphere) and recovers with ram pressure as the Mach number rises;
       // the engines follow the throttle with a spool-up lag (s.spool)
-      const M = V / s.a, lapse = Math.pow(sigma, 0.7), e = s.spool;
+      // above the tropopause, where the air stops getting colder, thrust falls in proportion to density
+      const M = V / s.a, lapse = rho > 0.36392 ? Math.pow(sigma, 0.7) : 0.427572 * rho / 0.36392, e = s.spool;
       const mil = AC.Tmil * lapse * (1 + 0.25 * M), wet = AC.Tab * lapse * (1 + 0.32 * M), idle = AC.idle * AC.Tmil * lapse;
       // at low level the engine controls hold the jet to its 800-knot (Mach 1.21 at sea level) dynamic-pressure limit
       const qLim = THREE.MathUtils.clamp(1 - ((s.ias || 0) - AC.vne) / 25, 0.1, 1);
@@ -1487,9 +1491,9 @@
       return (mil + (wet - mil) * (e - AC.abFrom) / (1 - AC.abFrom)) * qLim;
     }
     // Propeller thrust: limited by static thrust at low speed and by power × efficiency above that.
-    // Engine power falls with density (σ^1.3, matched to the handbook's 14,000 ft ceiling); efficiency of a fixed-pitch climb/cruise prop
+    // Engine power falls with density (σ^pLapse); efficiency of a fixed-pitch climb/cruise prop
     // rises from ~0.67 at 74 kt to ~0.73 at 126 kt. At idle the windmilling propeller adds drag.
-    const power = AC.P * Math.pow(sigma, 1.3);
+    const power = AC.P * Math.pow(sigma, AC.pLapse);
     const eta = THREE.MathUtils.clamp(0.665 + 0.0024 * (V - 38.1), 0.3, 0.8);
     const T = s.throttle * Math.min(AC.Tstatic * power / AC.P, eta * power / Math.max(V, 1));
     return T - AC.CDprop * (1 - s.throttle) ** 2 * 0.5 * rho * V * V * AC.S;
@@ -1530,7 +1534,9 @@
     ctl.yaw += (yaw - ctl.yaw) * kk;
     if (k.has('KeyR')) s.throttle = Math.min(1, s.throttle + dt * 0.55);
     if (k.has('KeyF')) s.throttle = Math.max(0, s.throttle - dt * 0.55);
-    s.brake = k.has('KeyB') || k.has('Space') || touch.brake;
+    // the parking brake is set at the start and lets go once the throttle comes up
+    if (s.parkBrake && s.throttle > 0.05) { s.parkBrake = false; flash('Parking brake <b>off</b>'); }
+    s.brake = k.has('KeyB') || k.has('Space') || touch.brake || !!s.parkBrake;
     // the propeller responds at once; a turbofan spools up and down
     if (AC.type === 'jet') s.spool += (s.throttle - s.spool) * (1 - Math.exp(-dt / AC.spool));
     else s.spool = s.throttle;
@@ -1587,9 +1593,9 @@
     const liftDir = new THREE.Vector3().crossVectors(right, vhat).normalize();
     const lift = qd * AC.S * CL;
     force.addScaledVector(liftDir, lift);
-    const CD = AC.CD0 + waveDrag(M) + inducedK(M) * CL * CL + (s.stalled ? 0.12 : 0) + Math.abs(beta) * 0.3;
+    const CD = AC.CD0 + waveDrag(M) + inducedK(M) * CL * CL + (s.stalled ? 0.12 : 0) + Math.abs(beta) * AC.CDbeta;
     force.addScaledVector(vhat, -qd * AC.S * CD);
-    force.addScaledVector(right, -qd * AC.S * 1.1 * beta);       // fuselage side force
+    force.addScaledVector(right, -qd * AC.S * AC.CYbeta * beta);   // fuselage side force
     const thrust = engineThrust(V, rho);
     force.addScaledVector(fwd, thrust);
     s.gLoad = lift / (AC.mass * AC.g);
@@ -1602,7 +1608,11 @@
     s.ias = V * Math.sqrt(rho / 1.225) * 1.94384;    // knots indicated (≈ equivalent airspeed)
     // how fast the flight path itself is turning — the nose follows it (stops turns from lagging into a spiral)
     const pathRate = new THREE.Vector3().crossVectors(s.vel, force).divideScalar(AC.mass * V * V);
+    // Speed changes only through the forces along the flight path; the forces across it just turn it. Setting the
+    // length explicitly stops plain Euler integration from adding energy in hard, sustained pulls (lift does no work).
+    const Vnext = V + force.dot(vhat) / AC.mass * dt;
     s.vel.addScaledVector(force, dt / AC.mass);
+    if (Vnext > 1) s.vel.setLength(Vnext);
     s.pos.addScaledVector(s.vel, dt);
 
     // control response (rate command) + aerodynamic stability.
@@ -1615,9 +1625,9 @@
     if (settings.assist || AC.fbw) {
       const gamma = Math.asin(THREE.MathUtils.clamp(vhat.y, -1, 1));
       let cb = Math.cos(rollRad()); cb = cb > 0.4 ? cb : (cb > 0 ? 0.4 : 1);
-      if (!settings.assist) cb = 1;
-      // load factor that holds the flight path; hands off with assist, the path eases back to level (~7 s time constant)
-      let nReq = Math.cos(gamma) / cb;
+      // With assist: the load factor that holds the flight path, and hands off the path eases back to level
+      // (~7 s time constant). Without it the F-22's flight controls behave like a real g-command system: neutral stick = 1 g.
+      let nReq = settings.assist ? Math.cos(gamma) / cb : 1;
       if (settings.assist && Math.abs(ctl.pitch) < 0.05) nReq -= gamma * 0.15 * V / AC.g;
       // the part of the thrust acting across the flight path carries some of the load
       const CLreq = (nReq * AC.mass * AC.g - thrust * Math.sin(alpha)) / Math.max(qd * AC.S, 1);
@@ -1642,11 +1652,16 @@
     let rollIn = ctl.roll;
     // assist: bank is limited to about 65°, and the wings level themselves when you let go
     if (settings.assist && rollIn * roll > 0) rollIn *= THREE.MathUtils.clamp((0.96 - Math.abs(roll)) / 0.3, 0, 1);
-    let rollRate = -rollIn * Math.min(AC.rollMax, AC.rollK * V * Math.sqrt(rho / 1.225));
+    // the part of the flight path's turn that lies along the fuselage: in a level turn with the nose above the path
+    // this small roll rate is what keeps the bank angle constant
+    let rollRate = -rollIn * Math.min(AC.rollMax, AC.rollK * V * Math.sqrt(rho / 1.225)) - pathRate.dot(fwd);
     if (settings.assist && Math.abs(ctl.roll) < 0.08) rollRate += THREE.MathUtils.clamp(roll, -1.2, 1.2) * 0.9 * eff;
     if (s.stalled) { rollRate += Math.sin(performance.now() * 0.0037) * 0.4; pitchRate -= 0.25; }
     // gravity pulls the nose down when there is little airflow to hold it
     if (V < AC.vMin) pitchRate -= (1 - V / AC.vMin) * 0.6 * Math.cos(pitchRad());
+    // fly-by-wire rolls about the flight path (the stability axis) rather than the fuselage, so a fast roll
+    // at high angle of attack doesn't turn the angle of attack into sideslip
+    if (AC.fbw) yawRate += rollRate * Math.tan(THREE.MathUtils.clamp(alpha, -0.6, 0.6));
     tq.setFromAxisAngle(X, pitchRate * dt); s.q.multiply(tq);
     tq.setFromAxisAngle(Y, yawRate * dt); s.q.multiply(tq);
     tq.setFromAxisAngle(Z, rollRate * dt); s.q.multiply(tq);
@@ -1675,7 +1690,9 @@
     // rolling resistance 0.02 on asphalt; full braking raises the effective friction coefficient to 0.4
     const resist = spd > 0.05 ? (s.brake ? 0.4 : 0.02) * normal : 0;
     s.ias = spd * Math.sqrt(rho / 1.225) * 1.94384;
-    spd += (thrust - drag - resist) / AC.mass * dt;
+    // held on the brakes: static friction holds the aircraft still while the net push is less than the brakes can resist
+    if (s.brake && spd < 0.3 && thrust - drag < 0.4 * normal) spd = 0;
+    else spd += (thrust - drag - resist) / AC.mass * dt;
     if (spd < 0) spd = 0;
     vy += (lift - AC.mass * AC.g) / AC.mass * dt;
     if (vy < 0) vy = 0;
@@ -1759,7 +1776,7 @@
     s.pos.set(rw.x, rw.h + GEAR_H, rw.z + rw.halfL - 30 * AC.cam);
     s.vel.set(0, 0, 0);
     s.q.identity();
-    s.spool = 0; s.mach = 0; s.a = isaA(rw.h);
+    s.spool = 0; s.mach = 0; s.a = isaA(rw.h); s.parkBrake = true; s.brake = true;
     s.throttle = 0; s.grounded = true; s.stalled = false; s.crashed = false; s.gLoad = 1; s.ias = 0; s.turnRate = 0; s.ball = 0; s.slipRatio = 0;
     s.nextRing = 0; s.time = 0; s.timing = false;
     ctl.pitch = ctl.roll = ctl.yaw = 0;
@@ -1775,7 +1792,7 @@
     showOverlay(null);
     phase = 'flying';
     $('hud').classList.remove('hidden');
-    setHint(mode === 'course' ? AC.hint : 'Free flight — explore the island · ' + AC.hint);
+    setHint((mode === 'course' ? '' : 'Free flight · ') + AC.hint + ' · parking brake releases as you throttle up');
     log.flights++; saveLog();
     audioStart();
     $('bar-status').textContent = mode === 'course' ? 'Ring course in progress' : 'Free flight';
@@ -2146,7 +2163,9 @@
       let dx = cs.x, dy = cs.y;
       if (cs.z > 0 && Math.hypot(dx, dy) < 1e-3) dy = -1;
       const a = Math.atan2(-dy, dx);
-      const rx = W * 0.42, ry = H * 0.38;
+      // keep the edge pointer in the clear band between the airspeed and altitude panels
+      const tape = stage.querySelector('.tape.left');
+      const rx = Math.max(40, Math.min(W * 0.42, W / 2 - (tape.offsetLeft + tape.offsetWidth) - 42)), ry = H * 0.38;
       const k = 1 / Math.sqrt((Math.cos(a) / rx) ** 2 + (Math.sin(a) / ry) ** 2);
       markerEl.style.transform = `translate(${W / 2 + Math.cos(a) * k}px, ${H / 2 + Math.sin(a) * k}px)`;
       mkArrow.style.transform = `rotate(${a}rad)`;
@@ -2167,6 +2186,7 @@
     $('f-ab').classList.toggle('on', AC.type === 'jet' && s.spool > AC.abFrom);
     $('h-mach').textContent = (s.mach || 0).toFixed(2);
     $('btn-brake').classList.toggle('on', !!s.brake);
+    $('btn-brake').querySelector('small').textContent = s.parkBrake ? 'PARKED' : 'HOLD · B';
     $('h-thr-fill').style.width = (s.throttle * 100) + '%';
     $('thr-touch-fill').style.height = (s.throttle * 100) + '%';
     $('thr-touch-lbl').textContent = 'THR ' + Math.round(s.throttle * 100) + '%';
@@ -2189,7 +2209,7 @@
       else if (s.gLoad > AC.nMax || s.gLoad < AC.nMin) warn = 'OVER G';
       else if (s.ias > AC.vne || s.mach > AC.mMax) warn = 'OVERSPEED';
       else if (agl < 90 && s.vel.y < -6 && agl / -s.vel.y < 6) warn = 'PULL UP';
-      else if (dist > 3700) warn = 'TURN BACK';
+      else if (dist > AC.range) warn = 'TURN BACK';
     }
     const w = $('warn'); w.textContent = warn; w.classList.toggle('show', !!warn);
     // hint fades once airborne
@@ -2421,7 +2441,7 @@
 
   // test hook (only with ?debug in the URL)
   if (new URLSearchParams(location.search).has('debug')) {
-    window.__fs = { dbg, camera, get plane() { return plane; }, AC, AIRCRAFT, setAircraft, engineThrust, isaA, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
+    window.__fs = { THREE, ringNormals, dbg, camera, get plane() { return plane; }, AC, AIRCRAFT, setAircraft, engineThrust, isaA, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
   }
   </script>
 </body>
