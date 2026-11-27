@@ -310,6 +310,19 @@
     ok('the closed runway (15/33) does not count for finishing the course', F.onRunway(c.x, c.z) && !F.onRunway(...(() => { const p = c.at(-c.halfL + 30, 0); return [p.x, p.z]; })(), true), '');
   }
 
+  {
+    const rh = F.holds.filter(h => h.kind === 'runway'), th = F.holds.filter(h => h.kind === 'taxiway');
+    const dist = h => Math.abs(h.rw.local(h.x, h.z).w);
+    ok('runway hold-short lines where 08 and 06 traffic reach the other runway, 60 m from its centreline',
+      rh.length === 2 && rh.every(h => Math.abs(dist(h) - 60) < 0.5 && F.onRunway(h.x, h.z)) && new Set(rh.map(h => h.on.names[0])).size === 2,
+      rh.map(h => `on ${h.on.names.join('/')} before ${h.rw.names.join('/')}: ${dist(h).toFixed(1)} m`).join('; '));
+    ok('every taxiway entrance has a hold-short line 60 m from the runway centreline, off the runway', th.length >= 8 && th.every(h => Math.abs(dist(h) - 60) < 0.5 && !F.onRunway(h.x, h.z)), `${th.length} taxiway holds`);
+    let onPave = 0; for (const ws of F.windsocks) { const g = ws.pivot.parent; if (F.onRunway(g.position.x, g.position.z) || F.RUNWAYS.some(r => { const l = r.local(g.position.x, g.position.z); return Math.abs(l.u) < r.halfL + 40 && Math.abs(l.w) < r.halfW + 25; })) onPave++; }
+    ok('no windsock stands on or beside a runway (≥ 25 m clear of the edges)', onPave === 0, `${onPave} too close`);
+    const w = F.windsocks[0].pivot.parent;
+    ok('windsocks are large: mast ≥ 15 m, sock ≥ 9 m', w.scale.x * 6.6 >= 15 && w.scale.x * (0.25 + 5 * 0.78) >= 9, `mast ${(w.scale.x * 6.6).toFixed(1)} m, sock ${(w.scale.x * (0.25 + 5 * 0.78)).toFixed(1)} m`);
+  }
+
   // ───────────────────────── 6. robustness ─────────────────────────
   for (const id of ['c172', 'f22']) for (const assist of [true, false]) {
     let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;

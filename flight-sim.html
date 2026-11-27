@@ -834,6 +834,7 @@
   //  apron, terminal, hangar line, tower, windsocks
   // ════════════════════════════════════════════════════════════════════
   const windsocks = [];
+  const holds = [];       // every holding position: taxiway entrances and runway-to-runway intersections
   const WIND_TO = -1.22;  // a light east-north-easterly (from 070°): the socks stream toward 250°, so 08 and 06 are into wind
   {
     const Y0 = FIELD_H;
@@ -949,7 +950,6 @@
       return finishTex(new THREE.CanvasTexture(cv));
     };
     const signPost = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
-    const holds = [];
     // along the taxiway from p toward q, mark the hold-short point 60 m before runway r's centreline
     function holdShort(p, q, r) {
       const m = meet(p, q, r), dx = q.x - p.x, dz = q.z - p.z, len = Math.hypot(dx, dz), ux = dx / len, uz = dz / len;
@@ -962,19 +962,48 @@
         new THREE.MeshBasicMaterial({ map: signTex(r.names.join('-')) }), new THREE.MeshBasicMaterial({ map: signTex(r.names.slice().reverse().join('-')) })]);
       sg.position.set(sx, Y0 + 1.1, sz); sg.rotation.y = Math.atan2(-ux, -uz); scene.add(sg);
       for (const k of [-1, 1]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.7, 0.12), signPost); post.position.set(sx + uz * k * 1.0, Y0 + 0.35, sz - ux * k * 1.0); scene.add(post); }
-      holds.push({ x: hx, z: hz, rw: r });
+      holds.push({ kind: 'taxiway', x: hx, z: hz, rw: r });
+    }
+
+    // ── runway holding positions: painted across a runway where it runs into another one ──
+    // On each open runway, for each direction of travel that reaches another open runway's pavement, the
+    // hold-short marking spans the full runway width 60 m (measured square to that runway) before its centreline,
+    // with red signs on both edges. At this field: 08 and 06 traffic rolling east, where 08/26 and 06/24 converge.
+    const rwyHoldMat = new THREE.MeshLambertMaterial({ map: holdTex, transparent: true, polygonOffset: true, polygonOffsetFactor: -7, polygonOffsetUnits: -7 });
+    for (const r of RUNWAYS) for (const o of RUNWAYS) {
+      if (r === o || r.closed || o.closed) continue;
+      // centrelines r(u) and o(v) cross where r's point lies on o's centreline (o.local(...).w = 0)
+      const p0 = o.local(r.x, r.z), sinA = r.dx * o.rx + r.dz * o.rz;     // w-rate of r's centreline across o
+      if (Math.abs(sinA) < 0.05) continue;
+      const ui = -p0.w / sinA, cross = r.at(ui, 0), vi = o.local(cross.x, cross.z).u;
+      if (Math.abs(vi) > o.halfL + 60) continue;                         // the crossing isn't on o's pavement
+      for (const dir of [1, -1]) {
+        const uh = ui - dir * 60 / Math.abs(sinA);
+        if (Math.abs(uh) > r.halfL - 60) continue;                       // no room: traffic this way starts beyond it
+        const h = r.at(uh, 0), hd = dir > 0 ? r.hdg : r.hdg + Math.PI;
+        flat(r.halfW * 2, 4.2, null, h.x, Y0 + 0.16, h.z, hd, -7, rwyHoldMat);
+        for (const sd of [-1, 1]) {                                       // signs off both edges, facing traffic
+          const sp = r.at(uh - dir * 4, sd * (r.halfW + 9));
+          const sg = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.2, 0.18), [signPost, signPost, signPost, signPost,
+            new THREE.MeshBasicMaterial({ map: signTex(o.names.join('-')) }), new THREE.MeshBasicMaterial({ map: signTex(o.names.slice().reverse().join('-')) })]);
+          sg.position.set(sp.x, Y0 + 1.3, sp.z); sg.rotation.y = -hd; scene.add(sg);
+          for (const k of [-1, 1]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.8, 0.12), signPost); post.position.set(sp.x + Math.cos(hd) * k * 1.2, Y0 + 0.4, sp.z + Math.sin(hd) * k * 1.2); scene.add(post); }
+        }
+        holds.push({ kind: 'runway', x: h.x, z: h.z, rw: o, on: r, dir });
+      }
     }
 
     // Taxiway Alpha: parallel to 08/26 on the north side, 120 m from its centreline, with three connectors
     const A = u => R0826.at(u, -120);
-    const alphaW = A(-500), alphaE = A(470);
+    const alphaW = A(-500), alphaE = A(420);
     taxi(alphaW, alphaE);
-    for (const u of [-560, 0, 470]) {
+    for (const u of [-560, 0, 420]) {
       const from = A(u), to = R0826.at(u, 0);
       taxi(from, to); holdShort(from, to, R0826);
     }
-    // Taxiway Bravo: from 08/26 south to the threshold of 06, crossing the closed 15/33
-    { const p = R0826.at(-200, 0), q = R0624.at(-R0624.halfL + 25, 0);
+    // Taxiway Bravo: from 08/26 south to 06/24 just past the 06 threshold, crossing the closed 15/33
+    // (it joins 80 m in so that its hold-short point lies on grass, not on 15/33's pavement)
+    { const p = R0826.at(-200, 0), q = R0624.at(-R0624.halfL + 80, 0);
       taxi(p, q); holdShort(q, p, R0826); holdShort(p, q, R0624); }
     // Taxiway Echo: at the east end, from Alpha across 08/26 to 06/24
     { const p = A(200), q0 = R0826.at(200, 0), far = { x: q0.x + R0826.rx * 400, z: q0.z + R0826.rz * 400 };
@@ -1070,7 +1099,8 @@
 
     // ── windsocks: striped cone on a pivoting mast; it fills and swings with the gusts ──
     function windsock(p, phase) {
-      const g = new THREE.Group(); g.position.set(p.x, Y0, p.z); scene.add(g);
+      // drawn at 2.5× a standard 12-ft sock so it reads clearly from the air: ~16.5 m mast, ~10 m sock
+      const g = new THREE.Group(); g.position.set(p.x, Y0, p.z); g.scale.setScalar(2.5); scene.add(g);
       const pole = lam(0xd9d6d0);
       const at = (m, x, y, z) => { m.position.set(x, y, z); return m; };
       g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 0.4, 8), lam(0x8f8c86)), 0, 0.2, 0));
@@ -1091,9 +1121,9 @@
       pivot.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 4), new THREE.MeshBasicMaterial({ color: 0xff3b2f })), 0, 0.35, 0));
       windsocks.push({ pivot, segs, phase });
     }
-    windsock(R0826.at(-R0826.halfL + 160, -R0826.halfW - 45), 0);        // left of the 08 touchdown zone
-    windsock(R0624.at(-R0624.halfL + 140, -R0624.halfW - 40), 1.7);      // left of the 06 touchdown zone
-    windsock(R0826.at(R0826.halfL - 160, R0826.halfW + 45), 3.1);        // by the 26 touchdown zone
+    windsock(R0826.at(-R0826.halfL + 160, -R0826.halfW - 55), 0);        // left of the 08 touchdown zone
+    windsock(R0624.at(-R0624.halfL + 140, -R0624.halfW - 50), 1.7);      // left of the 06 touchdown zone
+    windsock(R0826.at(R0826.halfL - 160, -R0826.halfW - 55), 3.1);       // by the 26 touchdown zone, north side (06/24 converges to the south)
   }
   function updateWindsocks(t) {
     for (const w of windsocks) {
@@ -2529,7 +2559,7 @@
 
   // test hook (only with ?debug in the URL)
   if (new URLSearchParams(location.search).has('debug')) {
-    window.__fs = { THREE, ringNormals, RUNWAYS, onRunway, dbg, camera, get plane() { return plane; }, AC, AIRCRAFT, setAircraft, engineThrust, isaA, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
+    window.__fs = { THREE, ringNormals, RUNWAYS, onRunway, holds, windsocks, dbg, camera, get plane() { return plane; }, AC, AIRCRAFT, setAircraft, engineThrust, isaA, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
   }
   </script>
 </body>
