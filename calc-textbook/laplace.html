@@ -2670,28 +2670,38 @@ ${E}-volt battery is connected to an LR series circuit with inductance ${L} H an
   add('4.4', 'L44b', 'Convolution', () => {
     const t = ri(0, 3);
     if (t === 0) { const a = nz(-3, 3), k = ri(1, 4); return {
-      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t e^{${a}\tau}\sin ${kk(k)}(t-\tau)\,d\tau\right\}$ without evaluating the integral.`,
+      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t ${ex(a, '\\tau')}\sin ${kk(k)}(t-\tau)\,d\tau\right\}$ without evaluating the integral.`,
       parts: [{ label: '$F(s)=$', type: 'expr', vars: ['s'], answer: `${k}/((s-(${a}))*(s^2+${k * k}))`, domain: { s: [Math.max(a, 0) + 1, Math.max(a, 0) + 5] } }],
-      hints: [R`It is $f*g$ with $f(t)=e^{${a}t}$ and $g(t)=\sin ${kk(k)}t$. The convolution theorem says $\mathcal{L}\{f*g\}=F(s)G(s)$.`],
-      sol: steps([R`<b>Recognise a convolution</b> $\displaystyle (f*g)(t)=\int_0^tf(\tau)g(t-\tau)d\tau$ with $f=e^{${a}t}$, $g=\sin ${kk(k)}t$.`, R`<b>Multiply transforms:</b>` + D$(R`\frac{1}{${sden(a)}}\cdot\frac{${k}}{s^2+${k * k}}=\frac{${k}}{(${sden(a)})(s^2+${k * k})}`)]),
+      hints: [R`It is $f*g$ with $f(t)=${ex(a, 't')}$ and $g(t)=\sin ${kk(k)}t$. The convolution theorem says $\mathcal{L}\{f*g\}=F(s)G(s)$.`],
+      sol: steps([R`<b>Recognise a convolution</b> $\displaystyle (f*g)(t)=\int_0^tf(\tau)g(t-\tau)d\tau$ with $f=${ex(a, 't')}$, $g=\sin ${kk(k)}t$.`, R`<b>Multiply transforms:</b>` + D$(R`\frac{1}{${sden(a)}}\cdot\frac{${k}}{s^2+${k * k}}=\frac{${k}}{(${sden(a)})(s^2+${k * k})}`)]),
     }; }
+    const pw = (v, n) => (n === 1 ? v : v + '^{' + n + '}');
     if (t === 1) { const k = ri(1, 4), n = ri(1, 3); return {
-      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t \tau^{${n}}\cos ${kk(k)}(t-\tau)\,d\tau\right\}$.`,
+      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t ${pw('\\tau', n)}\cos ${kk(k)}(t-\tau)\,d\tau\right\}$.`,
       parts: [{ label: '$F(s)=$', type: 'expr', vars: ['s'], answer: `${fact(n)}/s^${n + 1}*s/(s^2+${k * k})`, domain: { s: [1, 5] } }],
-      hints: [R`Convolution of $t^{${n}}$ and $\cos ${kk(k)}t$.`],
-      sol: steps([R`<b>Convolution theorem:</b> $\mathcal{L}\{t^{${n}}\}\cdot\mathcal{L}\{\cos ${kk(k)}t\}$.`, R`<b>Result:</b>` + D$(R`\frac{${fact(n)}}{s^{${n + 1}}}\cdot\frac{s}{s^2+${k * k}}=\frac{${fact(n)}}{s^{${n}}(s^2+${k * k})}`)]),
+      hints: [R`Convolution of $${pw('t', n)}$ and $\cos ${kk(k)}t$.`],
+      sol: steps([R`<b>Convolution theorem:</b> $\mathcal{L}\{${pw('t', n)}\}\cdot\mathcal{L}\{\cos ${kk(k)}t\}$.`, R`<b>Result:</b>` + D$(R`\frac{${fact(n)}}{s^{${n + 1}}}\cdot\frac{s}{s^2+${k * k}}=\frac{${fact(n)}}{${pw('s', n)}(s^2+${k * k})}`)]),
     }; }
     if (t === 2) { const k = ri(1, 4); return {
       q: R`Use convolution to find $\mathcal{L}^{-1}\left\{\dfrac{1}{s(s^2+${k * k})}\right\}$.`,
-      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: `(1-cos(${k}*t))/${k * k}`, domain: { t: [0, 3] }, invOf: `1/(s*(s^2+${k * k}))`, smin: 0 }],
-      hints: [R`$\dfrac{1}{s}\cdot\dfrac{1}{s^2+${k * k}}$: this is $\mathcal{L}\left\{\displaystyle\int_0^t g(\tau)d\tau\right\}$ with $g=\dfrac{1}{${k}}\sin ${kk(k)}t$.`],
-      sol: steps([R`<b>Product of transforms:</b> $\dfrac1s\leftrightarrow 1$ and $\dfrac{1}{s^2+${k * k}}\leftrightarrow\dfrac{1}{${k}}\sin ${kk(k)}t$.`, R`<b>Convolve</b> (dividing by $s$ means integrating from $0$ to $t$):` + D$(R`f(t)=\int_0^t\frac{1}{${k}}\sin ${kk(k)}\tau\,d\tau=\frac{1}{${k}}\left[-\frac{\cos ${kk(k)}\tau}{${k}}\right]_0^t=\frac{1-\cos ${kk(k)}t}{${k * k}}`)]),
+      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: k === 1 ? '1-cos(t)' : `(1-cos(${k}*t))/${k * k}`, domain: { t: [0, 3] }, invOf: `1/(s*(s^2+${k * k}))`, smin: 0 }],
+      hints: [R`$\dfrac{1}{s}\cdot\dfrac{1}{s^2+${k * k}}$: this is $\mathcal{L}\left\{\displaystyle\int_0^t g(\tau)d\tau\right\}$ with $g=${k === 1 ? '' : R`\dfrac{1}{${k}}`}\sin ${kk(k)}t$.`],
+      sol: steps([R`<b>Product of transforms:</b> $\dfrac1s\leftrightarrow 1$ and $\dfrac{1}{s^2+${k * k}}\leftrightarrow${k === 1 ? '' : R`\dfrac{1}{${k}}`}\sin ${kk(k)}t$.`, R`<b>Convolve</b> (dividing by $s$ means integrating from $0$ to $t$):` + D$(k === 1 ? R`f(t)=\int_0^t\sin\tau\,d\tau=\Big[-\cos\tau\Big]_0^t=1-\cos t` : R`f(t)=\int_0^t\frac{1}{${k}}\sin ${kk(k)}\tau\,d\tau=\frac{1}{${k}}\left[-\frac{\cos ${kk(k)}\tau}{${k}}\right]_0^t=\frac{1-\cos ${kk(k)}t}{${k * k}}`)]),
     }; }
-    const [a, b] = distinct(2, -4, 4); return {
-      q: R`Use convolution to find $\mathcal{L}^{-1}\left\{\dfrac{1}{(${sden(a)})(${sden(b)})}\right\}$.`,
-      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: `(exp(${a}*t)-exp(${b}*t))/(${a - b})`, domain: { t: [0, 1.5] }, invOf: `1/((s-(${a}))*(s-(${b})))`, smin: Math.max(a, b) }],
-      hints: [R`$f=e^{${a}t}*e^{${b}t}=\displaystyle\int_0^te^{${a}\tau}e^{${b}(t-\tau)}d\tau$.`],
-      sol: steps([R`<b>Write as a convolution:</b> $\displaystyle\int_0^te^{${a}\tau}e^{${b}(t-\tau)}d\tau=e^{${b}t}\int_0^te^{${a - b}\tau}d\tau$.`, R`<b>Integrate:</b> $e^{${b}t}\cdot\dfrac{e^{${a - b}t}-1}{${a - b}}$.`, R`<b>Simplify:</b>` + D$(R`f(t)=\frac{e^{${a}t}-e^{${b}t}}{${a - b}}`)]),
+    const [a, b] = distinct(2, -4, 4);
+    // tidy display: put the larger exponent on tau so the divisor is positive; drop e^{0}, and a divisor of 1
+    const hi = Math.max(a, b), lo = Math.min(a, b), d = hi - lo;
+    const E = (c, v) => (c === 0 ? '1' : ex(c, v)), S = (c) => (c === 0 ? '1' : `exp(${c}*t)`);
+    const fac = (c) => (c === 0 ? 's' : '(' + sden(c) + ')');
+    const den = b === 0 ? fac(b) + fac(a) : fac(a) + fac(b);
+    const integrand = ((hi !== 0 ? ex(hi, '\\tau') : '') + (lo !== 0 ? ex(lo, lo === 1 ? 't-\\tau' : '(t-\\tau)') : '')) || '1';
+    const front = lo !== 0 ? ex(lo, 't') : '';
+    const over = (num) => (d === 1 ? num : R`\dfrac{${num}}{${d}}`);
+    return {
+      q: R`Use convolution to find $\mathcal{L}^{-1}\left\{\dfrac{1}{${den}}\right\}$.`,
+      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: d === 1 ? `${S(hi)}-${S(lo)}` : `(${S(hi)}-${S(lo)})/${d}`, domain: { t: [0, 1.5] }, invOf: `1/((s-(${a}))*(s-(${b})))`, smin: Math.max(a, b) }],
+      hints: [R`$f=${E(hi, 't')}*${E(lo, 't')}=\displaystyle\int_0^t${integrand}\,d\tau$.`],
+      sol: steps([(lo === 0 ? R`<b>Write as a convolution:</b> $${E(hi, 't')}*1=\displaystyle\int_0^t${integrand}\,d\tau$.` : R`<b>Write as a convolution:</b> $\displaystyle\int_0^t${integrand}\,d\tau=${front}\int_0^t${ex(d, '\\tau')}\,d\tau$. The factor $${front}$ comes out because it does not depend on $\tau$.`), R`<b>Integrate:</b> $${front ? front + '\\cdot' : ''}${d === 1 ? (front ? R`\left(${ex(d, 't')}-1\right)` : R`${ex(d, 't')}-1`) : R`\dfrac{${ex(d, 't')}-1}{${d}}`}$.`, R`<b>Simplify:</b>` + D$(R`f(t)=${over(E(hi, 't') + '-' + E(lo, 't'))}`)]),
     };
   });
   add('4.4', 'L44c', 'Integral equations', () => {
@@ -3747,7 +3757,7 @@ ${E}-volt battery is connected to an LR series circuit with inductance ${L} H an
   const h = UI.h;
   const PAGES = [
     { href: 'textbook.html', key: 'book', label: 'Textbook', sub: 'All sections, 1.1 to 13.5' },
-    { href: 'MATH2Z03-Textbook.pdf', key: 'pdf', label: 'PDF textbook', sub: '440 pages · 30 MB' },
+    { href: 'MATH2Z03-Textbook.pdf', key: 'pdf', label: 'PDF textbook', sub: '449 pages · 30 MB' },
     { href: 'laplace.html', key: 'laplace', label: 'Laplace transforms', sub: '4.1 to 4.5 · 50 problems' },
     { href: 'pde.html', key: 'pde', label: 'Partial differential equations', sub: '13.1 to 13.5 · 50 problems' },
     { href: 'test2.html', key: 'test2', label: 'Test 2 practice', sub: '3.6, 3.8, 3.9, 4.1 to 4.3' },

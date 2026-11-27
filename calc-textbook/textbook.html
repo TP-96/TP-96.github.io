@@ -3407,6 +3407,131 @@ a.card:hover { border-color: var(--accent); text-decoration: none; }
     <p>In a series LRC circuit, Kirchhoff's law can be written with the current alone: $L\dfrac{di}{dt}+Ri+\dfrac1C\displaystyle\int_0^t i(\tau)\,d\tau=E(t)$. Transforming uses both $\mathcal{L}\{i'\}=sI-i(0)$ and $\mathcal{L}\{\int_0^t i\}=\dfrac{I}{s}$, so the equation becomes algebra in $I(s)$ directly.</p>
   </div>
 
+  <h3>Working with convolution</h3>
+  <p>The convolution theorem lets you skip the integral. Sometimes you need the integral itself, though: to check an answer, to see what a convolution actually looks like, or to write one formula that solves an equation for <i>every</i> input. This part shows how to evaluate $f*g$ by hand, which algebra rules convolution follows, and how it gives the response of a system to any forcing.</p>
+  <div class="idea"><span class="tag">Method · Evaluating $f*g$ by hand</span>
+    <ol>
+      <li><b>Rename the variable in $f$.</b> Write $f(\tau)$: replace every $t$ in $f$ by $\tau$.</li>
+      <li><b>Flip and shift $g$.</b> Write $g(t-\tau)$: replace every $t$ in $g$ by $t-\tau$.</li>
+      <li><b>Integrate in $\tau$ from $0$ to $t$.</b> While you integrate, $t$ is a constant, so any factor that depends only on $t$ comes out in front of the integral.</li>
+      <li><b>Check at $t=0$.</b> The answer must be $0$ there, because $\displaystyle\int_0^0(\cdots)\,d\tau=0$.</li>
+    </ol>
+    <p>Since $f*g=g*f$, you may choose which function gets the $t-\tau$. Give it to the one that is easier to shift, usually an exponential or a polynomial.</p>
+  </div>
+  <div class="box aside"><span class="tag">Picture it: flip, slide, multiply, add up</span>
+    <p>As a function of $\tau$, the graph of $g(t-\tau)$ is the graph of $g$ flipped left to right and slid along so that $g(0)$ sits at $\tau=t$. For a fixed $t$, multiply this flipped copy by $f(\tau)$ and find the area under the product from $\tau=0$ to $\tau=t$. That area is $(f*g)(t)$. As $t$ increases, the flipped copy slides to the right and the area changes, which traces out the whole function $f*g$.</p>
+  </div>
+
+  <div class="example"><div class="ex-head"><b>Example 7</b><span>A convolution straight from the definition</span></div><div class="ex-body">
+    <p>Evaluate $t*e^{t}$ from the definition. Then check the answer with the convolution theorem.</p>
+    <ol class="reveal">
+      <li><b>Choose which function to shift.</b> Since $t*e^{t}=e^{t}*t$, either order works. Shifting the exponential is easier, so take $f(\tau)=\tau$ and $g(t-\tau)=e^{t-\tau}$.</li>
+      <li><b>Set up the integral.</b> $\displaystyle t*e^{t}=\int_0^{t}\tau\,e^{t-\tau}\,d\tau=e^{t}\int_0^{t}\tau\,e^{-\tau}\,d\tau$. The factor $e^{t}$ comes out because $t$ is a constant while we integrate in $\tau$.</li>
+      <li><b>Integrate by parts.</b> With $u=\tau$ and $dv=e^{-\tau}\,d\tau$, we get $du=d\tau$ and $v=-e^{-\tau}$, so $$\int_0^{t}\tau\,e^{-\tau}\,d\tau=\Big[-\tau e^{-\tau}-e^{-\tau}\Big]_0^{t}=1-te^{-t}-e^{-t}.$$</li>
+      <li><b>Multiply by $e^{t}$.</b> $$t*e^{t}=e^{t}\left(1-te^{-t}-e^{-t}\right)=e^{t}-t-1.$$</li>
+      <li><b>Check at $t=0$.</b> $e^{0}-0-1=0$, as every convolution must be.</li>
+      <li><b>Check with the theorem.</b> The theorem says $\mathcal{L}\{t*e^{t}\}=\dfrac{1}{s^2}\cdot\dfrac{1}{s-1}=\dfrac{1}{s^2(s-1)}$. Transforming our answer term by term gives $$\frac{1}{s-1}-\frac{1}{s^2}-\frac{1}{s}=\frac{s^2-(s-1)-s(s-1)}{s^2(s-1)}=\frac{1}{s^2(s-1)}.$$ The two agree.</li>
+    </ol>
+  </div></div>
+
+  <div class="example"><div class="ex-head"><b>Example 8</b><span>Two bounded functions with a growing convolution</span></div><div class="ex-body">
+    <p>Evaluate $\sin t*\cos t$.</p>
+    <ol class="reveal">
+      <li><b>Set up the integral.</b> $\displaystyle\sin t*\cos t=\int_0^{t}\sin\tau\,\cos(t-\tau)\,d\tau$.</li>
+      <li><b>Use a product-to-sum identity.</b> $\sin A\cos B=\dfrac12\big[\sin(A+B)+\sin(A-B)\big]$. With $A=\tau$ and $B=t-\tau$ we have $A+B=t$ and $A-B=2\tau-t$, so $$\sin t*\cos t=\frac12\int_0^{t}\big[\sin t+\sin(2\tau-t)\big]\,d\tau.$$</li>
+      <li><b>Integrate in $\tau$.</b> $\sin t$ is a constant here, so it integrates to $\tau\sin t$. For the other term, $\displaystyle\int\sin(2\tau-t)\,d\tau=-\frac{\cos(2\tau-t)}{2}$. So the integral is $\dfrac12\left[\tau\sin t-\dfrac{\cos(2\tau-t)}{2}\right]_0^{t}$.</li>
+      <li><b>Evaluate the limits.</b> At $\tau=t$ the bracket is $t\sin t-\dfrac{\cos t}{2}$. At $\tau=0$ it is $-\dfrac{\cos(-t)}{2}=-\dfrac{\cos t}{2}$. Subtracting, the cosines cancel: $$\sin t*\cos t=\frac12\,t\sin t.$$</li>
+      <li><b>Check with the theorem.</b> $\mathcal{L}\{\sin t\}\,\mathcal{L}\{\cos t\}=\dfrac{1}{s^2+1}\cdot\dfrac{s}{s^2+1}=\dfrac{s}{(s^2+1)^2}$. Example 1 with $k=1$ gives $\mathcal{L}\{t\sin t\}=\dfrac{2s}{(s^2+1)^2}$, and half of that is exactly our transform.</li>
+      <li><b>Interpret.</b> Both $\sin t$ and $\cos t$ stay between $-1$ and $1$, yet their convolution grows like $t$. This is the resonance of Example 2 seen from the time side: $\cos t$ keeps pushing at exactly the natural frequency of a system whose free motion is $\sin t$.</li>
+    </ol>
+  </div></div>
+
+  <div class="idea"><span class="tag">Properties of convolution</span>
+    <p>For piecewise continuous $f$, $g$, $h$ and any constant $c$:</p>
+    $$\begin{aligned} f*g&=g*f &&\text{(commutative)}\\ f*(g+h)&=f*g+f*h &&\text{(distributive)}\\ (f*g)*h&=f*(g*h) &&\text{(associative)}\\ (cf)*g&=c\,(f*g) &&\text{(constants come out)}\\ f*0&=0. \end{aligned}$$
+    <p><b>Why they hold.</b> Each rule is a rule of ordinary multiplication, carried back through the convolution theorem. For example, $\mathcal{L}\{f*(g+h)\}=F\,(G+H)=FG+FH=\mathcal{L}\{f*g+f*h\}$, and two continuous functions with the same transform are the same function.</p>
+  </div>
+  <div class="box"><span class="tag">Careful: convolution is not ordinary multiplication</span>
+    <p>Some rules of ordinary multiplication do <b>not</b> carry over.</p>
+    <ul>
+      <li><b>Convolving with $1$ changes a function.</b> $f*1=\displaystyle\int_0^{t}f(\tau)\,d\tau$, the running integral of $f$. For example $1*1=\displaystyle\int_0^{t}1\,d\tau=t$, not $1$.</li>
+      <li><b>$f*f$ can be negative.</b> Example 5 with $k=1$ gives $\sin t*\sin t=\dfrac{\sin t-t\cos t}{2}$, which equals $-\pi$ at $t=2\pi$.</li>
+      <li><b>The function that acts like $1$</b> for convolution is the Dirac delta of Section 4.5: $f*\delta=f$.</li>
+    </ul>
+  </div>
+
+  <div class="example"><div class="ex-head"><b>Example 9</b><span>One formula for every input</span></div><div class="ex-body">
+    <p>A $1$ kg mass hangs on a spring with spring constant $4$ N/m. It starts at rest in its equilibrium position, and from $t=0$ an external force of $g(t)$ newtons pushes on it. The displacement $y(t)$, in metres, satisfies $$y''+4y=g(t),\qquad y(0)=0,\quad y'(0)=0.$$ Find $y(t)$ for any force $g$, then for the constant force $g(t)=1$ N.</p>
+    <ol class="reveal">
+      <li><b>Transform.</b> $s^2Y+4Y=G(s)$, so $Y=\dfrac{1}{s^2+4}\cdot G(s)$.</li>
+      <li><b>Recognize a product of transforms.</b> $\dfrac{1}{s^2+4}=\dfrac12\cdot\dfrac{2}{s^2+4}=\mathcal{L}\left\{\dfrac12\sin2t\right\}$, and $G(s)=\mathcal{L}\{g(t)\}$.</li>
+      <li><b>Invert with the convolution theorem.</b> Giving the shift $t-\tau$ to the sine, $$y(t)=\frac12\int_0^{t}g(\tau)\,\sin2(t-\tau)\,d\tau.$$ This one formula covers every force. You never need $G(s)$, so it works even when $g$ is not in the table.</li>
+      <li><b>Use it for $g(t)=1$.</b> Since $\dfrac{d}{d\tau}\cos2(t-\tau)=2\sin2(t-\tau)$, $$y(t)=\frac12\int_0^{t}\sin2(t-\tau)\,d\tau=\frac12\left[\frac{\cos2(t-\tau)}{2}\right]_0^{t}=\frac12\cdot\frac{1-\cos2t}{2}=\frac{1-\cos2t}{4}.$$</li>
+      <li><b>Check.</b> $y''=\cos2t$, so $y''+4y=\cos2t+1-\cos2t=1$. Also $y(0)=0$ and $y'(0)=\dfrac{\sin0}{2}=0$.</li>
+      <li><b>Interpret.</b> The mass oscillates between $0$ m and $0.5$ m around $0.25$ m, the position where the spring force $4\times0.25=1$ N balances the push. The function $w(t)=\dfrac12\sin2t$ is how the system responds to one sharp unit blow at $t=0$, its impulse response (Section 4.5). The formula $y=g*w$ says each small piece $g(\tau)\,d\tau$ of the force starts its own copy of $w$ at time $\tau$, and the solution adds all the copies up.</li>
+    </ol>
+  </div></div>
+  <div class="idea"><span class="tag">Response to any input</span>
+    <p>For $ay''+by'+cy=g(t)$ with $y(0)=0$ and $y'(0)=0$,</p>
+    $$y(t)=(g*w)(t)=\int_0^{t}g(\tau)\,w(t-\tau)\,d\tau,\qquad w(t)=\mathcal{L}^{-1}\left\{\frac{1}{as^2+bs+c}\right\}.$$
+    <p>If the initial conditions are not zero, add the solution of the homogeneous equation that meets them.</p>
+  </div>
+  <div class="box warn"><span class="tag">Common mistakes with convolution</span>
+    <ul>
+      <li>Putting $\tau$ in both functions, or $t-\tau$ in both. One function gets $\tau$ and the other gets $t-\tau$.</li>
+      <li>Treating $t$ as the variable of integration. Only $\tau$ changes. Factors such as $e^{t}$ or $\sin t$ come out of the integral as constants.</li>
+      <li>Assuming $f*1=f$. In fact $f*1=\int_0^{t}f(\tau)\,d\tau$.</li>
+      <li>Skipping the free check: a convolution of piecewise continuous functions is always $0$ at $t=0$.</li>
+    </ul>
+  </div>
+
+  <div class="tryit-group">
+  <h3>Try it yourself: convolution</h3>
+  <p>Work each one on paper, then reveal the solution one step at a time.</p>
+  <div class="example tryit" data-topic="Convolution from the definition" data-label="$t*t=$"><div class="ex-head"><b>Try it 1</b><span>A polynomial with itself</span></div><div class="ex-body">
+    <p>Evaluate $t*t$ from the definition, and check your answer with the convolution theorem.</p>
+    <p class="tryit-ans" hidden>$t*t=\dfrac{t^3}{6}$</p>
+    <ol class="reveal">
+      <li><b>Set up.</b> $f(\tau)=\tau$ and $g(t-\tau)=t-\tau$, so $\displaystyle t*t=\int_0^{t}\tau\,(t-\tau)\,d\tau=\int_0^{t}\big(t\tau-\tau^2\big)\,d\tau$.</li>
+      <li><b>Integrate in $\tau$, holding $t$ fixed.</b> $\left[\dfrac{t\tau^2}{2}-\dfrac{\tau^3}{3}\right]_0^{t}=\dfrac{t^3}{2}-\dfrac{t^3}{3}=\dfrac{t^3}{6}$.</li>
+      <li><b>Check with the theorem.</b> $\mathcal{L}\{t\}\cdot\mathcal{L}\{t\}=\dfrac{1}{s^2}\cdot\dfrac{1}{s^2}=\dfrac{1}{s^4}=\dfrac{1}{3!}\cdot\dfrac{3!}{s^4}=\mathcal{L}\left\{\dfrac{t^3}{6}\right\}$. They agree.</li>
+    </ol>
+  </div></div>
+  <div class="example tryit" data-topic="Convolution from the definition" data-label="$e^{t}*\sin t=$"><div class="ex-head"><b>Try it 2</b><span>An exponential and a sine</span></div><div class="ex-body">
+    <p>Evaluate $e^{t}*\sin t$ from the definition. Check that your answer is $0$ at $t=0$ and that its transform matches Example 3.</p>
+    <p class="tryit-ans" hidden>$e^{t}*\sin t=\dfrac{e^{t}-\sin t-\cos t}{2}$</p>
+    <ol class="reveal">
+      <li><b>Shift the exponential.</b> Using $e^{t}*\sin t=\sin t*e^{t}$, write $\displaystyle\int_0^{t}\sin\tau\,e^{t-\tau}\,d\tau=e^{t}\int_0^{t}e^{-\tau}\sin\tau\,d\tau$.</li>
+      <li><b>Use the standard integral.</b> Integrating by parts twice gives $\displaystyle\int e^{-\tau}\sin\tau\,d\tau=-\frac{e^{-\tau}(\sin\tau+\cos\tau)}{2}$. You can check this by differentiating.</li>
+      <li><b>Evaluate from $0$ to $t$.</b> $-\dfrac{e^{-t}(\sin t+\cos t)}{2}-\left(-\dfrac{1}{2}\right)=\dfrac12-\dfrac{e^{-t}(\sin t+\cos t)}{2}$.</li>
+      <li><b>Multiply by $e^{t}$.</b> $$e^{t}*\sin t=\frac{e^{t}-\sin t-\cos t}{2}.$$ At $t=0$ this is $\dfrac{1-0-1}{2}=0$.</li>
+      <li><b>Check with Example 3.</b> Our answer transforms to $\dfrac12\left[\dfrac{1}{s-1}-\dfrac{1}{s^2+1}-\dfrac{s}{s^2+1}\right]=\dfrac{(s^2+1)-(s-1)-s(s-1)}{2(s-1)(s^2+1)}=\dfrac{1}{(s-1)(s^2+1)}$, which is the answer of Example 3.</li>
+    </ol>
+  </div></div>
+  <div class="example tryit" data-topic="Properties of convolution" data-label="$1*1*1=$"><div class="ex-head"><b>Try it 3</b><span>Convolving $1$ with itself</span></div><div class="ex-body">
+    <p>Find $1*1*1$ in two ways: by convolving one pair at a time, and with the convolution theorem.</p>
+    <p class="tryit-ans" hidden>$1*1*1=\dfrac{t^2}{2}$</p>
+    <ol class="reveal">
+      <li><b>First pair.</b> $1*1=\displaystyle\int_0^{t}1\cdot1\,d\tau=t$.</li>
+      <li><b>Then the third $1$.</b> By associativity $1*1*1=(1*1)*1=t*1=\displaystyle\int_0^{t}\tau\,d\tau=\frac{t^2}{2}$.</li>
+      <li><b>With the theorem.</b> $\mathcal{L}\{1\}^3=\dfrac{1}{s^3}=\dfrac12\cdot\dfrac{2!}{s^3}=\mathcal{L}\left\{\dfrac{t^2}{2}\right\}$. Same answer.</li>
+      <li><b>The pattern.</b> Each extra $*1$ integrates once more, so $n$ ones convolved together give $\dfrac{t^{n-1}}{(n-1)!}$.</li>
+    </ol>
+  </div></div>
+  <div class="example tryit" data-topic="Response to any input" data-label="$y(t)=$"><div class="ex-head"><b>Try it 4</b><span>A spring pushed by a growing force</span></div><div class="ex-body">
+    <p>Write the solution of $y''+y=g(t)$, $y(0)=0$, $y'(0)=0$ as a convolution integral. Then use it to find $y(t)$ when $g(t)=t$.</p>
+    <p class="tryit-ans" hidden>$y(t)=\displaystyle\int_0^{t}g(\tau)\sin(t-\tau)\,d\tau$; for $g(t)=t$, $y(t)=t-\sin t$</p>
+    <ol class="reveal">
+      <li><b>Transform.</b> $(s^2+1)Y=G(s)$, so $Y=\dfrac{1}{s^2+1}\,G(s)$ and $w(t)=\mathcal{L}^{-1}\left\{\dfrac{1}{s^2+1}\right\}=\sin t$.</li>
+      <li><b>General formula.</b> $\displaystyle y(t)=\int_0^{t}g(\tau)\,\sin(t-\tau)\,d\tau$.</li>
+      <li><b>Put in $g(t)=t$, shifting the polynomial instead.</b> By commutativity $y=\displaystyle\int_0^{t}\sin\tau\,(t-\tau)\,d\tau=t\int_0^{t}\sin\tau\,d\tau-\int_0^{t}\tau\sin\tau\,d\tau$.</li>
+      <li><b>Integrate.</b> $\displaystyle t\int_0^{t}\sin\tau\,d\tau=t(1-\cos t)$ and, by parts, $\displaystyle\int_0^{t}\tau\sin\tau\,d\tau=\Big[\sin\tau-\tau\cos\tau\Big]_0^{t}=\sin t-t\cos t$.</li>
+      <li><b>Combine.</b> $y(t)=t-t\cos t-\sin t+t\cos t=t-\sin t$.</li>
+      <li><b>Check.</b> $y''=\sin t$, so $y''+y=\sin t+t-\sin t=t$. Also $y(0)=0$ and $y'(0)=1-\cos0=0$.</li>
+    </ol>
+  </div></div>
+  </div>
+
   <h3>Transform of a periodic function</h3>
   <p>If $f(t+T)=f(t)$ for all $t$, the integral over $[0,\infty)$ is a repeat of the integral over one period. Split $\int_0^\infty=\int_0^T+\int_T^\infty$ and substitute $t=u+T$ in the second part. Periodicity makes it $e^{-sT}\mathcal{L}\{f\}$, so $\mathcal{L}\{f\}=\int_0^Te^{-st}f\,dt+e^{-sT}\mathcal{L}\{f\}$. Solving for $\mathcal{L}\{f\}$:</p>
   <div class="idea"><span class="tag">Theorem 4.4.3 · Periodic functions</span>
@@ -3414,7 +3539,7 @@ a.card:hover { border-color: var(--accent); text-decoration: none; }
     <p>You only need to integrate over one period.</p>
   </div>
 
-  <div class="example"><div class="ex-head"><b>Example 7</b><span>A square wave</span></div><div class="ex-body">
+  <div class="example"><div class="ex-head"><b>Example 10</b><span>A square wave</span></div><div class="ex-body">
     <p>Find the transform of the square wave $E(t)=1$ for $0\le t&lt;1$, $E(t)=0$ for $1\le t&lt;2$, repeated with period $T=2$.</p>
     <ol class="reveal">
       <li><b>Integrate over one period.</b> $\displaystyle\int_0^{2}e^{-st}E(t)\,dt=\int_0^{1}e^{-st}\,dt+0=\frac{1-e^{-s}}{s}$.</li>
@@ -3427,6 +3552,9 @@ a.card:hover { border-color: var(--accent); text-decoration: none; }
     <ul>
       <li>$\mathcal{L}\{tf\}=-F'(s)$, and in general $\mathcal{L}\{t^nf\}=(-1)^nF^{(n)}(s)$.</li>
       <li>$\mathcal{L}\{f*g\}=FG$. Use it to invert products and to solve integral equations.</li>
+      <li>By hand: $(f*g)(t)=\int_0^tf(\tau)\,g(t-\tau)\,d\tau$, with $t$ held constant. Every convolution is $0$ at $t=0$.</li>
+      <li>$f*g=g*f$, and convolution distributes and associates, but $f*1=\int_0^tf\,d\tau\neq f$.</li>
+      <li>Zero initial conditions: the response to any input $g$ is $y=g*w$, where $w=\mathcal{L}^{-1}\left\{\frac{1}{as^2+bs+c}\right\}$.</li>
       <li>$\mathcal{L}\{\int_0^tf\}=\frac{F}{s}$.</li>
       <li>Periodic $f$: $\frac{1}{1-e^{-sT}}\int_0^Te^{-st}f\,dt$.</li>
     </ul>
@@ -3435,7 +3563,7 @@ a.card:hover { border-color: var(--accent); text-decoration: none; }
   <div data-practice-box="4.4"></div>
   <!--x:s4-4:more-->
   <h3>More worked examples</h3>
-  <div class="example foldable"><div class="ex-head"><b>Example 8</b><span>Inverting a product by convolution</span></div><div class="ex-body">
+  <div class="example foldable"><div class="ex-head"><b>Example 11</b><span>Inverting a product by convolution</span></div><div class="ex-body">
     <p>Find $\mathcal L^{-1}\left\{\dfrac{1}{s(s^2+1)}\right\}$ using convolution.</p>
     <ol class="reveal">
       <li><b>Split as a product.</b> $\dfrac1s\cdot\dfrac{1}{s^2+1}$, the transforms of $f=1$ and $g=\sin t$.</li>
@@ -6292,28 +6420,38 @@ ${E}-volt battery is connected to an LR series circuit with inductance ${L} H an
   add('4.4', 'L44b', 'Convolution', () => {
     const t = ri(0, 3);
     if (t === 0) { const a = nz(-3, 3), k = ri(1, 4); return {
-      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t e^{${a}\tau}\sin ${kk(k)}(t-\tau)\,d\tau\right\}$ without evaluating the integral.`,
+      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t ${ex(a, '\\tau')}\sin ${kk(k)}(t-\tau)\,d\tau\right\}$ without evaluating the integral.`,
       parts: [{ label: '$F(s)=$', type: 'expr', vars: ['s'], answer: `${k}/((s-(${a}))*(s^2+${k * k}))`, domain: { s: [Math.max(a, 0) + 1, Math.max(a, 0) + 5] } }],
-      hints: [R`It is $f*g$ with $f(t)=e^{${a}t}$ and $g(t)=\sin ${kk(k)}t$. The convolution theorem says $\mathcal{L}\{f*g\}=F(s)G(s)$.`],
-      sol: steps([R`<b>Recognise a convolution</b> $\displaystyle (f*g)(t)=\int_0^tf(\tau)g(t-\tau)d\tau$ with $f=e^{${a}t}$, $g=\sin ${kk(k)}t$.`, R`<b>Multiply transforms:</b>` + D$(R`\frac{1}{${sden(a)}}\cdot\frac{${k}}{s^2+${k * k}}=\frac{${k}}{(${sden(a)})(s^2+${k * k})}`)]),
+      hints: [R`It is $f*g$ with $f(t)=${ex(a, 't')}$ and $g(t)=\sin ${kk(k)}t$. The convolution theorem says $\mathcal{L}\{f*g\}=F(s)G(s)$.`],
+      sol: steps([R`<b>Recognise a convolution</b> $\displaystyle (f*g)(t)=\int_0^tf(\tau)g(t-\tau)d\tau$ with $f=${ex(a, 't')}$, $g=\sin ${kk(k)}t$.`, R`<b>Multiply transforms:</b>` + D$(R`\frac{1}{${sden(a)}}\cdot\frac{${k}}{s^2+${k * k}}=\frac{${k}}{(${sden(a)})(s^2+${k * k})}`)]),
     }; }
+    const pw = (v, n) => (n === 1 ? v : v + '^{' + n + '}');
     if (t === 1) { const k = ri(1, 4), n = ri(1, 3); return {
-      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t \tau^{${n}}\cos ${kk(k)}(t-\tau)\,d\tau\right\}$.`,
+      q: R`Find $\mathcal{L}\left\{\displaystyle\int_0^t ${pw('\\tau', n)}\cos ${kk(k)}(t-\tau)\,d\tau\right\}$.`,
       parts: [{ label: '$F(s)=$', type: 'expr', vars: ['s'], answer: `${fact(n)}/s^${n + 1}*s/(s^2+${k * k})`, domain: { s: [1, 5] } }],
-      hints: [R`Convolution of $t^{${n}}$ and $\cos ${kk(k)}t$.`],
-      sol: steps([R`<b>Convolution theorem:</b> $\mathcal{L}\{t^{${n}}\}\cdot\mathcal{L}\{\cos ${kk(k)}t\}$.`, R`<b>Result:</b>` + D$(R`\frac{${fact(n)}}{s^{${n + 1}}}\cdot\frac{s}{s^2+${k * k}}=\frac{${fact(n)}}{s^{${n}}(s^2+${k * k})}`)]),
+      hints: [R`Convolution of $${pw('t', n)}$ and $\cos ${kk(k)}t$.`],
+      sol: steps([R`<b>Convolution theorem:</b> $\mathcal{L}\{${pw('t', n)}\}\cdot\mathcal{L}\{\cos ${kk(k)}t\}$.`, R`<b>Result:</b>` + D$(R`\frac{${fact(n)}}{s^{${n + 1}}}\cdot\frac{s}{s^2+${k * k}}=\frac{${fact(n)}}{${pw('s', n)}(s^2+${k * k})}`)]),
     }; }
     if (t === 2) { const k = ri(1, 4); return {
       q: R`Use convolution to find $\mathcal{L}^{-1}\left\{\dfrac{1}{s(s^2+${k * k})}\right\}$.`,
-      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: `(1-cos(${k}*t))/${k * k}`, domain: { t: [0, 3] }, invOf: `1/(s*(s^2+${k * k}))`, smin: 0 }],
-      hints: [R`$\dfrac{1}{s}\cdot\dfrac{1}{s^2+${k * k}}$: this is $\mathcal{L}\left\{\displaystyle\int_0^t g(\tau)d\tau\right\}$ with $g=\dfrac{1}{${k}}\sin ${kk(k)}t$.`],
-      sol: steps([R`<b>Product of transforms:</b> $\dfrac1s\leftrightarrow 1$ and $\dfrac{1}{s^2+${k * k}}\leftrightarrow\dfrac{1}{${k}}\sin ${kk(k)}t$.`, R`<b>Convolve</b> (dividing by $s$ means integrating from $0$ to $t$):` + D$(R`f(t)=\int_0^t\frac{1}{${k}}\sin ${kk(k)}\tau\,d\tau=\frac{1}{${k}}\left[-\frac{\cos ${kk(k)}\tau}{${k}}\right]_0^t=\frac{1-\cos ${kk(k)}t}{${k * k}}`)]),
+      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: k === 1 ? '1-cos(t)' : `(1-cos(${k}*t))/${k * k}`, domain: { t: [0, 3] }, invOf: `1/(s*(s^2+${k * k}))`, smin: 0 }],
+      hints: [R`$\dfrac{1}{s}\cdot\dfrac{1}{s^2+${k * k}}$: this is $\mathcal{L}\left\{\displaystyle\int_0^t g(\tau)d\tau\right\}$ with $g=${k === 1 ? '' : R`\dfrac{1}{${k}}`}\sin ${kk(k)}t$.`],
+      sol: steps([R`<b>Product of transforms:</b> $\dfrac1s\leftrightarrow 1$ and $\dfrac{1}{s^2+${k * k}}\leftrightarrow${k === 1 ? '' : R`\dfrac{1}{${k}}`}\sin ${kk(k)}t$.`, R`<b>Convolve</b> (dividing by $s$ means integrating from $0$ to $t$):` + D$(k === 1 ? R`f(t)=\int_0^t\sin\tau\,d\tau=\Big[-\cos\tau\Big]_0^t=1-\cos t` : R`f(t)=\int_0^t\frac{1}{${k}}\sin ${kk(k)}\tau\,d\tau=\frac{1}{${k}}\left[-\frac{\cos ${kk(k)}\tau}{${k}}\right]_0^t=\frac{1-\cos ${kk(k)}t}{${k * k}}`)]),
     }; }
-    const [a, b] = distinct(2, -4, 4); return {
-      q: R`Use convolution to find $\mathcal{L}^{-1}\left\{\dfrac{1}{(${sden(a)})(${sden(b)})}\right\}$.`,
-      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: `(exp(${a}*t)-exp(${b}*t))/(${a - b})`, domain: { t: [0, 1.5] }, invOf: `1/((s-(${a}))*(s-(${b})))`, smin: Math.max(a, b) }],
-      hints: [R`$f=e^{${a}t}*e^{${b}t}=\displaystyle\int_0^te^{${a}\tau}e^{${b}(t-\tau)}d\tau$.`],
-      sol: steps([R`<b>Write as a convolution:</b> $\displaystyle\int_0^te^{${a}\tau}e^{${b}(t-\tau)}d\tau=e^{${b}t}\int_0^te^{${a - b}\tau}d\tau$.`, R`<b>Integrate:</b> $e^{${b}t}\cdot\dfrac{e^{${a - b}t}-1}{${a - b}}$.`, R`<b>Simplify:</b>` + D$(R`f(t)=\frac{e^{${a}t}-e^{${b}t}}{${a - b}}`)]),
+    const [a, b] = distinct(2, -4, 4);
+    // tidy display: put the larger exponent on tau so the divisor is positive; drop e^{0}, and a divisor of 1
+    const hi = Math.max(a, b), lo = Math.min(a, b), d = hi - lo;
+    const E = (c, v) => (c === 0 ? '1' : ex(c, v)), S = (c) => (c === 0 ? '1' : `exp(${c}*t)`);
+    const fac = (c) => (c === 0 ? 's' : '(' + sden(c) + ')');
+    const den = b === 0 ? fac(b) + fac(a) : fac(a) + fac(b);
+    const integrand = ((hi !== 0 ? ex(hi, '\\tau') : '') + (lo !== 0 ? ex(lo, lo === 1 ? 't-\\tau' : '(t-\\tau)') : '')) || '1';
+    const front = lo !== 0 ? ex(lo, 't') : '';
+    const over = (num) => (d === 1 ? num : R`\dfrac{${num}}{${d}}`);
+    return {
+      q: R`Use convolution to find $\mathcal{L}^{-1}\left\{\dfrac{1}{${den}}\right\}$.`,
+      parts: [{ label: '$f(t)=$', type: 'expr', vars: ['t'], answer: d === 1 ? `${S(hi)}-${S(lo)}` : `(${S(hi)}-${S(lo)})/${d}`, domain: { t: [0, 1.5] }, invOf: `1/((s-(${a}))*(s-(${b})))`, smin: Math.max(a, b) }],
+      hints: [R`$f=${E(hi, 't')}*${E(lo, 't')}=\displaystyle\int_0^t${integrand}\,d\tau$.`],
+      sol: steps([(lo === 0 ? R`<b>Write as a convolution:</b> $${E(hi, 't')}*1=\displaystyle\int_0^t${integrand}\,d\tau$.` : R`<b>Write as a convolution:</b> $\displaystyle\int_0^t${integrand}\,d\tau=${front}\int_0^t${ex(d, '\\tau')}\,d\tau$. The factor $${front}$ comes out because it does not depend on $\tau$.`), R`<b>Integrate:</b> $${front ? front + '\\cdot' : ''}${d === 1 ? (front ? R`\left(${ex(d, 't')}-1\right)` : R`${ex(d, 't')}-1`) : R`\dfrac{${ex(d, 't')}-1}{${d}}`}$.`, R`<b>Simplify:</b>` + D$(R`f(t)=${over(E(hi, 't') + '-' + E(lo, 't'))}`)]),
     };
   });
   add('4.4', 'L44c', 'Integral equations', () => {
@@ -7369,7 +7507,7 @@ ${E}-volt battery is connected to an LR series circuit with inductance ${L} H an
   const h = UI.h;
   const PAGES = [
     { href: 'textbook.html', key: 'book', label: 'Textbook', sub: 'All sections, 1.1 to 13.5' },
-    { href: 'MATH2Z03-Textbook.pdf', key: 'pdf', label: 'PDF textbook', sub: '440 pages · 30 MB' },
+    { href: 'MATH2Z03-Textbook.pdf', key: 'pdf', label: 'PDF textbook', sub: '449 pages · 30 MB' },
     { href: 'laplace.html', key: 'laplace', label: 'Laplace transforms', sub: '4.1 to 4.5 · 50 problems' },
     { href: 'pde.html', key: 'pde', label: 'Partial differential equations', sub: '13.1 to 13.5 · 50 problems' },
     { href: 'test2.html', key: 'test2', label: 'Test 2 practice', sub: '3.6, 3.8, 3.9, 4.1 to 4.3' },
