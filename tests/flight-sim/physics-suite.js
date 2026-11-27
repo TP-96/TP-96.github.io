@@ -252,20 +252,20 @@
     ok(`${id}: sits still on the runway at idle after spawning`, s.pos.distanceTo(p0) < 0.05 && s.grounded, `moved ${s.pos.distanceTo(p0).toFixed(3)} m`);
   }
   for (const id of ['c172', 'f22']) {
-    reset(); F.setAircraft(id); F.startFlight('free'); s.throttle = 1; const z0 = s.pos.z; let lo = null, rot = id === 'f22' ? 125 : 55;
-    stepN(120 * 60, () => { if (s.ias > rot) F.touch.y = 0.6; if (!s.grounded && !lo) lo = { kt: s.ias, d: z0 - s.pos.z }; if (lo && s.pos.y > F.RWY.h + 60) return false; });
-    const rw = id === 'f22' ? 1400 : 680;
-    ok(`${id}: takes off within the runway (${rw} m)`, lo && lo.d < rw - 60 && !s.crashed, lo ? `lift-off at ${lo.kt.toFixed(0)} kt after ${lo.d.toFixed(0)} m` : 'never lifted off');
+    reset(); F.setAircraft(id); F.startFlight('free'); s.throttle = 1; const p0 = s.pos.clone(); let lo = null, rot = id === 'f22' ? 125 : 55;
+    stepN(120 * 60, () => { if (s.ias > rot) F.touch.y = 0.6; if (!s.grounded && !lo) lo = { kt: s.ias, d: Math.hypot(s.pos.x - p0.x, s.pos.z - p0.z) }; if (lo && s.pos.y > F.RWY.h + 60) return false; });
+    const rw = F.AC.runway.halfL * 2;
+    ok(`${id}: takes off within runway ${F.AC.runway.names[0]} (${rw} m)`, lo && lo.d + 30 * F.AC.cam < rw - 60 && !s.crashed, lo ? `lift-off at ${lo.kt.toFixed(0)} kt after a ${lo.d.toFixed(0)} m ground roll` : 'never lifted off');
     if (id === 'c172') ok('C172 ground roll ≈ 960 ft / 290 m (POH, sea level)', lo && within(lo.d, 250, 340), `${lo && lo.d.toFixed(0)} m`);
   }
   for (const [id, v0, lim] of [['c172', 25.7, 140], ['f22', 72, 820]]) {
-    reset(); F.setAircraft(id); F.startFlight('free'); s.parkBrake = false; s.vel.set(0, 0, -v0); F.touch.brake = true; const z0 = s.pos.z;
+    reset(); F.setAircraft(id); F.startFlight('free'); s.parkBrake = false; F.axes(); const fw = new F.THREE.Vector3(0, 0, -1).applyQuaternion(s.q); s.vel.copy(fw).multiplyScalar(v0); F.touch.brake = true; const p0 = s.pos.clone();
     stepN(120 * 60, () => V() > 0.05);
-    const d = z0 - s.pos.z, decel = v0 * v0 / (2 * d);
+    const d = Math.hypot(s.pos.x - p0.x, s.pos.z - p0.z), decel = v0 * v0 / (2 * d);
     ok(`${id}: braking from ${(v0 * KT).toFixed(0)} kt stops in ${d.toFixed(0)} m (≈0.3–0.4 g)`, d < lim && within(decel / G, 0.28, 0.42) && !s.crashed, `${(decel / G).toFixed(2)} g mean deceleration`);
   }
   {
-    reset(); F.setAircraft('c172'); F.startFlight('free'); s.parkBrake = false; s.vel.set(0, 0, -8); s.throttle = 0.25;
+    reset(); F.setAircraft('c172'); F.startFlight('free'); s.parkBrake = false; s.vel.copy(new F.THREE.Vector3(0, 0, -8).applyQuaternion(s.q)); s.throttle = 0.25;
     const h0 = F.headingRad(); let maxY = 0;
     stepN(120 * 6, () => { F.touch.x = 1; maxY = Math.max(maxY, Math.abs(s.pos.y - (F.RWY.h + 1.24))); });
     ok('C172 steers on the ground without leaving it', s.grounded && Math.abs(F.headingRad() - h0) > 0.3 && maxY < 0.01, `heading changed ${((F.headingRad() - h0) * 57.3).toFixed(0)}°`);
@@ -274,26 +274,40 @@
   // ───────────────────────── 5. touchdowns ─────────────────────────
   const touchdown = (id, rw, kt, vsFpm, pitchDeg = 4, rollDeg = 0) => {
     reset(); F.setAircraft(id); F.startFlight('course');
-    const v = kt / KT, vs = vsFpm / 196.85, r = rw === 'B' ? { x: -160, z: 1300, halfL: 700 } : { x: 0, z: 1500, halfL: 340 };
+    const v = kt / KT, vs = vsFpm / 196.85, r = F.RUNWAYS[rw];
     s.grounded = false; s.parkBrake = false; s.nextRing = F.course.length;
-    s.pos.set(r.x, F.RWY.h + F.AC.gearH + 0.03, r.z + r.halfL - 150);
-    const gam = Math.atan2(-vs, v); s.vel.set(0, -vs, -v * Math.cos(gam));
-    s.q.setFromEuler(new THREE.Euler(pitchDeg / 57.3, 0, -rollDeg / 57.3, 'YXZ')); s.throttle = 0; s.spool = 0;
+    const tp = r.at(-r.halfL + 150, 0); s.pos.set(tp.x, F.RWY.h + F.AC.gearH + 0.03, tp.z);
+    s.vel.set(r.dx * v, -vs, r.dz * v);                          // landing in the A → B direction (08, 06)
+    s.q.setFromEuler(new THREE.Euler(pitchDeg / 57.3, -r.hdg, -rollDeg / 57.3, 'YXZ')); s.throttle = 0; s.spool = 0;
     let td = null; stepN(120 * 5, () => { if (s.grounded && !td) td = true; if (td) return false; });
     return s.crashed ? (document.getElementById('crash-reason').textContent) : (s.grounded ? 'ok' : 'airborne');
   };
   const THREE = F.THREE;
-  for (const [id, rw, kt] of [['c172', 'A', 60], ['f22', 'B', 145]]) {
+  for (const [id, rw, kt] of [['c172', 1, 60], ['f22', 0, 145]]) {
     const good = touchdown(id, rw, kt, 300);
     ok(`${id}: normal ${kt} kt, 300 fpm touchdown is accepted`, good === 'ok', good);
     F.touch.brake = true; stepN(120 * 40, () => V() > 0.05);
-    ok(`${id}: then brakes to a stop on the runway and the course finishes`, F.phase === 'finished', `phase ${F.phase}, rolled to z=${s.pos.z.toFixed(0)}`);
+    ok(`${id}: then brakes to a stop on the runway and the course finishes`, F.phase === 'finished', `phase ${F.phase}, stopped ${F.RUNWAYS[rw].local(s.pos.x, s.pos.z).u.toFixed(0)} m from mid-runway, on runway ${F.onRunway(s.pos.x, s.pos.z, true)}`);
     const hard = touchdown(id, rw, kt, 1300);
     ok(`${id}: 1,300 fpm arrival is a hard-landing crash`, /Hard landing/.test(hard), hard);
     const wing = touchdown(id, rw, kt, 300, 4, 25);
     ok(`${id}: 25° bank at touchdown strikes a wingtip`, /wingtip/.test(wing), wing);
     const nose = touchdown(id, rw, kt, 300, -10);
     ok(`${id}: nose-low arrival is a nose-first crash`, /nose/.test(nose), nose);
+  }
+
+  // ───────────────────────── 5b. airfield layout (Billy Bishop) ─────────────────────────
+  {
+    const [a, b, c] = F.RUNWAYS, deg = r => r.hdg * 57.2958;
+    const angle = (r1, r2) => { let d = Math.abs(deg(r1) - deg(r2)) % 180; return Math.min(d, 180 - d); };
+    ok('runways at Billy Bishop angles: 08/26 071.8°, 06/24 050.8°, 15/33 141°', Math.abs(deg(a) - 71.8) < 0.01 && Math.abs(deg(b) - 50.8) < 0.01 && Math.abs(deg(c) - 141) < 0.01 && Math.abs(angle(a, b) - 21) < 0.01,
+      `08/26 vs 06/24 ${angle(a, b).toFixed(1)}° apart, 15/33 vs 08/26 ${angle(a, c).toFixed(1)}°`);
+    ok('runway lengths match CYTZ: 1,216 / 894 / 847 m, all 46 m wide', a.halfL * 2 === 1216 && b.halfL * 2 === 894 && c.halfL * 2 === 847 && [a, b, c].every(r => r.halfW * 2 === 46), '');
+    const e26 = a.at(a.halfL, 0), e24 = b.at(b.halfL, 0);
+    ok('26 and 24 thresholds converge at the east end (within 40 m, as at CYTZ)', Math.hypot(e26.x - e24.x, e26.z - e24.z) < 40, `${Math.hypot(e26.x - e24.x, e26.z - e24.z).toFixed(1)} m apart`);
+    let flat = 0; for (const r of [a, b, c]) for (let u = -r.halfL; u <= r.halfL; u += 25) for (const w of [-r.halfW, 0, r.halfW]) { const p = r.at(u, w); flat = Math.max(flat, Math.abs(F.terrainH(p.x, p.z) - F.RWY.h)); }
+    ok('all three runways sit on level ground', flat < 0.01, `max deviation ${flat.toFixed(3)} m`);
+    ok('the closed runway (15/33) does not count for finishing the course', F.onRunway(c.x, c.z) && !F.onRunway(...(() => { const p = c.at(-c.halfL + 30, 0); return [p.x, p.z]; })(), true), '');
   }
 
   // ───────────────────────── 6. robustness ─────────────────────────

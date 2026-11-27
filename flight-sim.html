@@ -552,8 +552,9 @@
         <li>Bank with A / D to turn. The orange marker and the minimap point to the next ring.</li>
         <li>Pull too hard or fly too slow and the wing stalls — push the nose down to recover.</li>
         <li>The turn coordinator (bottom left) shows your rate of turn: wings on the L or R mark is a standard-rate turn, a full circle in two minutes. Keep the ball centred with the rudder (Q / E) — if it drifts, press the rudder on the ball's side.</li>
+        <li>The airfield is laid out like Billy Bishop Toronto City Airport: runways 08/26 and 06/24 meet at the east end, and 15/33 (closed — note the yellow crosses) cuts across them. Taxiways stop at yellow hold-short lines and red signs before each runway.</li>
         <li>To land, line up with the runway, slow to about 60 knots and touch down gently: descent under 880 ft/min, wings level. Hold B, Space or the BRAKE button to stop.</li>
-        <li>In the F-22, past 85% throttle the afterburners light. It departs from the long runway, 36L, rotates at about 125 knots, and lands at 140–150 knots — use 36L, the short strip is only 680 m. It's fully aerobatic: roll it upside down and flight assist holds it there; from a gentle bank it levels the wings.</li>
+        <li>In the F-22, past 85% throttle the afterburners light. It departs from runway 08 — 1,216 m, the longest — rotates at about 125 knots, and lands at 140–150 knots, so land it on 08 or 26. It's fully aerobatic: roll it upside down and flight assist holds it there; from a gentle bank it levels the wings.</li>
       </ol>
     </div>
     <div class="record">
@@ -671,31 +672,46 @@
   }
   const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-  // Runways: centre, half-length, half-width, elevation (metres). Aircraft take off heading north (-z).
-  // 36R/18L is the original 680 m light-aircraft strip; 36L/18R is a 1,400 m × 45 m runway to the west for the jet.
-  const RWY = { x: 0, z: 1500, halfL: 340, halfW: 16, h: 24, names: ['18L', '36R'] };
-  const RWY2 = { x: -160, z: 1300, halfL: 700, halfW: 22.5, h: 24, names: ['18R', '36L'] };
-  const RUNWAYS = [RWY, RWY2];
-  const TWY_X = 40;                                          // parallel taxiway east of 36R
-  const APRON = { x0: 50, x1: 150, z0: 1340, z1: 1700 };     // apron in front of the hangars
-  // ground levelled for the airfield: [centre x, centre z, half-size x, half-size z]
-  const PADS = [[RWY.x, RWY.z, RWY.halfW + 80, RWY.halfL + 110], [RWY2.x, RWY2.z, RWY2.halfW + 70, RWY2.halfL + 90], [100, 1500, 75, 380]];
-
+  // ── The airfield is laid out like Billy Bishop Toronto City Airport (CYTZ) on the Toronto Islands ──
+  // Runway centres and headings come from the published threshold coordinates and true headings:
+  //   08/26  1,216 × 46 m  071.8° T   main runway
+  //   06/24    894 × 46 m  050.8° T   converges with 26 at the east end
+  //   15/33    847 × 46 m  141.0° T   crosses both; closed (painted with X's)
+  // Coordinates: x east, z south, metres. Each runway runs from end A (first designator) toward end B.
+  const FIELD_H = 24;
+  const ARP = { x: 40, z: 1400 };                    // airport reference point on the island
+  function makeRunway(cx, cz, len, wid, hdgDeg, names, closed = false) {
+    const h = hdgDeg * Math.PI / 180;
+    const r = { x: ARP.x + cx, z: ARP.z + cz, halfL: len / 2, halfW: wid / 2, h: FIELD_H, hdg: h, names, closed,
+      dx: Math.sin(h), dz: -Math.cos(h),             // unit vector A → B
+      rx: Math.cos(h), rz: Math.sin(h) };            // unit vector to the right of A → B
+    r.at = (u, w) => ({ x: r.x + r.dx * u + r.rx * w, z: r.z + r.dz * u + r.rz * w });   // u along, w right of the centreline
+    r.local = (x, z) => ({ u: (x - r.x) * r.dx + (z - r.z) * r.dz, w: (x - r.x) * r.rx + (z - r.z) * r.rz });
+    return r;
+  }
+  const R0826 = makeRunway(-86, -159, 1216, 46, 71.8, ['08', '26']);
+  const R0624 = makeRunway(164, -67, 894, 46, 50.8, ['06', '24']);
+  const R1533 = makeRunway(-180, 147, 847, 46, 141.0, ['15', '33'], true);
+  const RUNWAYS = [R0826, R0624, R1533];
+  const RWY = R0826;                                  // the main runway (ring course start and finish)
+  // levelled ground: rectangles in a runway's frame [runway, centre u, centre w, half-length, half-width]
+  const PADS = [[R0826, 0, -60, 700, 260], [R0624, 0, 0, 520, 95], [R1533, 0, 0, 500, 95], [R0826, 300, -250, 260, 150]];
+  const VALLEY = { x: 0, z: 1500 };                   // the island's broad valley, independent of the runway layout
   function rawHeight(x, z) {
     const d = Math.hypot(x, z) / 2900 + fbm(x * 0.0005 + 31.7, z * 0.0005 - 12.3, 3) * 0.32;
     const land = 1 - smooth(0.6, 1.0, d);                         // 1 inland → 0 open sea
     const hills = fbm(x * 0.0016 + 3.1, z * 0.0016 + 8.7, 4) * 0.5 + 0.5;
     const r = ridge(x * 0.00075 + 17.2, z * 0.00075 - 4.4, 4);
     const core = smooth(0.95, 0.3, d);                             // mountains toward the middle
-    const drw = Math.hypot((x - RWY.x) * 0.5, (z - RWY.z) * 0.45);  // long valley around the airfield
+    const drw = Math.hypot((x - VALLEY.x) * 0.5, (z - VALLEY.z) * 0.45);  // long valley around the airfield
     const valley = smooth(260, 980, drw);
     const mount = Math.pow(r, 2.4) * 600 * core * valley;
     const ground = 16 + hills * 58 * (0.35 + 0.65 * valley) + mount;
     let h = -55 + (ground + 55) * land;
     // level the airfield
     let w = 0;
-    for (const [cx, cz, hx, hz] of PADS) w = Math.max(w, 1 - smooth(0, 240, Math.max(Math.abs(x - cx) - hx, Math.abs(z - cz) - hz)));
-    return h + (RWY.h - h) * w;
+    for (const [r, cu, cw, hu, hw] of PADS) { const l = r.local(x, z); w = Math.max(w, 1 - smooth(0, 240, Math.max(Math.abs(l.u - cu) - hu, Math.abs(l.w - cw) - hw))); }
+    return h + (FIELD_H - h) * w;
   }
 
   const T_SIZE = 8000, T_N = 256, T_STEP = T_SIZE / T_N, T_HALF = T_SIZE / 2;
@@ -719,12 +735,12 @@
     const hx = terrainH(x + e, z) - terrainH(x - e, z), hz = terrainH(x, z + e) - terrainH(x, z - e);
     return 1 / Math.sqrt(1 + (hx / (2 * e)) ** 2 + (hz / (2 * e)) ** 2);
   }
-  const inRwy = (r, x, z) => Math.abs(x - r.x) <= r.halfW + 4 && Math.abs(z - r.z) <= r.halfL + 6;
-  const onRunway = (x, z) => inRwy(RWY, x, z) || inRwy(RWY2, x, z);
+  const inRwy = (r, x, z) => { const l = r.local(x, z); return Math.abs(l.w) <= r.halfW + 4 && Math.abs(l.u) <= r.halfL + 6; };
+  const onRunway = (x, z, openOnly = false) => RUNWAYS.some(r => !(openOnly && r.closed) && inRwy(r, x, z));
   // 1 on the mown airfield infield, fading to 0 outside it
   const airfield = (x, z) => {
     let a = 0;
-    for (const [cx, cz, hx, hz] of PADS) a = Math.max(a, 1 - smooth(-30, 30, Math.max(Math.abs(x - cx) - hx + 20, Math.abs(z - cz) - hz + 20)));
+    for (const [r, cu, cw, hu, hw] of PADS) { const l = r.local(x, z); a = Math.max(a, 1 - smooth(-30, 30, Math.max(Math.abs(l.u - cu) - hu + 20, Math.abs(l.w - cw) - hw + 20))); }
     return a;
   };
 
@@ -814,79 +830,81 @@
   scene.add(sunLight);
 
   // ════════════════════════════════════════════════════════════════════
-  //  AIRPORT — two parallel runways, taxiways, apron, hangars, tower, windsocks
+  //  AIRPORT — Billy Bishop layout: three runways at angles, taxiways with hold-short lines,
+  //  apron, terminal, hangar line, tower, windsocks
   // ════════════════════════════════════════════════════════════════════
   const windsocks = [];
-  const WIND_TO = 0.3;    // a light north-north-westerly: the socks stream toward the south-south-east
+  const WIND_TO = -1.22;  // a light east-north-easterly (from 070°): the socks stream toward 250°, so 08 and 06 are into wind
   {
-    const Y0 = RWY.h;
+    const Y0 = FIELD_H;
     const aniso = renderer.capabilities.getMaxAnisotropy();
     const finishTex = t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = aniso; return t; };
-    const flat = (w, l, tex, x, y, z, rotY = 0, order = -2) => {
+    // a flat textured quad: w across, l along heading hdg (texture top points along the heading)
+    const flat = (w, l, tex, x, y, z, hdg = 0, order = -2, mat = null) => {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(w, l),
-        new THREE.MeshLambertMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: order, polygonOffsetUnits: order }));
-      m.rotation.set(-Math.PI / 2, 0, rotY); m.position.set(x, y, z); scene.add(m); return m;
+        mat || new THREE.MeshLambertMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: order, polygonOffsetUnits: order }));
+      m.rotation.set(-Math.PI / 2, 0, -hdg); m.position.set(x, y, z); scene.add(m); return m;
     };
+    const hdgOf = (dx, dz) => Math.atan2(dx, -dz);
 
-    // ── runway surface with FAA-style markings, painted to scale ──
+    // ── runway surface with ICAO/Transport Canada-style markings, painted to scale ──
     function runwayTexture(r) {
       const L = r.halfL * 2, Wm = r.halfW * 2;
       const W = 256, H = Math.min(4096, Math.round(L * 2.8));
       const px = W / Wm, pz = H / L;                    // pixels per metre across / along
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const g = cv.getContext('2d'), rr = mulberry32(r.halfL | 0);
-      g.fillStyle = '#3d3e41'; g.fillRect(0, 0, W, H);
-      // patched asphalt, fine aggregate, and rubber laid down in the touchdown zones
+      g.fillStyle = r.closed ? '#46474a' : '#3d3e41'; g.fillRect(0, 0, W, H);
       for (let i = 0; i < 70; i++) { g.fillStyle = rr() < 0.5 ? `rgba(18,18,20,${0.06 + rr() * 0.08})` : `rgba(95,95,98,${0.05 + rr() * 0.07})`; g.fillRect(rr() * W, rr() * H, 30 + rr() * 90, 40 + rr() * 260); }
       for (let i = 0; i < 6000; i++) { g.fillStyle = `rgba(255,255,255,${rr() * 0.045})`; g.fillRect(rr() * W, rr() * H, 1.5, 1.5); }
-      for (const end of [0, 1]) for (let i = 0; i < 90; i++) {
-        const d = 90 + rr() * 380, y = (end ? L - d : d) * pz;
+      // canvas top is end B; distances d are measured from a threshold
+      const M = (x0, z0, w, l) => g.fillRect(W / 2 + x0 * px, z0 * pz, w * px, l * pz);
+      if (!r.closed) for (const end of [0, 1]) for (let i = 0; i < 90; i++) {
+        const d = 90 + rr() * 320, y = (end ? L - d : d) * pz;
         g.fillStyle = `rgba(8,8,8,${0.08 + rr() * 0.1})`; g.fillRect(W / 2 + (rr() - 0.5) * Wm * 0.32 * px, y, (0.6 + rr()) * px, (6 + rr() * 25) * pz);
       }
-      const M = (x0, z0, w, l) => g.fillRect(W / 2 + x0 * px, z0 * pz, w * px, l * pz);   // x0 metres from the centreline, z0 metres from the north end
-      g.fillStyle = '#ecebe5';
+      g.fillStyle = r.closed ? 'rgba(236,235,229,0.45)' : '#ecebe5';
       M(-r.halfW + 0.6, 0, 0.9, L); M(r.halfW - 1.5, 0, 0.9, L);                         // side stripes
       for (let z = 150; z < L - 186; z += 60) M(-0.45, z, 0.9, 36);                       // centreline: 36 m dashes, 24 m gaps
-      const long = L >= 1200, nKeys = Wm >= 45 ? 12 : 8;
-      for (const end of [0, 1]) {
-        const at = (d, l) => end ? L - d - l : d;                                         // d = distance from this threshold
+      const nKeys = 12;
+      for (const end of [0, 1]) {                                                           // end 0 = B (top), end 1 = A (bottom)
+        const at = (d, l) => end ? L - d - l : d;
         g.fillRect(0, at(1.5, 1.2) * pz, W, 1.2 * pz);                                     // threshold bar
-        // piano keys, split down the middle
         const sw = 1.8, half = Wm / 2 - 3, gap = (half * 2 - 3.6 - nKeys * sw) / (nKeys - 2);
-        for (let i = 0; i < nKeys; i++) {
+        for (let i = 0; i < nKeys; i++) {                                                   // piano keys
           const x = i < nKeys / 2 ? -half + i * (sw + gap) : half - (nKeys - 1 - i) * (sw + gap) - sw;
-          M(x, at(6, 45), sw, 45);
+          M(x, at(6, 30), sw, 30);
         }
-        // designator: number, with the L/R letter nearer the threshold
-        const [num, letter] = [r.names[end].slice(0, 2), r.names[end].slice(2)];
-        const drawText = (txt, d) => {
-          g.save(); g.translate(W / 2, at(d, 0) * pz);
-          if (!end) g.rotate(Math.PI);
-          g.scale(1, pz / px);
-          g.font = `bold ${Math.round(18 * px)}px "DM Mono", monospace`; g.textAlign = 'center'; g.textBaseline = 'bottom';
-          g.fillText(txt, 0, 0); g.restore();
-        };
-        drawText(letter, 75); drawText(num, 99);
-        // touchdown-zone bars and the aiming point
-        const bars = long ? [[150, 3], [300, 'A'], [450, 2], [600, 2]] : [[120, 3], [180, 'A'], [270, 2]];
+        const name = r.names[end ? 0 : 1];
+        g.save(); g.translate(W / 2, at(48, 0) * pz);
+        if (!end) g.rotate(Math.PI);
+        g.scale(1, pz / px);
+        g.font = `bold ${Math.round(18 * px)}px "DM Mono", monospace`; g.textAlign = 'center'; g.textBaseline = 'bottom';
+        g.fillText(name, 0, -(end ? 18 : -18) * px * 0 + 0); g.restore();
+        if (r.closed) continue;
+        // touchdown-zone bars and the aiming point (runways under 1,200 m: shorter pattern)
+        const bars = L >= 1200 ? [[150, 3], [300, 'A'], [450, 2]] : [[120, 3], [200, 'A'], [300, 2]];
         for (const [d, n] of bars) {
-          if (n === 'A') { const aw = long ? 9 : 6; for (const sd of [-1, 1]) M(sd > 0 ? (long ? 9 : 5.5) : -(long ? 9 : 5.5) - aw, at(d, 45), aw, 45); continue; }
-          for (const sd of [-1, 1]) for (let k = 0; k < n; k++) { const x = (long ? 6 : 4.5) + k * 3.3; M(sd > 0 ? x : -x - 1.8, at(d, 22.5), 1.8, 22.5); }
+          if (n === 'A') { for (const sd of [-1, 1]) M(sd > 0 ? 6 : -12, at(d, 45), 6, 45); continue; }
+          for (const sd of [-1, 1]) for (let k = 0; k < n; k++) { const x = 4.5 + k * 3.3; M(sd > 0 ? x : -x - 1.8, at(d, 22.5), 1.8, 22.5); }
+        }
+      }
+      if (r.closed) {                                                                       // closed-runway crosses
+        g.strokeStyle = '#e3b82c'; g.lineCap = 'butt';
+        for (const d of [L * 0.12, L * 0.5, L * 0.88]) {
+          g.save(); g.translate(W / 2, d * pz); g.scale(1, pz / px); g.lineWidth = 1.8 * px;
+          const a = 18 * px; g.beginPath(); g.moveTo(-a * 0.6, -a); g.lineTo(a * 0.6, a); g.moveTo(a * 0.6, -a); g.lineTo(-a * 0.6, a); g.stroke(); g.restore();
         }
       }
       return finishTex(new THREE.CanvasTexture(cv));
     }
-    for (const r of RUNWAYS) {
-      flat(r.halfW * 2, r.halfL * 2, runwayTexture(r), r.x, Y0 + 0.09, r.z, 0, -3);
-      // light-grey blast pads and shoulders
+    // the main runway is drawn above the others where they overlap
+    RUNWAYS.forEach((r, i) => {
+      const lift = [0.13, 0.11, 0.10][i], order = [-5, -4, -3][i];
+      flat(r.halfW * 2, r.halfL * 2, runwayTexture(r), r.x, Y0 + lift, r.z, r.hdg, order);
       const sh = new THREE.MeshLambertMaterial({ color: 0x6b6a64, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
-      for (const end of [-1, 1]) {
-        const m = new THREE.Mesh(new THREE.PlaneGeometry(r.halfW * 2, 40), sh);
-        m.rotation.x = -Math.PI / 2; m.position.set(r.x, Y0 + 0.05, r.z + end * (r.halfL + 20)); scene.add(m);
-      }
-      const shm = new THREE.Mesh(new THREE.PlaneGeometry(r.halfW * 2 + 7, r.halfL * 2), sh);
-      shm.rotation.x = -Math.PI / 2; shm.position.set(r.x, Y0 + 0.05, r.z); scene.add(shm);
-    }
+      flat(r.halfW * 2 + 7, r.halfL * 2 + 70, null, r.x, Y0 + 0.05, r.z, r.hdg, -1, sh);     // shoulders and blast pads
+    });
 
     // ── taxiways: asphalt with a yellow centreline and edge lines ──
     const twyTex = (() => {
@@ -898,103 +916,161 @@
       g.fillRect(6, 0, 3, 64); g.fillRect(10, 0, 3, 64); g.fillRect(115, 0, 3, 64); g.fillRect(119, 0, 3, 64);
       const t = finishTex(new THREE.CanvasTexture(cv)); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
     })();
-    const taxi = (x0, z0, x1, z1, w = 18) => {
-      const ew = Math.abs(x1 - x0) > Math.abs(z1 - z0), len = ew ? Math.abs(x1 - x0) : Math.abs(z1 - z0);
+    const TW = 18;
+    const twyEdge = [];
+    const taxi = (p, q) => {
+      const dx = q.x - p.x, dz = q.z - p.z, len = Math.hypot(dx, dz);
       const t = twyTex.clone(); t.needsUpdate = true; t.repeat.set(1, len / 16);
-      flat(w, len, t, (x0 + x1) / 2, Y0 + 0.07, (z0 + z1) / 2, ew ? Math.PI / 2 : 0, -2);
+      flat(TW, len + TW * 0.5, t, (p.x + q.x) / 2, Y0 + 0.07, (p.z + q.z) / 2, hdgOf(dx, dz), -2);
+      const ux = dx / len, uz = dz / len;
+      for (let d = 15; d < len - 10; d += 40) for (const sd of [-1, 1]) twyEdge.push([p.x + ux * d - uz * sd * (TW / 2 + 1), p.z + uz * d + ux * sd * (TW / 2 + 1)]);
     };
-    taxi(TWY_X, RWY.z - RWY.halfL + 10, TWY_X, RWY.z + RWY.halfL - 10);       // parallel taxiway
-    for (const z of [RWY.z - RWY.halfL + 22, RWY.z, RWY.z + RWY.halfL - 22]) taxi(RWY.x + RWY.halfW, z, TWY_X + 9, z);
-    for (const z of [1230, 1760]) taxi(RWY2.x + RWY2.halfW, z, RWY.x - RWY.halfW, z);   // crossovers to 36L
+    // where a straight taxiway, followed from p toward q, reaches runway r's centreline
+    const meet = (p, q, r) => {
+      const dx = q.x - p.x, dz = q.z - p.z, a = r.local(p.x, p.z), b = r.local(q.x, q.z);
+      const t = a.w / (a.w - b.w); return { x: p.x + dx * t, z: p.z + dz * t };
+    };
 
-    // ── apron: concrete slabs with joints and yellow lead-in lines ──
-    {
-      const aw = APRON.x1 - APRON.x0, al = APRON.z1 - APRON.z0;
-      const cv = document.createElement('canvas'); cv.width = 512; cv.height = 1024;
-      const g = cv.getContext('2d'), sx = 512 / aw, sz = 1024 / al;
-      g.fillStyle = '#9b9a94'; g.fillRect(0, 0, 512, 1024);
-      for (let i = 0; i < 160; i++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? '60,60,58' : '200,198,190'},${Math.random() * 0.08})`; g.fillRect(Math.random() * 512, Math.random() * 1024, 7.5 * sx, 7.5 * sz); }
-      g.fillStyle = 'rgba(40,40,38,0.35)';
-      for (let x = 0; x < aw; x += 7.5) g.fillRect(x * sx, 0, 1, 1024);
-      for (let z = 0; z < al; z += 7.5) g.fillRect(0, z * sz, 512, 1);
-      g.strokeStyle = '#e3b82c'; g.lineWidth = 4;
-      g.beginPath(); g.moveTo(12 * sx, 0); g.lineTo(12 * sx, 1024); g.stroke();
-      for (const zc of [60, 160, 280]) {          // a lead-in line to each hangar door
-        g.beginPath(); g.moveTo(12 * sx, (zc - 25) * sz); g.quadraticCurveTo(12 * sx, zc * sz, 40 * sx, zc * sz); g.lineTo(aw * sx, zc * sz); g.stroke();
-      }
-      flat(aw, al, finishTex(new THREE.CanvasTexture(cv)), (APRON.x0 + APRON.x1) / 2, Y0 + 0.06, (APRON.z0 + APRON.z1) / 2, 0, -1);
+    // ── hold-short lines (two solid, two dashed; solid on the taxiway side) and holding-position signs ──
+    const holdTex = (() => {
+      const cv = document.createElement('canvas'); cv.width = 128; cv.height = 64;
+      const g = cv.getContext('2d'); g.clearRect(0, 0, 128, 64); g.fillStyle = '#f2c230';
+      // top of the texture faces the runway: dashed pair there, solid pair below
+      for (const y of [6, 20]) for (let x = 4; x < 128; x += 20) g.fillRect(x, y, 12, 7);
+      for (const y of [37, 51]) g.fillRect(0, y, 128, 7);
+      return finishTex(new THREE.CanvasTexture(cv));
+    })();
+    const holdMat = new THREE.MeshLambertMaterial({ map: holdTex, transparent: true, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6 });
+    const signTex = txt => {
+      const cv = document.createElement('canvas'); cv.width = 256; cv.height = 96;
+      const g = cv.getContext('2d'); g.fillStyle = '#c8191e'; g.fillRect(0, 0, 256, 96);
+      g.strokeStyle = '#ffffff'; g.lineWidth = 5; g.strokeRect(6, 6, 244, 84);
+      g.fillStyle = '#ffffff'; g.font = 'bold 58px "DM Mono", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 128, 52);
+      return finishTex(new THREE.CanvasTexture(cv));
+    };
+    const signPost = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
+    const holds = [];
+    // along the taxiway from p toward q, mark the hold-short point 60 m before runway r's centreline
+    function holdShort(p, q, r) {
+      const m = meet(p, q, r), dx = q.x - p.x, dz = q.z - p.z, len = Math.hypot(dx, dz), ux = dx / len, uz = dz / len;
+      const cosA = Math.abs(ux * r.rx + uz * r.rz);    // 1 when the taxiway meets the runway at right angles
+      const back = 60 / Math.max(cosA, 0.35), hx = m.x - ux * back, hz = m.z - uz * back;
+      flat(TW, 3.4, null, hx, Y0 + 0.08, hz, hdgOf(ux, uz), -6, holdMat);
+      // sign on the left of the taxiway, facing traffic, naming the runway ahead
+      const sx = hx - uz * -(TW / 2 + 5), sz = hz + ux * -(TW / 2 + 5);
+      const sg = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.0, 0.18), [signPost, signPost, signPost, signPost,
+        new THREE.MeshBasicMaterial({ map: signTex(r.names.join('-')) }), new THREE.MeshBasicMaterial({ map: signTex(r.names.slice().reverse().join('-')) })]);
+      sg.position.set(sx, Y0 + 1.1, sz); sg.rotation.y = Math.atan2(-ux, -uz); scene.add(sg);
+      for (const k of [-1, 1]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.7, 0.12), signPost); post.position.set(sx + uz * k * 1.0, Y0 + 0.35, sz - ux * k * 1.0); scene.add(post); }
+      holds.push({ x: hx, z: hz, rw: r });
     }
 
-    // ── buildings ──
+    // Taxiway Alpha: parallel to 08/26 on the north side, 120 m from its centreline, with three connectors
+    const A = u => R0826.at(u, -120);
+    const alphaW = A(-500), alphaE = A(470);
+    taxi(alphaW, alphaE);
+    for (const u of [-560, 0, 470]) {
+      const from = A(u), to = R0826.at(u, 0);
+      taxi(from, to); holdShort(from, to, R0826);
+    }
+    // Taxiway Bravo: from 08/26 south to the threshold of 06, crossing the closed 15/33
+    { const p = R0826.at(-200, 0), q = R0624.at(-R0624.halfL + 25, 0);
+      taxi(p, q); holdShort(q, p, R0826); holdShort(p, q, R0624); }
+    // Taxiway Echo: at the east end, from Alpha across 08/26 to 06/24
+    { const p = A(200), q0 = R0826.at(200, 0), far = { x: q0.x + R0826.rx * 400, z: q0.z + R0826.rz * 400 };
+      const q = meet(p, far, R0624);
+      taxi(p, q); holdShort(p, q0, R0826); holdShort(q, p, R0826); holdShort(p, far, R0624); }
+
+    // ── apron north of Alpha's east end: concrete slabs, joints and yellow lead-in lines ──
+    const AP_U = [140, 470], AP_W = [-310, -135];
+    {
+      const aw = AP_U[1] - AP_U[0], al = AP_W[1] - AP_W[0];
+      const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 512;
+      const g = cv.getContext('2d'), sx = 1024 / aw, sz = 512 / al;
+      g.fillStyle = '#9b9a94'; g.fillRect(0, 0, 1024, 512);
+      for (let i = 0; i < 200; i++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? '60,60,58' : '200,198,190'},${Math.random() * 0.08})`; g.fillRect(Math.random() * 1024, Math.random() * 512, 7.5 * sx, 7.5 * sz); }
+      g.fillStyle = 'rgba(40,40,38,0.35)';
+      for (let x = 0; x < aw; x += 7.5) g.fillRect(x * sx, 0, 1, 512);
+      for (let z = 0; z < al; z += 7.5) g.fillRect(0, z * sz, 1024, 1);
+      g.strokeStyle = '#e3b82c'; g.lineWidth = 4;
+      g.beginPath(); g.moveTo(0, (al - 14) * sz); g.lineTo(1024, (al - 14) * sz); g.stroke();      // apron taxilane
+      for (const u of [40, 120, 200]) { g.beginPath(); g.moveTo(u * sx, (al - 14) * sz); g.quadraticCurveTo(u * sx, (al - 50) * sz, (u + 20) * sx, (al - 60) * sz); g.lineTo((u + 20) * sx, 0); g.stroke(); }
+      const c = R0826.at((AP_U[0] + AP_U[1]) / 2, (AP_W[0] + AP_W[1]) / 2);
+      // canvas x runs along the runway, canvas y across it (top = north side)
+      flat(aw, al, finishTex(new THREE.CanvasTexture(cv)), c.x, Y0 + 0.06, c.z, R0826.hdg - Math.PI / 2, -1);
+      taxi(A(160), R0826.at(160, AP_W[1] + 5));
+    }
+
+    // ── buildings, aligned with the runway like the hangar line along 08/26 ──
     const lam = c => new THREE.MeshLambertMaterial({ color: c, flatShading: true });
-    const put = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); scene.add(m); return m; };
-    // three arched hangars facing the apron, doors open to the west
-    for (const [zc, w] of [[APRON.z0 + 60, 40], [APRON.z0 + 160, 46], [APRON.z0 + 280, 40]]) {
-      const d = 34, xc = APRON.x1 + d / 2 - 2, wallH = 5;
-      put(new THREE.BoxGeometry(d, wallH, w), lam(0xc9c3b6), xc, Y0 + wallH / 2, zc);
+    const yaw = -R0826.hdg;                                   // local x → along 08/26, local z → across (south)
+    const put = (geo, mat, u, y, w, rotExtra = 0) => { const p = R0826.at(u, w); const m = new THREE.Mesh(geo, mat); m.position.set(p.x, Y0 + y, p.z); m.rotation.y = yaw + Math.PI / 2 + rotExtra; scene.add(m); return m; };
+    // three arched hangars on the north edge of the apron, doors facing the runway
+    for (const [u, w] of [[180, 40], [260, 46], [340, 40]]) {
+      const d = 34, wc = AP_W[0] - d / 2 + 2, wallH = 5;
+      put(new THREE.BoxGeometry(w, wallH, d), lam(0xc9c3b6), u, wallH / 2, wc);
       const arch = new THREE.CylinderGeometry(w / 2, w / 2, d, 18, 1, false, 0, Math.PI);
-      arch.rotateZ(Math.PI / 2); arch.scale(1, 0.42, 1);
-      put(arch, lam(0xa9b0b4), xc, Y0 + wallH, zc);
-      put(new THREE.BoxGeometry(d + 0.4, 0.8, w + 0.4), lam(0xF45D00), xc, Y0 + wallH, zc);   // orange eave band
-      // sliding doors: dark panels, one pushed half open to show the shadowed interior
+      arch.rotateZ(Math.PI / 2); arch.scale(1, 0.42, 1); arch.rotateY(Math.PI / 2);
+      put(arch, lam(0xa9b0b4), u, wallH, wc);
+      put(new THREE.BoxGeometry(w + 0.4, 0.8, d + 0.4), lam(0xF45D00), u, wallH, wc);
       const door = lam(0x5d6266);
       for (let k = 0; k < 4; k++) {
-        const pw = (w - 4) / 4, open = k === 1 ? -pw * 0.9 : 0;
-        put(new THREE.BoxGeometry(0.3, wallH + 5.5, pw - 0.3), door, xc - d / 2 - 0.25 - (k === 1 ? 0.35 : 0), Y0 + (wallH + 5.5) / 2, zc - w / 2 + 2 + pw * (k + 0.5) + open);
+        const pw = (w - 4) / 4, open = k === 1 ? pw * 0.9 : 0;
+        put(new THREE.BoxGeometry(pw - 0.3, wallH + 5.5, 0.3), door, u - w / 2 + 2 + pw * (k + 0.5) + open, (wallH + 5.5) / 2, wc + d / 2 + 0.25 + (k === 1 ? 0.35 : 0));
       }
-      put(new THREE.BoxGeometry(0.2, wallH + 5, (w - 4) / 4 - 0.4), lam(0x16181a), xc - d / 2 - 0.05, Y0 + (wallH + 5) / 2, zc - w / 2 + 2 + (w - 4) / 4 * 1.5);
+      put(new THREE.BoxGeometry((w - 4) / 4 - 0.4, wallH + 5, 0.2), lam(0x16181a), u - w / 2 + 2 + (w - 4) / 4 * 1.5, (wallH + 5) / 2, wc + d / 2 + 0.05);
     }
-    // control tower: tapered shaft, catwalk, sloped glass cab, orange roof and a beacon mast
+    // passenger terminal at the east end of the apron: long low glass-fronted building
     {
-      const tx = 82, tz = APRON.z0 - 40;
-      put(new THREE.BoxGeometry(14, 4, 10), lam(0xd8d2c5), tx + 4, Y0 + 2, tz);
-      put(new THREE.CylinderGeometry(2.2, 2.8, 20, 10), lam(0xe2dccf), tx, Y0 + 10, tz);
-      put(new THREE.CylinderGeometry(4.6, 4.6, 0.5, 8), lam(0x9a968e), tx, Y0 + 20.25, tz);
-      const glass = new THREE.MeshPhongMaterial({ color: 0x2c4558, specular: 0xffd2a0, shininess: 80, flatShading: true });
-      put(new THREE.CylinderGeometry(4.4, 3.7, 3.8, 8), glass, tx, Y0 + 22.4, tz);
-      put(new THREE.CylinderGeometry(4.9, 4.6, 0.7, 8), lam(0xF45D00), tx, Y0 + 24.65, tz);
-      put(new THREE.CylinderGeometry(0.08, 0.08, 4, 5), lam(0x888888), tx, Y0 + 27, tz);
-      put(new THREE.SphereGeometry(0.25, 6, 4), new THREE.MeshBasicMaterial({ color: 0xff3b2f }), tx, Y0 + 29.1, tz);
+      put(new THREE.BoxGeometry(90, 9, 24), lam(0xddd6c8), 430, 4.5, -335);
+      put(new THREE.BoxGeometry(90.4, 0.7, 24.4), lam(0xF45D00), 430, 9.2, -335);
+      put(new THREE.BoxGeometry(84, 5, 0.3), new THREE.MeshPhongMaterial({ color: 0x2c4558, specular: 0xffd2a0, shininess: 70 }), 430, 4.8, -322.8);
+      put(new THREE.BoxGeometry(14, 4, 26), lam(0xcfc8ba), 470, 2, -300);          // jet-bridge-less boarding pier
     }
-    // terminal with a glass frontage, and fuel tanks
+    // control tower west of the apron
     {
-      const tz = APRON.z1 + 14;
-      put(new THREE.BoxGeometry(70, 7, 18), lam(0xddd6c8), APRON.x0 + 50, Y0 + 3.5, tz);
-      put(new THREE.BoxGeometry(70.4, 0.6, 18.4), lam(0xF45D00), APRON.x0 + 50, Y0 + 7.2, tz);
-      put(new THREE.BoxGeometry(62, 3.2, 0.3), new THREE.MeshPhongMaterial({ color: 0x2c4558, specular: 0xffd2a0, shininess: 70 }), APRON.x0 + 50, Y0 + 3.6, tz - 9.05);
-      for (const dz of [0, 11]) {
-        put(new THREE.CylinderGeometry(4, 4, 6, 14), lam(0xf0ece4), APRON.x1 + 12, Y0 + 3, APRON.z1 + 8 + dz);
-        put(new THREE.CylinderGeometry(4.05, 4.05, 0.5, 14), lam(0xF45D00), APRON.x1 + 12, Y0 + 5.2, APRON.z1 + 8 + dz);
-      }
+      put(new THREE.BoxGeometry(14, 4, 10), lam(0xd8d2c5), 95, 2, -240);
+      put(new THREE.CylinderGeometry(2.2, 2.8, 20, 10), lam(0xe2dccf), 100, 10, -240);
+      put(new THREE.CylinderGeometry(4.6, 4.6, 0.5, 8), lam(0x9a968e), 100, 20.25, -240);
+      put(new THREE.CylinderGeometry(4.4, 3.7, 3.8, 8), new THREE.MeshPhongMaterial({ color: 0x2c4558, specular: 0xffd2a0, shininess: 80, flatShading: true }), 100, 22.4, -240);
+      put(new THREE.CylinderGeometry(4.9, 4.6, 0.7, 8), lam(0xF45D00), 100, 24.65, -240);
+      put(new THREE.CylinderGeometry(0.08, 0.08, 4, 5), lam(0x888888), 100, 27, -240);
+      put(new THREE.SphereGeometry(0.25, 6, 4), new THREE.MeshBasicMaterial({ color: 0xff3b2f }), 100, 29.1, -240);
+    }
+    // fuel farm
+    for (const du of [0, 11]) {
+      put(new THREE.CylinderGeometry(4, 4, 6, 14), lam(0xf0ece4), 500 + du, 3, -260);
+      put(new THREE.CylinderGeometry(4.05, 4.05, 0.5, 14), lam(0xF45D00), 500 + du, 5.2, -260);
     }
 
-    // ── lights: white edge lights, green thresholds, blue taxiway edges, PAPIs ──
+    // ── lights: white runway edges, green thresholds, blue taxiway edges, PAPIs ──
     {
       const geo = new THREE.SphereGeometry(0.4, 6, 4), mtx = new THREE.Matrix4();
       const batch = (color, pts) => {
         const m = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color }), pts.length);
         pts.forEach((p, i) => m.setMatrixAt(i, mtx.makeTranslation(p[0], Y0 + 0.4, p[1]))); scene.add(m);
       };
-      const edge = [], thr = [], twy = [];
+      const edge = [], thr = [];
       for (const r of RUNWAYS) {
-        for (const sd of [-1, 1]) for (let z = r.z - r.halfL; z <= r.z + r.halfL + 0.1; z += 60) edge.push([r.x + sd * (r.halfW + 1.5), z]);
-        for (const end of [-1, 1]) for (let x = -r.halfW; x <= r.halfW + 0.1; x += 3) thr.push([r.x + x, r.z + end * (r.halfL + 0.8)]);
+        if (r.closed) continue;
+        for (const sd of [-1, 1]) for (let u = -r.halfL; u <= r.halfL + 0.1; u += 60) { const p = r.at(u, sd * (r.halfW + 1.5)); edge.push([p.x, p.z]); }
+        for (const end of [-1, 1]) for (let w = -r.halfW; w <= r.halfW + 0.1; w += 3) { const p = r.at(end * (r.halfL + 0.8), w); thr.push([p.x, p.z]); }
       }
-      for (let z = RWY.z - RWY.halfL + 30; z < RWY.z + RWY.halfL - 20; z += 45) for (const sd of [-1, 1]) twy.push([TWY_X + sd * 10, z]);
-      batch(0xfff2d8, edge); batch(0x6dff9a, thr); batch(0x5b8cff, twy);
-      // PAPI: four boxes left of each northbound touchdown zone — two white, two red on the glide path
-      const papi = (r, d) => {
+      batch(0xfff2d8, edge); batch(0x6dff9a, thr); batch(0x5b8cff, twyEdge);
+      // PAPI: four boxes left of each landing threshold — two white, two red on the glide path
+      const papi = (r, fromA, d) => {
         for (let k = 0; k < 4; k++) {
-          const m = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), new THREE.MeshBasicMaterial({ color: k < 2 ? 0xffffff : 0xff3b2f }));
-          m.position.set(r.x - r.halfW - 12 - k * 9, Y0 + 0.6, r.z + r.halfL - d); scene.add(m);
+          const u = fromA ? -r.halfL + d : r.halfL - d, w = (fromA ? -1 : 1) * (r.halfW + 15 + k * 9);
+          const p = r.at(u, w), m = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), new THREE.MeshBasicMaterial({ color: k < 2 ? 0xffffff : 0xff3b2f }));
+          m.position.set(p.x, Y0 + 0.6, p.z); m.rotation.y = -r.hdg; scene.add(m);
         }
       };
-      papi(RWY, 180); papi(RWY2, 300);
+      papi(R0826, true, 300); papi(R0826, false, 300); papi(R0624, true, 200); papi(R0624, false, 200);
     }
 
     // ── windsocks: striped cone on a pivoting mast; it fills and swings with the gusts ──
-    function windsock(x, z, phase) {
-      const g = new THREE.Group(); g.position.set(x, Y0, z); scene.add(g);
+    function windsock(p, phase) {
+      const g = new THREE.Group(); g.position.set(p.x, Y0, p.z); scene.add(g);
       const pole = lam(0xd9d6d0);
       const at = (m, x, y, z) => { m.position.set(x, y, z); return m; };
       g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 0.4, 8), lam(0x8f8c86)), 0, 0.2, 0));
@@ -1012,13 +1088,12 @@
         seg.add(new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: i % 2 ? 0xf4f1ea : 0xF45D00, side: THREE.DoubleSide })));
         segs.push(seg); parent = seg; r0 = r1;
       }
-      // night/edge light at the mast head
       pivot.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 4), new THREE.MeshBasicMaterial({ color: 0xff3b2f })), 0, 0.35, 0));
       windsocks.push({ pivot, segs, phase });
     }
-    windsock(RWY.x - RWY.halfW - 26, RWY.z + RWY.halfL - 170, 0);
-    windsock(RWY2.x - RWY2.halfW - 30, RWY2.z + RWY2.halfL - 280, 1.7);
-    windsock(RWY.x - RWY.halfW - 26, RWY.z - RWY.halfL + 120, 3.1);
+    windsock(R0826.at(-R0826.halfL + 160, -R0826.halfW - 45), 0);        // left of the 08 touchdown zone
+    windsock(R0624.at(-R0624.halfL + 140, -R0624.halfW - 40), 1.7);      // left of the 06 touchdown zone
+    windsock(R0826.at(R0826.halfL - 160, R0826.halfW + 45), 3.1);        // by the 26 touchdown zone
   }
   function updateWindsocks(t) {
     for (const w of windsocks) {
@@ -1046,7 +1121,7 @@
       const h = terrainH(x, z);
       if (h < 6 || h > 280) continue;
       if (fbm(x * 0.0022 + 50, z * 0.0022 - 20, 2) < 0.06) continue;
-      if (x > -300 && x < 230 && z > 470 && z < 2130) continue;          // keep the airfield clear
+      if (airfield(x, z) > 0.01) continue;                                 // keep the airfield clear
       if (terrainNormalY(x, z) < 0.86) continue;
       const w = 3.2 + r() * 2.6, ht = 9 + r() * 9;
       p.set(x, h - 0.5, z); s.set(w, ht, w); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6.28);
@@ -1369,7 +1444,8 @@
       return m;
     };
     WAY.forEach(([x, z], i) => course.push(new THREE.Vector3(x, Math.max(localMax(x, z, 60) + RING_R + 22 + (i % 3) * 18, 70), z)));
-    const start = new THREE.Vector3(RWY.x, RWY.h, RWY.z), end = new THREE.Vector3(RWY.x, RWY.h + 40, RWY.z + RWY.halfL + 500);
+    const fin = RWY.at(-RWY.halfL - 500, 0);
+    const start = new THREE.Vector3(RWY.x, RWY.h, RWY.z), end = new THREE.Vector3(fin.x, RWY.h + 40, fin.z);
     const pts = [start, ...course, end];
     for (let pass = 0; pass < 20; pass++) {
       let changed = false;
@@ -1393,8 +1469,9 @@
   const matLater = new THREE.MeshBasicMaterial({ color: 0xfff1e2, transparent: true, opacity: 0.38, depthWrite: false });
   const ringNormals = [];
   for (let i = 0; i < course.length; i++) {
-    const prev = i === 0 ? new THREE.Vector3(RWY.x, RWY.h, RWY.z - RWY.halfL) : course[i - 1];
-    const next = i === course.length - 1 ? new THREE.Vector3(RWY.x, RWY.h, RWY.z + RWY.halfL + 500) : course[i + 1];
+    const pB = RWY.at(RWY.halfL, 0), pF = RWY.at(-RWY.halfL - 500, 0);
+    const prev = i === 0 ? new THREE.Vector3(pB.x, RWY.h, pB.z) : course[i - 1];
+    const next = i === course.length - 1 ? new THREE.Vector3(pF.x, RWY.h, pF.z) : course[i + 1];
     const dir = next.clone().sub(prev); dir.y = 0; dir.normalize();
     ringNormals.push(dir);
     const m = new THREE.Mesh(ringGeo, matLater);
@@ -1431,9 +1508,9 @@
       // handling: control power builds up to vRef (m/s); roll rate limit (rad/s); pitch-rate authority; static stability
       aerobatic: false, aNeg: -0.2,   // assist limits bank to ~65°; most negative angle of attack the assist allows
       vRef: 38, vSlow: 34, vMin: 25, rollMax: 1.1, rollK: 0.0165, pitchK: 0.75, stab: 3.2, aTrim0: 0.05, fbw: false,
-      vRotate: 22, thetaMax: 0.24, vTouchMax: 72, gearH: 1.24, runway: RWY, range: 3700,
+      vRotate: 22, thetaMax: 0.24, vTouchMax: 72, gearH: 1.24, runway: R0624, range: 3700,
       cam: 1, eye: [0.55, 0.55], shadow: [5.2, 3.2], debris: [0xf0ede8, 0xF45D00, 0x1c1c1c],
-      hint: 'Hold <kbd>R</kbd> for full throttle · at 55 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
+      hint: 'Runway 06 · hold <kbd>R</kbd> for full throttle · at 55 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
       numbers: [['Stall, clean', '53 kt'], ['Rotate', '55 kt'], ['Best climb', '74 kt'], ['Best glide', '68 kt'], ['Never exceed', '163 kt'], ['Load limits', '+3.8 / −1.52 g']],
       note: "Modelled on a Cessna 172S at maximum weight, using the figures in its pilot's operating handbook."
     },
@@ -1461,9 +1538,9 @@
       vne: 800, mMax: 2.25,     // knots equivalent airspeed, and Mach limit
       aerobatic: true, aNeg: -0.35,   // fully aerobatic: any bank, inverted flight; −20° angle-of-attack limit
       vRef: 80, vSlow: 66, vMin: 45, rollMax: 3.5, rollK: 0.024, pitchK: 1.4, stab: 3.6, aTrim0: 0.08, fbw: true,
-      vRotate: 58, thetaMax: 0.24, vTouchMax: 100, gearH: 1.95, runway: RWY2, range: 12000,
+      vRotate: 58, thetaMax: 0.24, vTouchMax: 100, gearH: 1.95, runway: R0826, range: 12000,
       cam: 1.75, eye: [0.95, 5.6], shadow: [7.2, 9.6], debris: [0x8b9298, 0x5d6268, 0xF45D00],
-      hint: 'Runway 36L · hold <kbd>R</kbd> — past 85% the afterburners light · at 125 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
+      hint: 'Runway 08 · hold <kbd>R</kbd> — past 85% the afterburners light · at 125 kt ease back with <kbd>S</kbd> / <kbd>↓</kbd>',
       numbers: [['Stall, 1 g', '110 kt'], ['Rotate', '125 kt'], ['Approach', '140–150 kt'], ['Supercruise', 'Mach 1.6'], ['Top speed', 'Mach 2.25 high · 800 kt low'], ['Load limits', '+9 / −3 g'], ['Thrust / weight', '1.27 with afterburner']],
       note: 'Modelled on an F-22A Raptor at 25,000 kg from published figures: two F119 engines (116 kN dry, 156 kN afterburning each), 78 m² wing, transonic wave drag and thrust that falls with altitude.'
     }
@@ -1719,7 +1796,7 @@
       if (terrainH(s.pos.x, s.pos.z) < 0.3) return crash('You rolled into the water.');
       if (spd > 4 && terrainNormalY(s.pos.x, s.pos.z) < 0.9) return crash('You ran off into rough ground.');
     }
-    if (s.mode === 'course' && s.nextRing >= course.length && onRunway(s.pos.x, s.pos.z) && spd < 2.5) finish();
+    if (s.mode === 'course' && s.nextRing >= course.length && onRunway(s.pos.x, s.pos.z, true) && spd < 2.5) finish();
   }
 
   const groundLevel = (x, z) => Math.max(0, terrainH(x, z));
@@ -1782,10 +1859,10 @@
 
   function resetFlight(mode) {
     s.mode = mode;
-    const rw = AC.runway;
-    s.pos.set(rw.x, rw.h + GEAR_H, rw.z + rw.halfL - 30 * AC.cam);
+    const rw = AC.runway, sp = rw.at(-rw.halfL + 30 * AC.cam, 0);       // lined up on the threshold, ready to roll
+    s.pos.set(sp.x, rw.h + GEAR_H, sp.z);
     s.vel.set(0, 0, 0);
-    s.q.identity();
+    s.q.setFromEuler(new THREE.Euler(0, -rw.hdg, 0, 'YXZ'));
     s.spool = 0; s.mach = 0; s.a = isaA(rw.h); s.parkBrake = true; s.brake = true;
     s.throttle = 0; s.grounded = true; s.stalled = false; s.crashed = false; s.gLoad = 1; s.ias = 0; s.turnRate = 0; s.ball = 0; s.slipRatio = 0;
     s.nextRing = 0; s.time = 0; s.timing = false;
@@ -2017,8 +2094,9 @@
     // runway
     g.fillStyle = '#f0ede8';
     for (const r of RUNWAYS) {
-      const [rx, rz] = toMap(r.x, r.z, W), wd = (r === AC.runway ? 3 : 2) * dpr;
-      g.fillRect(rx - wd / 2, rz - (r.halfL / MAP_RANGE * 0.5) * W, wd, r.halfL / MAP_RANGE * W);
+      const a = r.at(-r.halfL, 0), b = r.at(r.halfL, 0), [ax, az] = toMap(a.x, a.z, W), [bx, bz] = toMap(b.x, b.z, W);
+      g.strokeStyle = r.closed ? 'rgba(240,237,232,0.35)' : '#f0ede8'; g.lineWidth = (r === AC.runway ? 3 : 2) * dpr;
+      g.beginPath(); g.moveTo(ax, az); g.lineTo(bx, bz); g.stroke();
     }
     if (s.mode === 'course') {
       for (let i = s.nextRing; i < course.length; i++) {
@@ -2451,7 +2529,7 @@
 
   // test hook (only with ?debug in the URL)
   if (new URLSearchParams(location.search).has('debug')) {
-    window.__fs = { THREE, ringNormals, dbg, camera, get plane() { return plane; }, AC, AIRCRAFT, setAircraft, engineThrust, isaA, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
+    window.__fs = { THREE, ringNormals, RUNWAYS, onRunway, dbg, camera, get plane() { return plane; }, AC, AIRCRAFT, setAircraft, engineThrust, isaA, isaRho, s, ctl, keys, touch, course, RWY, settings, get phase() { return phase; }, step, startFlight, terrainH, axes, pitchRad, rollRad, headingRad, toMenu, setCam: m => camMode = m };
   }
   </script>
 </body>
