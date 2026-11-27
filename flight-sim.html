@@ -553,7 +553,7 @@
         <li>Pull too hard or fly too slow and the wing stalls — push the nose down to recover.</li>
         <li>The turn coordinator (bottom left) shows your rate of turn: wings on the L or R mark is a standard-rate turn, a full circle in two minutes. Keep the ball centred with the rudder (Q / E) — if it drifts, press the rudder on the ball's side.</li>
         <li>To land, line up with the runway, slow to about 60 knots and touch down gently: descent under 880 ft/min, wings level. Hold B, Space or the BRAKE button to stop.</li>
-        <li>In the F-22, past 85% throttle the afterburners light. It departs from the long runway, 36L, rotates at about 125 knots, and lands at 140–150 knots — use 36L, the short strip is only 680 m.</li>
+        <li>In the F-22, past 85% throttle the afterburners light. It departs from the long runway, 36L, rotates at about 125 knots, and lands at 140–150 knots — use 36L, the short strip is only 680 m. It's fully aerobatic: roll it upside down and flight assist holds it there; from a gentle bank it levels the wings.</li>
       </ol>
     </div>
     <div class="record">
@@ -1429,6 +1429,7 @@
       nMax: 3.8, nMin: -1.52,   // limit load factors, normal category
       vne: 163, mMax: 1,        // knots IAS, never-exceed speed
       // handling: control power builds up to vRef (m/s); roll rate limit (rad/s); pitch-rate authority; static stability
+      aerobatic: false, aNeg: -0.2,   // assist limits bank to ~65°; most negative angle of attack the assist allows
       vRef: 38, vSlow: 34, vMin: 25, rollMax: 1.1, rollK: 0.0165, pitchK: 0.75, stab: 3.2, aTrim0: 0.05, fbw: false,
       vRotate: 22, thetaMax: 0.24, vTouchMax: 72, gearH: 1.24, runway: RWY, range: 3700,
       cam: 1, eye: [0.55, 0.55], shadow: [5.2, 3.2], debris: [0xf0ede8, 0xF45D00, 0x1c1c1c],
@@ -1458,6 +1459,7 @@
       g: 9.80665,
       nMax: 9, nMin: -3,        // flight-control-system g limits
       vne: 800, mMax: 2.25,     // knots equivalent airspeed, and Mach limit
+      aerobatic: true, aNeg: -0.35,   // fully aerobatic: any bank, inverted flight; −20° angle-of-attack limit
       vRef: 80, vSlow: 66, vMin: 45, rollMax: 3.5, rollK: 0.024, pitchK: 1.4, stab: 3.6, aTrim0: 0.08, fbw: true,
       vRotate: 58, thetaMax: 0.24, vTouchMax: 100, gearH: 1.95, runway: RWY2, range: 12000,
       cam: 1.75, eye: [0.95, 5.6], shadow: [7.2, 9.6], debris: [0x8b9298, 0x5d6268, 0xF45D00],
@@ -1530,7 +1532,7 @@
     pitch = THREE.MathUtils.clamp(pitch, -1, 1); roll = THREE.MathUtils.clamp(roll, -1, 1);
     const kk = 1 - Math.exp(-dt * 7);
     ctl.pitch += (pitch - ctl.pitch) * kk;
-    ctl.roll += (roll - ctl.roll) * kk;
+    ctl.roll += (roll - ctl.roll) * (AC.fbw ? 1 - Math.exp(-dt * 16) : kk);   // fly-by-wire stops a roll crisply
     ctl.yaw += (yaw - ctl.yaw) * kk;
     if (k.has('KeyR')) s.throttle = Math.min(1, s.throttle + dt * 0.55);
     if (k.has('KeyF')) s.throttle = Math.max(0, s.throttle - dt * 0.55);
@@ -1624,15 +1626,22 @@
     let aTrim = AC.aTrim0;
     if (settings.assist || AC.fbw) {
       const gamma = Math.asin(THREE.MathUtils.clamp(vhat.y, -1, 1));
-      let cb = Math.cos(rollRad()); cb = cb > 0.4 ? cb : (cb > 0 ? 0.4 : 1);
+      const cr = Math.cos(rollRad());
+      const cb = cr > 0.4 ? cr : (cr > 0 ? 0.4 : 1);
       // With assist: the load factor that holds the flight path, and hands off the path eases back to level
       // (~7 s time constant). Without it the F-22's flight controls behave like a real g-command system: neutral stick = 1 g.
-      let nReq = settings.assist ? Math.cos(gamma) / cb : 1;
-      if (settings.assist && Math.abs(ctl.pitch) < 0.05) nReq -= gamma * 0.15 * V / AC.g;
+      let nReq = 1;
+      if (settings.assist) {
+        const corr = Math.abs(ctl.pitch) < 0.05 ? gamma * 0.15 * V / AC.g : 0;
+        // an aerobatic jet holds whatever attitude it's in, upside down included: the lift needed is
+        // (cos γ − correction) / cos φ, which is −1 g when inverted, eased smoothly through zero at knife-edge
+        nReq = AC.aerobatic ? (Math.cos(gamma) - corr) * cr / Math.max(cr * cr, 0.16) : Math.cos(gamma) / cb - corr;
+      }
       // the part of the thrust acting across the flight path carries some of the load
       const CLreq = (nReq * AC.mass * AC.g - thrust * Math.sin(alpha)) / Math.max(qd * AC.S, 1);
-      aTrim = THREE.MathUtils.clamp((CLreq - AC.CL0) / CLa, -0.08, AC.aStall - 0.05);
-      if (settings.assist && V < AC.vSlow) aTrim -= (AC.vSlow - V) * 0.004;      // getting slow: let the nose drop a little to keep flying speed
+      aTrim = THREE.MathUtils.clamp((CLreq - AC.CL0) / CLa, AC.aerobatic ? AC.aNeg + 0.05 : -0.08, AC.aStall - 0.05);
+      // getting slow: let the nose drop a little (toward the ground, whichever way up) to keep flying speed
+      if (settings.assist && V < AC.vSlow) aTrim -= (AC.vSlow - V) * 0.004 * (AC.aerobatic && cr < 0 ? -1 : 1);
     }
     const STAB = AC.stab;
     let cmd = ctl.pitch * AC.pitchK;
@@ -1640,22 +1649,23 @@
       // envelope protection: stay below the stall and inside the airframe's g limits
       const qS = Math.max(qd * AC.S, 1), W = AC.mass * AC.g;
       const aMax = Math.min(AC.aStall - 0.05, (AC.nMax * W / qS - AC.CL0) / CLa);
-      const aMin = Math.max(-0.2, (AC.nMin * W / qS - AC.CL0) / CLa);
+      const aMin = Math.max(AC.aNeg, (AC.nMin * W / qS - AC.CL0) / CLa);
       cmd = Math.min(cmd, Math.max(0, (aMax - aTrim) * STAB));
       cmd = Math.max(cmd, Math.min(0, (aMin - aTrim) * STAB));
       const p = pitchRad();
-      if (settings.assist && ((p < -0.7 && cmd < 0) || (p > 0.85 && cmd > 0))) cmd = 0;           // no runaway dives or loops
+      if (settings.assist && !AC.aerobatic && ((p < -0.7 && cmd < 0) || (p > 0.85 && cmd > 0))) cmd = 0;   // no runaway dives or loops (the jet may loop)
     }
     let pitchRate = cmd * eff - (alpha - aTrim) * STAB * eff + pathRate.dot(right);
     let yawRate = -ctl.yaw * 0.45 * eff - beta * 2.6 * eff + pathRate.dot(up);
     const roll = rollRad();
     let rollIn = ctl.roll;
     // assist: bank is limited to about 65°, and the wings level themselves when you let go
-    if (settings.assist && rollIn * roll > 0) rollIn *= THREE.MathUtils.clamp((0.96 - Math.abs(roll)) / 0.3, 0, 1);
+    if (settings.assist && !AC.aerobatic && rollIn * roll > 0) rollIn *= THREE.MathUtils.clamp((0.96 - Math.abs(roll)) / 0.3, 0, 1);
     // the part of the flight path's turn that lies along the fuselage: in a level turn with the nose above the path
     // this small roll rate is what keeps the bank angle constant
     let rollRate = -rollIn * Math.min(AC.rollMax, AC.rollK * V * Math.sqrt(rho / 1.225)) - pathRate.dot(fwd);
-    if (settings.assist && Math.abs(ctl.roll) < 0.08) rollRate += THREE.MathUtils.clamp(roll, -1.2, 1.2) * 0.9 * eff;
+    // (the jet only levels its wings from gentle banks; past 60° — or upside down — it holds the attitude you left it in)
+    if (settings.assist && Math.abs(ctl.roll) < 0.08 && (!AC.aerobatic || Math.abs(roll) < 1.05)) rollRate += THREE.MathUtils.clamp(roll, -1.2, 1.2) * 0.9 * eff;
     if (s.stalled) { rollRate += Math.sin(performance.now() * 0.0037) * 0.4; pitchRate -= 0.25; }
     // gravity pulls the nose down when there is little airflow to hold it
     if (V < AC.vMin) pitchRate -= (1 - V / AC.vMin) * 0.6 * Math.cos(pitchRad());

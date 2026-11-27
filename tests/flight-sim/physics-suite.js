@@ -38,6 +38,7 @@
     F.touch.x = clamp(2.5 * (bank - r) - 0.3 * (s._lastR !== undefined ? (r - s._lastR) * 120 : 0), -1, 1);
     s._lastR = r;
   }
+  const up_y = () => new F.THREE.Vector3(0, 1, 0).applyQuaternion(s.q).y;
   const clearAP = () => { s._gI = 0; s._sI = 0; s._lastR = undefined; s._lastV = undefined; };
 
   // ───────────────────────── 1. integrator & conservation ─────────────────────────
@@ -198,6 +199,50 @@
       if ((m0 > 1) !== (s.mach > 1)) crossed++;
     }
     ok('F-22 accelerates and decelerates through Mach 1 smoothly (no force discontinuities)', jump < 0.3 && crossed === 2, `largest step-to-step change in acceleration ${jump.toFixed(3)} m/s², crossed Mach 1 ${crossed}/2 times`);
+  }
+
+  // ───────────────────────── 3b. aerobatics & inverted flight ─────────────────────────
+  const rollTo = (target, maxS = 4) => {              // full aileron until |roll| passes the target (rad)
+    stepN(120 * maxS, () => { F.axes(); if (Math.abs(F.rollRad()) >= target) { F.touch.x = 0; return false; } F.touch.x = 1; });
+    F.touch.x = 0;
+  };
+  for (const kt of [350, 220]) {
+    air('f22', 4000, kt / KT, { assist: true, thr: 0.8 }); stepN(120 * 2);
+    rollTo(3.05); const y0 = s.pos.y; let gs = 0, n = 0, rmin = 9;
+    stepN(120 * 20, () => { F.axes(); rmin = Math.min(rmin, Math.abs(F.rollRad())); if (n++ > 120 * 5) gs += s.gLoad; });
+    ok(`F-22 with assist: rolled upside down at ${kt} kt, it stays inverted and level hands-off`, rmin > 2.6 && Math.abs(s.pos.y - y0) < 120 && !s.crashed && within(gs / (n - 600), -1.15, -0.85),
+      `roll never below ${(rmin * 57.3).toFixed(0)}°, altitude ${(s.pos.y - y0).toFixed(0)} m in 20 s, ${(gs / (n - 600)).toFixed(2)} g`);
+  }
+  {
+    air('f22', 4000, 180, { assist: true, thr: 0.8 }); stepN(120 * 2); rollTo(0.6); stepN(60); F.axes(); let r1 = F.rollRad(); stepN(120 * 8); F.axes();
+    ok('F-22 with assist: from a gentle bank, hands-off levels the wings', Math.abs(r1) < 1.05 && Math.abs(F.rollRad()) < 0.05, `stopped at ${(r1 * 57.3).toFixed(0)}°, ${(F.rollRad() * 57.3).toFixed(1)}° after 8 s`);
+    air('f22', 4000, 180, { assist: true, thr: 0.8 }); stepN(120 * 2); rollTo(1.3); stepN(60); F.axes(); r1 = F.rollRad(); stepN(120 * 6); F.axes();
+    ok('F-22 with assist: a steep bank is held hands-off (attitude hold)', Math.abs(r1) > 1.1 && Math.abs(F.rollRad() - r1) < 0.09 && !s.crashed, `stopped at ${(r1 * 57.3).toFixed(0)}°, ${(F.rollRad() * 57.3).toFixed(1)}° after 6 s`);
+    // roll crispness: after letting go at full roll rate, the jet stops within ~15°
+    air('f22', 4000, 200, { assist: true, thr: 0.8 }); stepN(120 * 2); rollTo(1.0); F.axes(); const rr0 = F.rollRad(); stepN(120); F.axes();
+    ok('F-22 stops rolling crisply when the stick is released (< 15° overshoot)', Math.abs(F.rollRad() - rr0) < 0.26, `${((F.rollRad() - rr0) * 57.3).toFixed(1)}° overshoot`);
+  }
+  {
+    air('f22', 4000, 200, { assist: true, thr: 0.9 }); stepN(120 * 2); const y0 = s.pos.y; let turns = 0, last = 0;
+    stepN(120 * 8, () => { F.axes(); const r = F.rollRad(); if (last > 2.5 && r < -2.5) turns++; last = r; F.touch.x = 1; });
+    F.touch.x = 0; stepN(120 * 6); F.axes();
+    ok('F-22 with assist: four aileron rolls and back to level flight (lift averages to zero while rolling, so some height is lost)', turns >= 4 && Math.abs(s.pos.y - y0) < 500 && !s.crashed && Math.abs(F.pitchRad()) < 0.3, `${turns} rolls, altitude ${(s.pos.y - y0).toFixed(0)} m, pitch ${(F.pitchRad() * 57.3).toFixed(0)}°`);
+  }
+  {
+    air('f22', 3000, 210, { assist: true, thr: 1 }); stepN(120); let maxP = -9, inv = false, done = false, h0 = F.headingRad();
+    stepN(120 * 25, () => { F.axes(); const p = F.pitchRad(); maxP = Math.max(maxP, p); if (up_y() < -0.9) inv = true; if (inv && Math.abs(p) < 0.15 && up_y() > 0.9) { done = true; return false; } F.touch.y = 1; });
+    F.touch.y = 0;
+    ok('F-22 with assist: full back stick flies a complete loop', done && maxP > 1.4 && !s.crashed, `peak pitch ${(maxP * 57.3).toFixed(0)}°, went inverted ${inv}, came back level ${done}`);
+  }
+  {
+    air('f22', 4000, 180, { assist: false, thr: 0.8 }); stepN(60); rollTo(3.05); const y0 = s.pos.y;
+    stepN(120 * 10, () => { F.touch.y = -0.26; });
+    ok('F-22 without assist: inverted, forward stick holds it up (negative g)', s.gLoad < -0.5 && s.pos.y - y0 > -300 && !s.crashed, `${s.gLoad.toFixed(2)} g, altitude ${(s.pos.y - y0).toFixed(0)} m`);
+  }
+  {
+    air('c172', 1500, 50, { assist: true, thr: 0.7 }); let rmax = 0;
+    stepN(120 * 5, () => { F.axes(); rmax = Math.max(rmax, Math.abs(F.rollRad())); F.touch.x = 1; }); F.touch.x = 0;
+    ok('Cessna with assist: bank still limited to ~65° (not aerobatic)', rmax < 1.2, `max bank ${(rmax * 57.3).toFixed(0)}°`);
   }
 
   // ───────────────────────── 4. ground handling ─────────────────────────
